@@ -7,6 +7,7 @@ import Dashboard from './components/dashboard/Dashboard';
 
 function App() {
   const roles = ['admin', 'pentester', 'user'];
+  const currentRole = 'admin'
   const router = createBrowserRouter([
     {
       path: '/',
@@ -26,7 +27,7 @@ function App() {
           children:[
             {
               path: 'dashboard',
-              element: <Dashboard/>
+              element: <Dashboard role={currentRole}/>
             }
           ]
         }
@@ -38,7 +39,7 @@ function App() {
 
   return (
     <>
-     
+     Hello
     </>
   )
 }
