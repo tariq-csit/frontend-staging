@@ -13,17 +13,45 @@ export default {
       secondary: '#BBBBBB',
       },
       radius:{
-        nav: '100px',
-        component: '16px'
+        nav: '6.25rem',
+        component: '1rem',
+        chart: '1.25rem',
+        form: '1rem',
+        formInput: '0.375rem',
+        reportItem: '1rem',
+
       },
-      padding:{
-        nav: '16px',
+      p:{
+        nav: '1rem',
+        component: '1.5rem',
+        chart: '0.75rem 1.5rem',
+        listItem: '0.625rem',
+        form: '2rem', 
+        formInput: '0rem 0.9375rem',
+        reportsComponent: '1.25rem',
+        reoprtItem: '1.25rem',
+        settingSection: '3.75rem'
+
       },
-      height:{
-        nav: '44px'
+      h:{
+        nav: '2.75rem',
+        listItem: '3.125rem',
+        formInput: '2.625rem',
+        reportListItem: '3.75rem'
       },
       gap:{
-        nav: '10px'
+        nav: '0.625rem',
+        component: '1.5rem',
+        listItem: '0.625rem',
+        form: '0.625rem',
+        reoprtItem: '2rem',
+        settingSection: '0.75rem'
+      },
+      boxShadow:{
+        component: '0px 5px 10px 0px rgba(0, 0, 0, 0.08)',
+      },
+      w:{
+        form: '64.5625rem'
       }
     },
   },
