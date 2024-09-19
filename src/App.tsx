@@ -1,10 +1,16 @@
 import './App.css'
+import { Routes, Route } from 'react-router-dom';
+
 
 
 function App() {
-return (
-    <>
-    </>
+  return (
+    <div>
+      <Routes>
+        <Route path='/login' element={<div><h1>Login Page</h1></div>}/>
+        <Route path='/dashboard/:role' element={<div><h1>Dashboard</h1></div>}/>
+      </Routes>
+    </div>
   )
 }
 
