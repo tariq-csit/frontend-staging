@@ -6,11 +6,11 @@ export default {
   theme: {
     extend: {
       colors:{
-      primary:{
-        900:'#353086',
-        100: rgba(53, 48, 134, 0.1)
+       primary:{
+         900:'#353086',
+         100: 'rgba(53, 48, 134, 0.1)'
       },
-      secondary: '#BBBBBB',
+       secondary: '#BBBBBB',
       },
       rounded:{
         nav: '6.25rem',
@@ -57,4 +57,3 @@ export default {
   },
   plugins: [],
 }
-
