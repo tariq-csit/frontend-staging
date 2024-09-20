@@ -22,7 +22,7 @@ export default {
 
       },
       padding:{
-        nav: '1rem',
+        nav: '0.75rem 1rem',
         component: '1.5rem',
         chart: '0.75rem 1.5rem',
         listItem: '0.625rem',
