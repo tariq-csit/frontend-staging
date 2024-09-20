@@ -12,7 +12,7 @@ export default {
       },
       secondary: '#BBBBBB',
       },
-      radius:{
+      rounded:{
         nav: '6.25rem',
         component: '1rem',
         chart: '1.25rem',
