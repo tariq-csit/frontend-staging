@@ -12,7 +12,7 @@ export default {
       },
        secondary: '#BBBBBB',
       },
-      rounded:{
+      borderRadius:{
         nav: '6.25rem',
         component: '1rem',
         chart: '1.25rem',
@@ -21,7 +21,7 @@ export default {
         reportItem: '1rem',
 
       },
-      p:{
+      padding:{
         nav: '1rem',
         component: '1.5rem',
         chart: '0.75rem 1.5rem',
@@ -33,7 +33,7 @@ export default {
         settingSection: '3.75rem'
 
       },
-      h:{
+      height:{
         nav: '2.75rem',
         listItem: '3.125rem',
         formInput: '2.625rem',
@@ -50,7 +50,7 @@ export default {
       boxShadow:{
         component: '0px 5px 10px 0px rgba(0, 0, 0, 0.08)',
       },
-      w:{
+      width:{
         form: '64.5625rem'
       }
     },
