@@ -52,6 +52,11 @@ export default {
       },
       width:{
         form: '64.5625rem'
+      },
+      fontSize:{
+        xxs: '0.65rem',
+        xxxs: '0.5rem',
+        xxxxs: '0.425rem'
       }
     },
   },
