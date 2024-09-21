@@ -54,7 +54,7 @@ function Sidebar() {
       <div className="flex flex-col justify-center gap-6 self-stretch ">
         <div className="flex  items-center gap-[0.75rem] self-stretch">
           <img
-            className={`${collapsed && "w-full p-0"} p-component mt-4 sm:mt-2`}
+            className={`${collapsed? "p-0": 'p-component'}  mt-4 sm:mt-2`}
             src={collapsed ? smallLogo : largeLogo}
           />
           <div
