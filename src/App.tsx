@@ -8,7 +8,7 @@ function App() {
   return (
     <div>
       <Routes>
-        <Route path='/' element={<div className='flex'><Sidebar/> <div className='w-3/4 bg-lime-500' >hello</div></div>}/>
+        <Route path='/' element={<div className='flex'><Sidebar/> <div className='w-full sm:w-3/4 h-screen bg-lime-500' ></div></div>}/>
         <Route path='/login' element={<div><h1>Login Page</h1></div>}/>
         <Route path='/dashboard/:role' element={<div><h1>Dashboard</h1></div>}/>
       </Routes>
