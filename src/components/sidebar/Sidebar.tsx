@@ -14,7 +14,7 @@ import ProfileNav from "./ProfileNav";
 import bars from '/bars-solid.svg'
 import cross from '/xmark-solid.svg'
 function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
 
   const navComponents = [
     {
