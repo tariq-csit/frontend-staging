@@ -6,13 +6,13 @@ export default {
   theme: {
     extend: {
       colors:{
-      primary:{
-        900:'#353086',
-        100: rgba(53, 48, 134, 0.1)
+       primary:{
+         900:'#353086',
+         100: 'rgba(53, 48, 134, 0.1)'
       },
-      secondary: '#BBBBBB',
+       secondary: '#BBBBBB',
       },
-      rounded:{
+      borderRadius:{
         nav: '6.25rem',
         component: '1rem',
         chart: '1.25rem',
@@ -21,8 +21,8 @@ export default {
         reportItem: '1rem',
 
       },
-      p:{
-        nav: '1rem',
+      padding:{
+        nav: '0.75rem 1rem',
         component: '1.5rem',
         chart: '0.75rem 1.5rem',
         listItem: '0.625rem',
@@ -33,7 +33,7 @@ export default {
         settingSection: '3.75rem'
 
       },
-      h:{
+      height:{
         nav: '2.75rem',
         listItem: '3.125rem',
         formInput: '2.625rem',
@@ -50,11 +50,10 @@ export default {
       boxShadow:{
         component: '0px 5px 10px 0px rgba(0, 0, 0, 0.08)',
       },
-      w:{
+      width:{
         form: '64.5625rem'
       }
     },
   },
   plugins: [],
 }
-
