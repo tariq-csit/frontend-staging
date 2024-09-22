@@ -51,12 +51,21 @@ export default {
         component: '0px 5px 10px 0px rgba(0, 0, 0, 0.08)',
       },
       width:{
-        form: '64.5625rem'
+        form: '64.5625rem',
+        icon: '1.25rem',
+        iconContainer: '3.75rem'
+      },
+      height:{
+        icon: '1.25rem',
+        iconContainer: '3.75rem'
       },
       fontSize:{
         xxs: '0.65rem',
         xxxs: '0.5rem',
         xxxxs: '0.425rem'
+      },
+      flex:{
+        component: '1 0% 0%'
       }
     },
   },
