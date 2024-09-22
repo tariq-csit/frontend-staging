@@ -12,8 +12,8 @@ function ProfileNav(props: propsType) {
       <img className='w-6 sm:w-8 lg:w-10' src={profileImage} alt="" />
        <div className={`flex ${props.collapsed?'hidden':'visible'}`}>
          <div className='w-20 sm:w-24 lg:w-28'>
-          <p className='text-[0.5rem] sm:text-[0.65rem] lg:text-[0.725rem]'>Welcome back &#128075;</p>
-          <p className='text-[0.65rem] sm:text-[0.725rem] lg:text-sm font-medium'>Jonathan</p>
+          <p className='text-xxxs sm:text-xxs lg:text-xs'>Welcome back &#128075;</p>
+          <p className='text-xxs sm:text-xs lg:text-sm font-medium'>Jonathan</p>
         </div>
           <img className='w-3 sm:w-5 lg:w-7' src={rightArrow} />
         </div>

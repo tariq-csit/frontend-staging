@@ -18,27 +18,27 @@ function Sidebar() {
 
   const navComponents = [
     {
-      link: "dashboard",
+      link: "dashboard/:role",
       text: "Dashboard",
       icon: dashboard,
     },
     {
-      link: "pentest",
+      link: "dashboard/pentests",
       text: "Pentests",
       icon: pentests,
     },
     {
-      link: "reports",
+      link: "dashboard/vulnerability-reports",
       text: "Vulnerability Reports",
       icon: reports,
     },
     {
-      link: "client-list",
+      link: "dashboard/client-lists",
       text: "Client Lists",
       icon: clients,
     },
     {
-      link: "pentesters-list",
+      link: "dashboard/pentesters-list",
       text: "Pentesters List",
       icon: pentesters,
     },
@@ -88,7 +88,7 @@ function Sidebar() {
             } my-3 h-[0.0625rem] bg-secondary`}
           />
           <SidebarNav
-            link="/setting"
+            link="dashboard/settings"
             navText="Settings"
             icon={setting}
             collapsed={collapsed}
