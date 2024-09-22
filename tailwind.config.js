@@ -19,12 +19,13 @@ export default {
         form: '1rem',
         formInput: '0.375rem',
         reportItem: '1rem',
+        activity: '0.5rem'
 
       },
       padding:{
         nav: '0.75rem 1rem',
         component: '1.5rem',
-        chart: '0.75rem 1.5rem',
+        chart: '1.5rem 0.75rem',
         listItem: '0.625rem',
         form: '2rem', 
         formInput: '0rem 0.9375rem',
@@ -37,7 +38,8 @@ export default {
         nav: '2.75rem',
         listItem: '3.125rem',
         formInput: '2.625rem',
-        reportListItem: '3.75rem'
+        reportListItem: '3.75rem',
+        activityIcon: '2.5rem'
       },
       gap:{
         nav: '0.625rem',
@@ -53,11 +55,13 @@ export default {
       width:{
         form: '64.5625rem',
         icon: '1.25rem',
-        iconContainer: '3.75rem'
+        iconContainer: '3.75rem',
+        activityIcon: '2.5rem'
       },
       height:{
         icon: '1.25rem',
-        iconContainer: '3.75rem'
+        iconContainer: '3.75rem',
+        activity: '6rem'
       },
       fontSize:{
         xxs: '0.65rem',

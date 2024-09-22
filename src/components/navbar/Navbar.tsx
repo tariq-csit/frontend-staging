@@ -7,7 +7,7 @@ import ntfcnOrange from '/ntfcn=orange.svg'
 
 function Navbar() {
   return (
-    <div className='flex pl-0 pr-6 sm:pr-10  py-4 flex-col w-full h-12 justify-center items-center self-stretch border-b border-secondary bg-white shadow-component'>
+    <div className='flex pl-0 pr-6 sm:pr-10 w-full py-4 flex-col h-12 justify-center items-center self-stretch border-b border-secondary bg-white shadow-component'>
       <div className='flex pl-10 justify-end items-center gap-component self-stretch'>
         <div className='flex justify-center items-center gap-5 sm:gap-8 lg:gap-[2.8125rem]'>
           <div className='flex items-center gap-3'>
