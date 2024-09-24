@@ -11,6 +11,7 @@ export default {
          100: 'rgba(53, 48, 134, 0.1)'
       },
        secondary: '#BBBBBB',
+       button: '#4943A4'
       },
       borderRadius:{
         nav: '6.25rem',
@@ -56,12 +57,14 @@ export default {
         form: '64.5625rem',
         icon: '1.25rem',
         iconContainer: '3.75rem',
-        activityIcon: '2.5rem'
+        activityIcon: '2.5rem',
+        tableVarients: '11.58931rem'
       },
       height:{
         icon: '1.25rem',
         iconContainer: '3.75rem',
-        activity: '6rem'
+        activity: '6rem',
+        tableVarients: '3.125rem'
       },
       fontSize:{
         xxs: '0.65rem',
