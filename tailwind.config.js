@@ -11,7 +11,14 @@ export default {
          100: 'rgba(53, 48, 134, 0.1)'
       },
        secondary: '#BBBBBB',
-       button: '#4943A4'
+       button: '#4943A4',
+       listBg: '#FAFAFB',
+       statusGreen: 'rgba(0, 128, 0, 0.30)',
+       statusTextGreen: '#008000',
+       statusOrange: 'rgba(255, 140, 4, 0.30)',
+       statusTextOrange: '#FF5E04',
+       statusSilver: ' rgba(93, 93, 93, 0.15)',
+       statusTextSilver: '#5D5D5D'
       },
       borderRadius:{
         nav: '6.25rem',
@@ -48,7 +55,8 @@ export default {
         listItem: '0.625rem',
         form: '0.625rem',
         reoprtItem: '2rem',
-        settingSection: '0.75rem'
+        settingSection: '0.75rem',
+        teamIcons: '0.9375rem'
       },
       boxShadow:{
         component: '0px 5px 10px 0px rgba(0, 0, 0, 0.08)',
@@ -58,13 +66,15 @@ export default {
         icon: '1.25rem',
         iconContainer: '3.75rem',
         activityIcon: '2.5rem',
-        tableVarients: '11.58931rem'
+        tableVarients: '11.58931rem',
+        team: '2.1875rem'
       },
       height:{
         icon: '1.25rem',
         iconContainer: '3.75rem',
         activity: '6rem',
-        tableVarients: '3.125rem'
+        tableVarients: '3.125rem',
+        team: '2.1875rem'
       },
       fontSize:{
         xxs: '0.65rem',
