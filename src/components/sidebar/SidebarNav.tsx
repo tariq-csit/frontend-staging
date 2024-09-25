@@ -11,9 +11,9 @@ type propsType={
 
 function SidebarNav(props: propsType) {
   return (
-      <NavLink to={props.link} className={(e)=>e.isActive? `bg-primary-100 text-primary-900 ${style}` : `bg-white hover:bg-primary-100 text-[#64748B] ${style}`} >
+      <NavLink to={props.link} className={(e)=>e.isActive? `bg-primary-100 font-poppins text-primary-900 ${style}` : `bg-white hover:bg-primary-100 text-[#64748B] ${style}`} >
         <img className={`w-3 h-3 sm:w-[0.875rem] sm:h-[0.875rem] ${props.collapsed && 'scale-150'}`} src={props.icon} />
-        {!props.collapsed &&<p className={`text-[0.65rem] sm:text-[0.7rem] lg:text-sm sm:ml-2 font-medium leading-3 sm:leading-tight`}> {props.navText}</p>}
+        {!props.collapsed &&<p className={`text-2xs sm:text-xs lg:text-sm font-poppins sm:ml-2 font-medium leading-3 sm:leading-tight`}> {props.navText}</p>}
       </NavLink>
 
   )

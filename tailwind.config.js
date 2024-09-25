@@ -77,12 +77,15 @@ export default {
         team: '2.1875rem'
       },
       fontSize:{
-        xxs: '0.65rem',
-        xxxs: '0.5rem',
-        xxxxs: '0.425rem'
+        '2xs': '0.65rem',
+        '3xs': '0.5rem',
+        '4xs': '0.425rem'
       },
       flex:{
         component: '1 0% 0%'
+      },
+      fontFamily:{
+        poppins: 'Poppins'
       }
     },
   },
