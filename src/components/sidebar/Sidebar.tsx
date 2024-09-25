@@ -49,7 +49,7 @@ function Sidebar() {
     onClick={()=>setCollapsed(!collapsed)}><img className="w-3 h-3" src={collapsed?bars:cross} /></div>
     <div
       className={`sm:flex sm:visible bg-white  w-[12.5rem] absolute sm:relative  duration-75 ${
-        collapsed? "hidden sm:w-[4.75rem]":'visible flex sm:w-[15rem] lg:w-[17.5rem]'} h-auto flex-col justify-between items-start shrink-0 rounded-component`}
+        collapsed? "hidden sm:w-[4.75rem]":'visible flex sm:w-[15rem] lg:w-[17.5rem]'} h-auto min-h-screen flex-col justify-between items-start shrink-0 rounded-component`}
     >
       <div className="flex flex-col justify-center gap-6 self-stretch ">
         <div className="flex  items-center gap-[0.75rem] self-stretch">
