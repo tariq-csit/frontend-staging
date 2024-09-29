@@ -82,7 +82,8 @@ export default {
   			reportsComponent: '1.25rem',
   			reoprtItem: '1.25rem',
   			settingSection: '3.75rem',
-  			input: '0.9375rem'
+  			input: '0.9375rem',
+				formBtn: '0.5rem 1rem'
   		},
   		height: {
   			icon: '1.25rem',
@@ -91,7 +92,8 @@ export default {
   			tableVarients: '3.125rem',
   			team: '2.1875rem',
   			input: '2.625rem',
-  			textArea: '8.75rem'
+  			textArea: '8.75rem',
+				attachmentsField: '10.4375rem'
   		},
   		gap: {
   			nav: '0.625rem',
