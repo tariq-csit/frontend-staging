@@ -7,7 +7,7 @@ function Layout() {
   return (
     <div className='flex'>
       <Sidebar/>
-      <div className='w-full'>
+      <div className='w-full bg-[#E5E5E5]'>
         <Navbar/>
         <Outlet/>
       </div>
