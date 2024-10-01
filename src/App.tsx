@@ -19,7 +19,7 @@ function App() {
         <Route path='/login' element={<div><h1>Login Page</h1></div>}/>
         <Route path='/' element={<Layout/>} >
         <Route path='/dashboard/:role' element={<ActivePentests/>}/>
-        <Route path='/dashboard/pentests' element={<NewPentestsForm/>}/>
+        <Route path='/dashboard/pentests' element={<Pentests/>}/>
         <Route path='/dashboard/vulnerability-reports' element={<VulnerabilityReports/>}/>
         <Route path='/dashboard/client-lists' element={<ClientLists/>}/>
         <Route path='/dashboard/pentesters-list' element={<PentestersList/>}/>
