@@ -128,7 +128,8 @@ export default {
   			component: '1 0% 0%'
   		},
   		fontFamily: {
-  			poppins: 'Poppins'
+  			poppins: 'Poppins',
+				inter: 'Inter'
   		}
   	}
   },

@@ -2,13 +2,11 @@ import './App.css'
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import Pentests from './components/pentests/Pentests';
-import Dashboard from './components/dashboard/Dashboard';
 import VulnerabilityReports from './components/vulenerabilityReports/VulnerabilityReports';
 import ClientLists from './components/clientLists/ClientLists';
 import PentestersList from './components/pentestersList/PentestersList';
 import Settings from './components/settings/Settings';
 import ActivePentests from './components/activePentests/ActivePentests';
-import NewPentestsForm from './components/newPentestsForm/NewPentestsForm';
 
 
 
