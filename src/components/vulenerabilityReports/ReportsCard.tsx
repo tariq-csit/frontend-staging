@@ -13,7 +13,7 @@ function ReportsCard(props: {
             className={`flex w-9 h-[1.4375rem] py-1 px-[0.375rem] justify-center items-center gap-nav rounded-chart 
         ${props.priority === "low" && "bg-[#DFA87433]"}
         ${props.priority === "high" && "bg-[#D8727D1A]"}
-        ${props.priority === "critical" && "bg-[#D5494933] w-12"}
+        ${props.priority === "critical" && "bg-[#D5494933] w-[3.25744rem]"}
         ${props.priority === "completed" && "bg-[#83C29D33] w-[4.75rem]"}`}
           >
             <p
