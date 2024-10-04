@@ -14,7 +14,7 @@ function Navbar() {
 
           <div className='text-end'>
             <p className='text-3xs sm:text-2xs lg:text-xs font-poppins font-medium'>Johnathan</p>
-            <p className='text-4xs sm:text-3xs lg:text-2xs text-secondary font-poppins font-normal'>PM,Tecessc LLC</p>
+            <p className='text-4xs sm:text-3xs lg:text-2xs text-inputBorder font-poppins font-normal'>PM,Tecessc LLC</p>
           </div>
           <img className='w-4 sm:w-5 lg:w-7' src={profilePic}/>
           <img className='w-1 sm:w-2 lg:w-3 ' src={downArrow}  />
