@@ -106,7 +106,7 @@ function List() {
             <p className="flex-component font-poppins text-sm">{item.pentestsNo}</p>
             </div>
             <div className="flex h-[3.75rem] p-listItem items-center gap-listItem self-stretch">
-              <div className="flex py-1 px-listItem justify-center items-center gap-listItem rounded-s bg-[#5D5D5D26]/15">
+              <div className="flex py-1 px-listItem justify-center items-center gap-listItem rounded-[0.25rem] bg-[#5D5D5D26]/15">
                 <p className="text-[#5D5D5D] font-inter text-sm font-medium">{item.service}</p>
               </div>
             </div>
