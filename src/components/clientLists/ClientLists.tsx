@@ -1,9 +1,11 @@
-import React from 'react'
-
+import List from "./List"
 function ClientLists() {
   return (
-    <div>
-      clientlists
+    <div className="flex px-6 flex-col items-start gap-component self-stretch">
+      <div className="flex p-component flex-col items-start gap-component self-stretch rounded-activity bg-white shadow-component">
+        <h3 className="self-stretch text-[#030229] font-poppins text-2xl font-medium">Client Lists</h3>
+        <List/>
+      </div>
     </div>
   )
 }
