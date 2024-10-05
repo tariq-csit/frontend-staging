@@ -1,4 +1,3 @@
-import React from "react";
 import { useState } from "react";
 import dashboard from "/state=dashboard.svg";
 import leftArrow from "/chevron-left.svg";
@@ -45,7 +44,7 @@ function Sidebar() {
   ];
   return (
     <>
-    <div className="sm:hidden bg-secondary z-100 rounded-full p-2 absolute top-2 left-2"
+    <div className="sm:hidden bg-secondary z-10 rounded-full p-2 absolute top-2 left-2"
     onClick={()=>setCollapsed(!collapsed)}><img className="w-3 h-3" src={collapsed?bars:cross} /></div>
     <div
       className={`sm:flex sm:visible bg-white  w-[12.5rem] absolute sm:relative  duration-75 ${
