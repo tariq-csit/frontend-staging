@@ -68,6 +68,7 @@ export default {
   			reportItem: '1rem',
   			activity: '0.5rem',
   			input: '0.375rem',
+				settingsSection: '0.5rem',
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
