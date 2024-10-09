@@ -131,7 +131,10 @@ export default {
   		fontFamily: {
   			poppins: 'Poppins',
 				inter: 'Inter'
-  		}
+  		},
+			backgroundImage:{
+				login: "url('/login-image.png')"
+			}
   	}
   },
   plugins: [require("tailwindcss-animate")],
