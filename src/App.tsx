@@ -7,6 +7,7 @@ import ClientLists from './components/clientLists/ClientLists';
 import PentestersList from './components/pentestersList/PentestersList';
 import Settings from './components/settings/Settings';
 import ActivePentests from './components/activePentests/ActivePentests';
+import Login from './components/login/Login';
 
 
 
@@ -14,7 +15,7 @@ function App() {
   return (
     <div>
       <Routes>
-        <Route path='/login' element={<div><h1>Login Page</h1></div>}/>
+        <Route path='/login' element={<Login/>}/>
         <Route path='/' element={<Layout/>} >
         <Route path='/dashboard/:role' element={<ActivePentests/>}/>
         <Route path='/dashboard/pentests' element={<Pentests/>}/>
