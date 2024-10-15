@@ -5,6 +5,13 @@ import { Eye, EyeOff } from "lucide-react"
 import { useState } from "react"
 import { Checkbox } from "@/components/ui/checkbox"
 
+import axios from 'axios';
+
+
+const api = '172.86.114.162:4000'
+const apiUrl = 'http://172.86.114.162:4000/auth/login';
+const loginReq = '/auth/login'
+
 
 
 const formSchema = z.object({
@@ -40,9 +47,16 @@ function LoginForm() {
 
     },
   })
-  function onSubmit(values: z.infer<typeof formSchema>) {
-
-    console.log(values)
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      const response = await axios.post(apiUrl, {
+        "email": values.email,
+        "password": values.password
+      });
+      console.log(response);
+    } catch (error) {
+      console.error(error); // Make sure you handle errors properly
+    }
   }
   
   return (
