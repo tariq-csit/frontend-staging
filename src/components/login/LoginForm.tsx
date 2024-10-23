@@ -5,6 +5,13 @@ import { Eye, EyeOff } from "lucide-react"
 import { useState } from "react"
 import { Checkbox } from "@/components/ui/checkbox"
 
+import axios from 'axios';
+
+
+const api = '172.86.114.162:4000'
+const apiUrl = 'https://172.86.114.162:4000/auth/login';
+const loginReq = '/auth/login'
+
 
 
 const formSchema = z.object({
