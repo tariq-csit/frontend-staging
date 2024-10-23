@@ -9,8 +9,8 @@ import axios from 'axios';
 
 
 const api = '172.86.114.162:4000'
-const apiUrl = 'http://172.86.114.162:4000/auth/login';
-const loginReq = '/auth/login'
+const loginApiUrl = 'http://172.86.114.162:4000/api/auth/login';
+const twoFaApiUrl = 'http://172.86.114.162:4000/api/auth/setup-2fa'
 
 
 
@@ -38,6 +38,8 @@ import { Input } from "@/components/ui/input"
 
 function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
+  const [tempToken, settempToken] = useState('')
+  const [qrCode, setqrCode] = useState('')
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -49,16 +51,17 @@ function LoginForm() {
   })
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const response = await axios.post(apiUrl, {
+      const response = await axios.post(loginApiUrl, {
         "email": values.email,
         "password": values.password
       });
       console.log(response);
-    } catch (error) {
-      console.error(error); // Make sure you handle errors properly
+    } catch (error:any) {
+      settempToken(error.response.data.tempToken)
     }
   }
-  
+
+  if(tempToken === '' && qrCode===''){
   return (
     <Form {...form}>
     <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col items-start gap-component justify-center self-stretch">
@@ -136,7 +139,38 @@ function LoginForm() {
         />
     </form>
   </Form> 
-  )
+  )}
+  else if(tempToken !== '' && qrCode===''){
+    return (
+      <div className="p-8 flex flex-col justify-center items-center">
+        <h2>2 factor authentication required</h2>
+        <Button onClick={
+         async ()=>{
+          try {
+            const response = await axios.post(
+              twoFaApiUrl,
+              {}, // If the body is empty, pass an empty object
+              {
+                headers: {
+                  Authorization: `Bearer ${tempToken}`, // Add the token to the headers
+                },
+              }
+            );
+        
+            setqrCode(response.data.qrCodeUrl);
+            console.log(response.data.qrCodeUrl)
+          } catch (error) {
+            console.error('Error setting up 2FA:', error);
+          }
+        }}>Next</Button>
+      </div>
+    )
+}else{
+  return(<div className="">
+    qr code here
+  </div>)
+}
 }
 
 export default LoginForm
+
