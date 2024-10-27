@@ -52,12 +52,19 @@ function InitialForm(props:{
         email: values.email,
         password: values.password,
       });
-      localStorage.setItem("token", response.data.token);
-      response.data.token&&navigate('/dashboard/:role')
-    } catch (error: any) {
-      error.response.data.message === "2FA setup required"
-        ? props.settempToken(error.response.data.tempToken)
-        : console.log(error);
+      sessionStorage.setItem("token", response.data.token);
+      sessionStorage.setItem("user", JSON.stringify(response.data.user));
+      navigate('/dashboard')
+    } catch (error: unknown) {
+      if (axios.isAxiosError(error) && error.response) {
+        if (error.response.data.message === "2FA setup required") {
+          props.settempToken(error.response.data.tempToken);
+        } else {
+          console.log(error.response.data.message);
+        }
+      } else {
+        console.log(error);
+      }
     }
   }
   return (
@@ -187,5 +194,4 @@ function InitialForm(props:{
       </div>
   )
 }
-
 export default InitialForm

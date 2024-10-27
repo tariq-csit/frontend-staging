@@ -50,7 +50,7 @@ function QrCodeAuth(props: {
       );
       props.settoken(response.data.token);
       localStorage.setItem("token", response.data.token);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log(error);
     }
   }

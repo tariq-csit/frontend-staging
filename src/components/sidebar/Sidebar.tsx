@@ -1,10 +1,5 @@
 import { useState } from "react";
-import dashboard from "/state=dashboard.svg";
 import leftArrow from "/chevron-left.svg";
-import reports from "/state=reports.svg";
-import clients from "/state=clients.svg";
-import pentesters from "/state=pentesters.svg";
-import pentests from "/state=pentests.svg";
 import SidebarNav from "./SidebarNav";
 import setting from "/tage=setting.svg";
 import largeLogo from "/logo-large.png";
@@ -17,29 +12,29 @@ function Sidebar() {
 
   const navComponents = [
     {
-      link: "dashboard/:role",
+      link: "dashboard",
       text: "Dashboard",
-      icon: dashboard,
+      icon: "/state=dashboard.svg",
     },
     {
       link: "dashboard/pentests",
       text: "Pentests",
-      icon: pentests,
+      icon: "/state=pentests.svg",
     },
     {
       link: "dashboard/vulnerability-reports",
       text: "Vulnerability Reports",
-      icon: reports,
+      icon: "/state=reports.svg",
     },
     {
       link: "dashboard/client-lists",
       text: "Client Lists",
-      icon: clients,
+      icon: "/state=clients.svg",
     },
     {
       link: "dashboard/pentesters-list",
       text: "Pentesters List",
-      icon: pentesters,
+      icon: "/state=pentesters.svg",
     },
   ];
   return (

@@ -22,7 +22,6 @@ function LoginForm() {
   } else if (token === "" && qrCode !== "") {
     return (
       <QrCodeAuth tempToken={tempToken} qrCode={qrCode} settoken={settoken} />
-      // <div></div>
     );
   } else {
     return(
