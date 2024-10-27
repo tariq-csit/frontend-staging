@@ -54,10 +54,10 @@ function GridFormat() {
     }
   ];
   return (
-    <div className="flex flex-col justify-between gap-component w-full ">
+    <div className="flex flex-col overflow-x-auto justify-between gap-component w-full ">
       
 
-      <div className="flex flex-col p-0 m-0">
+      <div className="flex flex-col p-0 m-0 min-w-[1000px]">
         <div className={`grid grid-cols-9 place-items-start rounded-[0.5rem] bg-white/80 border gap-0`}>
           {listHead.map((data, index) => {
             return (

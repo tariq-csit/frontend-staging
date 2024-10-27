@@ -108,9 +108,6 @@ export default {
   		boxShadow: {
   			component: '0px 5px 10px 0px rgba(0, 0, 0, 0.08)'
   		},
-  		minWidth: {
-  			formFieldMin: '15.625rem'
-  		},
   		width: {
   			form: '64.5625rem',
   			icon: '1.25rem',
