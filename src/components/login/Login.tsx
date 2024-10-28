@@ -1,9 +1,16 @@
+import { useNavigate } from "react-router-dom";
 import LoginForm from "./LoginForm"
+import { useEffect } from "react";
 
 
 
 function Login() {
-
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (sessionStorage.getItem("token")) {
+      navigate("/dashboard");
+    }
+  }, [navigate]);
   return (
     <div className='flex min-h-screen'>
       <div className="bg-login bg-cover bg-center w-1/2"></div>

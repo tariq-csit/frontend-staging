@@ -87,7 +87,7 @@ function ListFormat() {
         </div>
         {
           openBugs.map((card, i)=>{
-            return<ReportsCard priority={card.priority} title={card.title} description={card.description} comments={card.comments} files={card.files}/>
+            return<ReportsCard key={i} priority={card.priority} title={card.title} description={card.description} comments={card.comments} files={card.files}/>
           })
         }
       </div>
@@ -130,7 +130,7 @@ function ListFormat() {
       
       {
           ResolvedBugs.map((card, i)=>{
-            return<ReportsCard priority={card.priority} title={card.title} description={card.description} comments={card.comments} files={card.files}/>
+            return<ReportsCard key={i} priority={card.priority} title={card.title} description={card.description} comments={card.comments} files={card.files}/>
           })
         }
         </div> 

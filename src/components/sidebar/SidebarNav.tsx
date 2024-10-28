@@ -1,11 +1,10 @@
-import React from 'react'
 import { NavLink } from 'react-router-dom'
 const style = `flex h-nav p-nav gap-nav items-center rounded-nav`
 
 type propsType={
   link: string,
   collapsed: boolean,
-  icon: any,
+  icon: string,
   navText: string
 }
 

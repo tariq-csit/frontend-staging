@@ -7,7 +7,8 @@ function Layout() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!localStorage.getItem("token")) {
+    if (!sessionStorage.getItem("token")) {
+
       navigate("/login");
     }
   }, [navigate]);

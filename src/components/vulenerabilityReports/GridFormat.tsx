@@ -1,9 +1,6 @@
-import React from 'react'
-import PentesterList from '../activePentests/subComponenets/PentesterList'
-
 function GridFormat() {
   const listHead = [{header: "Title",},{header: "Priority",},{header: "Status",},{header: "Description",},{header: "Comments",},{header: "Reported By",},{header: 'Reported On',},{header: "Team Members",},{header: 'Actions'}];
-  let listData = [
+  const listData = [
     {
       title: "Brainstorming",
       priority: 'critical',

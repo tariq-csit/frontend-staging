@@ -15,8 +15,8 @@ function App() {
     <div>
       <Routes>
         <Route path='/login' element={<Login/>}/>
-        <Route path='/' element={<Layout/>} >
-        <Route path='dashboard/:role' element={<ActivePentests/>}/>
+        <Route path='/' element={<Layout/>} 
+        <Route path='dashboard' element={<ActivePentests/>}/>
         <Route path='dashboard/pentests' element={<Pentests/>}/>
         <Route path='dashboard/vulnerability-reports' element={<VulnerabilityReports/>}/>
         <Route path='dashboard/client-lists' element={<ClientLists/>}/>
