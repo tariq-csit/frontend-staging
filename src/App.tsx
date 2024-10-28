@@ -15,13 +15,13 @@ function App() {
     <div>
       <Routes>
         <Route path='/login' element={<Login/>}/>
-        <Route path='/' element={<Layout/>} 
-        <Route path='dashboard' element={<ActivePentests/>}/>
-        <Route path='dashboard/pentests' element={<Pentests/>}/>
-        <Route path='dashboard/vulnerability-reports' element={<VulnerabilityReports/>}/>
-        <Route path='dashboard/client-lists' element={<ClientLists/>}/>
-        <Route path='dashboard/pentesters-list' element={<PentestersList/>}/>
-        <Route path='dashboard/settings' element={<Settings/>}/>
+        <Route path='/' element={<Layout/>}>
+          <Route path='dashboard' element={<ActivePentests/>}/>
+          <Route path='dashboard/pentests' element={<Pentests/>}/>
+          <Route path='dashboard/vulnerability-reports' element={<VulnerabilityReports/>}/>
+          <Route path='dashboard/client-lists' element={<ClientLists/>}/>
+          <Route path='dashboard/pentesters-list' element={<PentestersList/>}/>
+          <Route path='dashboard/settings' element={<Settings/>}/>
         </Route>
       </Routes>
     </div>
