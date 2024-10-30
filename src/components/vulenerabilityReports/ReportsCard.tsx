@@ -10,7 +10,7 @@ function ReportsCard(props: {
       <div className="flex flex-col gap-1 items-start self-stretch">
         <div className="flex justify-between items-center self-stretch">
           <div
-            className={`flex w-9 h-[1.4375rem] py-1 px-[0.375rem] justify-center items-center gap-nav rounded-chart 
+            className={`flex w-9 h-[1.4375rem] py-1 px-[0.375rem] justify-center items-center gapx-4 py-3 rounded-chart 
         ${props.priority === "low" && "bg-[#DFA87433]"}
         ${props.priority === "high" && "bg-[#D8727D1A]"}
         ${props.priority === "critical" && "bg-[#D5494933] w-[3.25744rem]"}

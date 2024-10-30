@@ -71,9 +71,9 @@ function ListFormat() {
     },
   ]
   return (
-    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-component w-full">
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
       <div className="flex p-5 flex-col items-start gap-6 flex-component rounded-component bg-[#F5F5F5]">
-        <div className="flex flex-col items-start gap-component self-stretch">
+        <div className="flex flex-col items-start gap-6 self-stretch">
           <div className="flex items-center gap-3">
             <div className="w-2 h-2 rounded-full bg-[#5030E5]"></div>
             <h3 className="font-inter text-[#0D062D] font-medium">Open Bugs</h3>
@@ -93,7 +93,7 @@ function ListFormat() {
       </div>
 
       <div className="flex p-5 flex-col items-start gap-6 flex-component rounded-component bg-[#F5F5F5]">
-        <div className="flex flex-col items-start gap-component self-stretch">
+        <div className="flex flex-col items-start gap-6 self-stretch">
           <div className="flex items-center gap-3">
             <div className="w-2 h-2 rounded-full bg-[#FFA500]"></div>
             <h3 className="font-inter text-[#0D062D] font-medium">
@@ -115,7 +115,7 @@ function ListFormat() {
       </div>
 
       <div className="flex p-5 flex-col items-start gap-6 flex-component rounded-component bg-[#F5F5F5]">
-        <div className="flex flex-col items-start gap-component self-stretch">
+        <div className="flex flex-col items-start gap-6 self-stretch">
           <div className="flex items-center gap-3">
             <div className="w-2 h-2 rounded-full bg-[#76A5EA]"></div>
             <h3 className="font-inter text-[#0D062D] font-medium">Resolved</h3>

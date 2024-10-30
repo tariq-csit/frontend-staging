@@ -73,54 +73,54 @@ export default {
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
   		},
-  		padding: {
-  			nav: '0.75rem 1rem',
-  			component: '1.5rem',
-  			chart: '1.5rem 0.75rem',
-  			listItem: '0.625rem',
-  			form: '2rem',
-  			formInput: '0rem 0.9375rem',
-  			reportsComponent: '1.25rem',
-  			reoprtItem: '1.25rem',
-  			settingSection: '3.75rem',
-  			input: '0.9375rem',
-				formBtn: '0.5rem 1rem'
-  		},
-  		height: {
-  			icon: '1.25rem',
-  			iconContainer: '3.75rem',
-  			activity: '6rem',
-  			tableVarients: '3.125rem',
-  			team: '2.1875rem',
-  			input: '2.625rem',
-  			textArea: '8.75rem',
-				attachmentsField: '10.4375rem'
-  		},
-  		gap: {
-  			nav: '0.625rem',
-  			component: '1.5rem',
-  			listItem: '0.625rem',
-  			form: '0.625rem',
-  			reoprtItem: '2rem',
-  			settingSection: '0.75rem',
-  			teamIcons: '0.9375rem'
-  		},
+  		// padding: {
+  		// 	nav: '0.75rem 1rem',// px-4 py-3
+  		// 	component: '1.5rem',// p-6
+  		// 	chart: '1.5rem 0.75rem',// py-6 px-3
+  		// 	listItem: '0.625rem',// p-2.5
+  		// 	form: '2rem',// p-8
+  		// 	formInput: '0rem 0.9375rem',
+  		// 	reportsComponent: '1.25rem',
+  		// 	reoprtItem: '1.25rem',
+  		// 	settingSection: '3.75rem',
+  		// 	input: '0.9375rem',
+			// 	formBtn: '0.5rem 1rem'
+  		// },
+  		// height: {
+  		// 	icon: '1.25rem',
+  		// 	iconContainer: '3.75rem',
+  		// 	activity: '6rem',
+  		// 	tableVarients: '3.125rem',
+  		// 	team: '2.1875rem',
+  		// 	input: '2.625rem',
+  		// 	textArea: '8.75rem',
+			// 	attachmentsField: '10.4375rem'
+  		// },
+  		// gap: {
+  		// 	nav: '0.625rem',
+  		// 	component: '1.5rem',
+  		// 	listItem: '0.625rem',
+  		// 	form: '0.625rem',
+  		// 	reoprtItem: '2rem',
+  		// 	settingSection: '0.75rem',
+  		// 	teamIcons: '0.9375rem'
+  		// },
   		boxShadow: {
   			component: '0px 5px 10px 0px rgba(0, 0, 0, 0.08)'
   		},
-  		width: {
-  			form: '64.5625rem',
-  			iconContainer: '',
-  			activityIcon: '',
-  			tableVarients: '',
-  			team: '',
-  			formField: ''
-  		},
-  		fontSize: {
-  			'2xs': '0.65rem',
-  			'3xs': '0.5rem',
-  			'4xs': '0.425rem'
-  		},
+  		// width: {
+  		// 	form: '64.5625rem',
+  		// 	iconContainer: '',
+  		// 	activityIcon: '',
+  		// 	tableVarients: '',
+  		// 	team: '',
+  		// 	formField: ''
+  		// },
+  		// fontSize: {
+  		// 	'2xs': '0.65rem',
+  		// 	'3xs': '0.5rem',
+  		// 	'4xs': '0.425rem'
+  		// },
   		flex: {
   			component: '1 0% 0%'
   		},
