@@ -48,11 +48,11 @@ function ReportsCard(props: {
             <img className="w-6 h-6 -ml-2 border rounded-full border-white" src="/Ellipse 6.svg" />
           </div>
           <div className="flex justify-center items-center gap-3">
-            <div className="flex items-center gap-1">
+            <div className="flex flex-col sm:flex-row items-center gap-1">
               <img src="/message.svg" />
               <span className="text-inputBorder font-poppins text-xs font-medium ">{props.comments} comments</span>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex flex-col sm:flex-row items-center gap-1">
               <img src="/folder-2.svg" />
               <span className="text-inputBorder font-poppins text-xs font-medium ">{props.files} files</span>
             </div>

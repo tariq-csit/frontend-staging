@@ -110,12 +110,11 @@ export default {
   		},
   		width: {
   			form: '64.5625rem',
-  			icon: '1.25rem',
-  			iconContainer: '3.75rem',
-  			activityIcon: '2.5rem',
-  			tableVarients: '11.58931rem',
-  			team: '2.1875rem',
-  			formField: '19.1875rem'
+  			iconContainer: '',
+  			activityIcon: '',
+  			tableVarients: '',
+  			team: '',
+  			formField: ''
   		},
   		fontSize: {
   			'2xs': '0.65rem',
@@ -128,10 +127,7 @@ export default {
   		fontFamily: {
   			poppins: 'Poppins',
 				inter: 'Inter'
-  		},
-			backgroundImage:{
-				login: "url('/login-image.png')"
-			}
+  		}
   	}
   },
   plugins: [require("tailwindcss-animate")],

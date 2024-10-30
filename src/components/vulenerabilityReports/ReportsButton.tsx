@@ -18,7 +18,7 @@ function ReportsButton() {
           <span>Add Vulnerabiities</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="flex w-full sm:w-4/5 sm:max-w-full lg:w-form p-form flex-col items-start gap-form rounded-form shrink-0 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="flex w-full sm:w-4/5 sm:max-w-full lg:w-2.5 p-form flex-col items-start gap-form rounded-form shrink-0 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-poppins text-base sm:text-lg lg:text-2xl font-medium capitalize">
             Create new pentest

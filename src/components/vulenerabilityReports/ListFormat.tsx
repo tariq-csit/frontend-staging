@@ -71,7 +71,7 @@ function ListFormat() {
     },
   ]
   return (
-    <div className="grid grid-cols-3 gap-component w-full">
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-component w-full">
       <div className="flex p-5 flex-col items-start gap-6 flex-component rounded-component bg-[#F5F5F5]">
         <div className="flex flex-col items-start gap-component self-stretch">
           <div className="flex items-center gap-3">

@@ -69,7 +69,7 @@ function Settings() {
       {
         sections.map((section, i)=>{
           return(
-            <div key={i} className='flex p-component flex-col items-start gap-settingSection self-stretch rounded-settingsSection bg-white shadow-component'>
+            <div key={i} className='flex p-component flex-col items-start gap-settingSection self-stretch rounded-settingsSection bg-white shadow-6'>
         
         <div className="flex flex-col items-start gap-component self-stretch">
           {section.settingHeading && <h4 className="self-stretch font-poppins text-xl sm:text-2xl font-medium">Settings</h4>}

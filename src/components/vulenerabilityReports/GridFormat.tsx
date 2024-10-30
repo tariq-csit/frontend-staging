@@ -138,10 +138,10 @@ function GridFormat() {
                   {data.team}
                 </p> */}
                 <div className="flex items-center gap-teamIcons flex-component">
-                  <img className="w-team h-team rounded-full border border-white" src={'/Ellipse 6.svg'} />
-                  <img className="w-team -ml-9 h-team rounded-full border border-white" src={'/Ellipse 6.svg'} />
-                  <img className="w-team -ml-9 h-team rounded-full border border-white" src={'/Ellipse 6.svg'} />
-                  <div className={`flex justify-center items-center w-team -ml-9 h-team rounded-full bg-primary-900 border border-white`}>
+                  <img className="w-8 h-team rounded-full border border-white" src={'/Ellipse 6.svg'} />
+                  <img className="w-8 -ml-9 h-team rounded-full border border-white" src={'/Ellipse 6.svg'} />
+                  <img className="w-8 -ml-9 h-team rounded-full border border-white" src={'/Ellipse 6.svg'} />
+                  <div className={`flex justify-center items-center w-8 -ml-9 h-team rounded-full bg-primary-900 border border-white`}>
                     <p className="text-2xs font-poppins font-normal text-white">{`+${data.team}`}</p>
                   </div>
                 </div>
