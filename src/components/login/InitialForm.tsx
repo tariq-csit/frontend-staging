@@ -15,7 +15,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 const loginApiUrl = "http://172.86.114.162:4000/api/auth/login";
 const formSchema = z.object({
   email: z
@@ -34,9 +33,9 @@ const formSchema = z.object({
 
 
 function InitialForm(props:{
-  settempToken: Function
+  settempToken: Function,
+  setvarificationToken: Function
 }) {
-  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -52,9 +51,9 @@ function InitialForm(props:{
         email: values.email,
         password: values.password,
       });
-      sessionStorage.setItem("token", response.data.token);
+      props.setvarificationToken(response.data.token);
+      console.log(response)
       sessionStorage.setItem("user", JSON.stringify(response.data.user));
-      navigate('/dashboard')
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
         if (error.response.data.message === "2FA setup required") {

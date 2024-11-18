@@ -27,7 +27,6 @@ function TwoFaAuth(props: {
               );
 
               props.setqrCode(response.data.qrCodeUrl);
-              console.log(response.data.qrCodeUrl);
             } catch (error) {
               console.error("Error setting up 2FA:", error);
             }
