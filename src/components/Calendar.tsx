@@ -20,7 +20,7 @@ export default function InputCalendar(props: {
         <Button 
           variant={"outline"} 
           className={cn(
-            "flex h-input px-input  justify-start border border-inputBorder rounded-input w-full sm:text-sm lg:text-base",
+            "flex h-10 px-input  justify-start border border-inputBorder rounded-input w-full sm:text-sm lg:text-base",
             !props.value && "text-muted-foreground"
           )}
         >

@@ -65,13 +65,13 @@ function Settings() {
     }, 
   ]
   return (
-    <div className='flex flex-col px-5 sm:px-10 items-start gap-component shrink-0 self-stretch'>
+    <div className='flex flex-col px-5 sm:px-10 items-start gap-6 shrink-0 self-stretch'>
       {
         sections.map((section, i)=>{
           return(
-            <div key={i} className='flex p-component flex-col items-start gap-settingSection self-stretch rounded-settingsSection bg-white shadow-component'>
+            <div key={i} className='flex p-6 flex-col items-start gap-3 self-stretch rounded-settingsSection bg-white shadow-6'>
         
-        <div className="flex flex-col items-start gap-component self-stretch">
+        <div className="flex flex-col items-start gap-6 self-stretch">
           {section.settingHeading && <h4 className="self-stretch font-poppins text-xl sm:text-2xl font-medium">Settings</h4>}
           <h5 className="self-stretch font-poppins sm:text-xl font-medium">{section.heading}</h5>
         </div>

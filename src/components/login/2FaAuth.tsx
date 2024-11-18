@@ -13,7 +13,7 @@ function TwoFaAuth(props: {
           2 Factor Authentication Setup Required
         </h2>
         <Button
-          className="px-8 shadow-component"
+          className="px-8 shadow-6"
           onClick={async () => {
             try {
               const response = await axios.post(

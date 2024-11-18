@@ -25,7 +25,7 @@ function LoginForm() {
     );
   } else {
     return(
-      <SuccessfulMessage/>
+      <SuccessfulMessage settempToken={settempToken} setqrCode={setqrCode}/>
     )
   }
 }

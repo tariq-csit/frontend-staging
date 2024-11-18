@@ -10,7 +10,7 @@ function ReportsCard(props: {
       <div className="flex flex-col gap-1 items-start self-stretch">
         <div className="flex justify-between items-center self-stretch">
           <div
-            className={`flex w-9 h-[1.4375rem] py-1 px-[0.375rem] justify-center items-center gap-nav rounded-chart 
+            className={`flex w-9 h-[1.4375rem] py-1 px-[0.375rem] justify-center items-center gapx-4 py-3 rounded-chart 
         ${props.priority === "low" && "bg-[#DFA87433]"}
         ${props.priority === "high" && "bg-[#D8727D1A]"}
         ${props.priority === "critical" && "bg-[#D5494933] w-[3.25744rem]"}
@@ -48,11 +48,11 @@ function ReportsCard(props: {
             <img className="w-6 h-6 -ml-2 border rounded-full border-white" src="/Ellipse 6.svg" />
           </div>
           <div className="flex justify-center items-center gap-3">
-            <div className="flex items-center gap-1">
+            <div className="flex flex-col sm:flex-row items-center gap-1">
               <img src="/message.svg" />
               <span className="text-inputBorder font-poppins text-xs font-medium ">{props.comments} comments</span>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex flex-col sm:flex-row items-center gap-1">
               <img src="/folder-2.svg" />
               <span className="text-inputBorder font-poppins text-xs font-medium ">{props.files} files</span>
             </div>

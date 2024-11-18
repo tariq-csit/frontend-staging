@@ -83,9 +83,9 @@ function InitialForm(props:{
             <Form {...form}>
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
-                className="flex flex-col items-start gap-component justify-center self-stretch"
+                className="flex flex-col items-start gap-6 justify-center self-stretch"
               >
-                <div className="flex flex-col items-center gap-component self-stretch">
+                <div className="flex flex-col items-center gap-6 self-stretch">
                   <FormField
                     control={form.control}
                     name="email"
