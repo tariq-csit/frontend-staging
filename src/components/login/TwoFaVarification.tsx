@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import { apiRoutes } from '@/lib/routes';
 import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
@@ -40,11 +41,11 @@ function TwoFaVarification(props:{
   async function pinSubmit(data: z.infer<typeof pinSchema>) {
     try {
       const response = await axios.post(
-        'http://172.86.114.162:4000/api/auth/verify-2fa',
-        {'token':`${data}`}, // If the body is empty, pass an empty object
+        apiRoutes.verify2Fa,
+        {'token':data.pin},
         {
           headers: {
-            Authorization: `Bearer ${props.varificationToken}`, // Add the token to the headers
+            Authorization: `Bearer ${props.varificationToken}`,
           },
         }
       );
@@ -87,7 +88,7 @@ function TwoFaVarification(props:{
               </FormItem>
             )}
           />
-          <Button type="submit">Submit</Button>
+          <Button type="submit">Verify</Button>
         </form>
       </Form>
       

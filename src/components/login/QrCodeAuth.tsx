@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { apiRoutes } from "@/lib/routes";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -16,8 +17,6 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-
-const twoFaVerifyUrl = "http://172.86.114.162:4000/api/auth/setup-2fa-verify";
 
 const pinSchema = z.object({
   pin: z.string().length(6, {
@@ -40,7 +39,7 @@ function QrCodeAuth(props: {
   async function pinSubmit(data: z.infer<typeof pinSchema>) {
     try {
       const response = await axios.post(
-        twoFaVerifyUrl,
+        apiRoutes.setup2FaVerify,
         { token: data.pin },
         {
           headers: {

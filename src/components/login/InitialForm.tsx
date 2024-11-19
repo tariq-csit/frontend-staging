@@ -1,3 +1,4 @@
+import { apiRoutes } from "@/lib/routes";
 import { Eye, EyeOff } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -15,7 +16,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-const loginApiUrl = "http://172.86.114.162:4000/api/auth/login";
 const formSchema = z.object({
   email: z
     .string()
@@ -47,12 +47,11 @@ function InitialForm(props:{
   });
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const response = await axios.post(loginApiUrl, {
+      const response = await axios.post(apiRoutes.login, {
         email: values.email,
         password: values.password,
       });
       props.setvarificationToken(response.data.token);
-      console.log(response)
       sessionStorage.setItem("user", JSON.stringify(response.data.user));
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
