@@ -18,6 +18,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
+import { useState } from 'react';
 
 const pinSchema = z.object({
   pin: z.string().length(6, {
@@ -29,6 +30,8 @@ const pinSchema = z.object({
 function TwoFaVarification(props:{
   varificationToken: string
 }) {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(false)
   const navigate = useNavigate();
 
   const pinForm = useForm<z.infer<typeof pinSchema>>({
@@ -39,6 +42,8 @@ function TwoFaVarification(props:{
   });
 
   async function pinSubmit(data: z.infer<typeof pinSchema>) {
+    setLoading(true)
+    setError(false)
     try {
       const response = await axios.post(
         apiRoutes.verify2Fa,
@@ -52,12 +57,34 @@ function TwoFaVarification(props:{
       
       sessionStorage.setItem('token', response.data.token)
       navigate('/dashboard')
+      setLoading(false)
     } catch (error) {
       console.error("Error setting up 2FA:", error);
-      console.log(data.pin)
+      setLoading(false)
+      setError(true)
     } 
   }
 
+  if(loading){
+    return(
+      <div className="p-8 flex flex-col justify-center font-poppins items-center gap-12">
+        <h2 className="text-xl font-semibold">
+          Verifying...
+        </h2>
+      </div>
+    )
+  }
+  if(error){
+    return(
+      <div className="p-8 flex flex-col justify-center font-poppins items-center gap-12">
+        <h2 className="text-xl font-semibold">
+          Invalid Token.
+        </h2>
+        <Button
+        onClick={()=>setError(false)}>Try Again</Button>
+      </div>
+    )
+  }
 
   return (
     <div className="p-8 flex flex-col justify-center font-poppins items-center gap-12">
