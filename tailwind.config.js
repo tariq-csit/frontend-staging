@@ -106,7 +106,8 @@ export default {
   		// 	teamIcons: '0.9375rem'
   		// },
   		boxShadow: {
-  			component: '0px 5px 10px 0px rgba(0, 0, 0, 0.08)'
+  			component: '0px 5px 10px 0px rgba(0, 0, 0, 0.08)',
+				otpSlot: '0px 4px 4px 0px rgba(0, 0, 0, 0.25);'
   		},
   		// width: {
   		// 	form: '64.5625rem',
