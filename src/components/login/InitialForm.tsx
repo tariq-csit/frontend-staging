@@ -1,3 +1,4 @@
+import { apiRoutes } from "@/lib/routes";
 import { Eye, EyeOff } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -15,8 +16,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-const loginApiUrl = "http://172.86.114.162:4000/api/auth/login";
 const formSchema = z.object({
   email: z
     .string()
@@ -34,9 +33,9 @@ const formSchema = z.object({
 
 
 function InitialForm(props:{
-  settempToken: Function
+  settempToken: Function,
+  setvarificationToken: Function
 }) {
-  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -48,13 +47,12 @@ function InitialForm(props:{
   });
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const response = await axios.post(loginApiUrl, {
+      const response = await axios.post(apiRoutes.login, {
         email: values.email,
         password: values.password,
       });
-      sessionStorage.setItem("token", response.data.token);
+      props.setvarificationToken(response.data.token);
       sessionStorage.setItem("user", JSON.stringify(response.data.user));
-      navigate('/dashboard')
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
         if (error.response.data.message === "2FA setup required") {

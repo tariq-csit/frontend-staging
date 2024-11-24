@@ -1,9 +1,10 @@
-import { Button } from "@/components/ui/button";
-import { apiRoutes } from "@/lib/routes";
+import { Button } from '@/components/ui/button'
+import { apiRoutes } from '@/lib/routes';
+import axios from 'axios';
+import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import axios from "axios";
 import {
   Form,
   FormControl,
@@ -17,6 +18,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
+import { useState } from 'react';
 
 const pinSchema = z.object({
   pin: z.string().length(6, {
@@ -24,11 +26,14 @@ const pinSchema = z.object({
   }),
 });
 
-function QrCodeAuth(props: {
-  qrCode: string;
-  tempToken: string;
-  settoken: (token: string) => void;
+
+function TwoFaVarification(props:{
+  varificationToken: string
 }) {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(false)
+  const navigate = useNavigate();
+
   const pinForm = useForm<z.infer<typeof pinSchema>>({
     resolver: zodResolver(pinSchema),
     defaultValues: {
@@ -37,32 +42,56 @@ function QrCodeAuth(props: {
   });
 
   async function pinSubmit(data: z.infer<typeof pinSchema>) {
+    setLoading(true)
+    setError(false)
     try {
       const response = await axios.post(
-        apiRoutes.setup2FaVerify,
-        { token: data.pin },
+        apiRoutes.verify2Fa,
+        {'token':data.pin},
         {
           headers: {
-            Authorization: `Bearer ${props.tempToken}`,
+            Authorization: `Bearer ${props.varificationToken}`,
           },
         }
       );
-      props.settoken(response.data.token);
-      localStorage.setItem("token", response.data.token);
-    } catch (error: unknown) {
-      console.log(error);
-    }
+      
+      sessionStorage.setItem('token', response.data.token)
+      navigate('/dashboard')
+      setLoading(false)
+    } catch (error) {
+      console.error("Error setting up 2FA:", error);
+      setLoading(false)
+      setError(true)
+    } 
+  }
+
+  if(loading){
+    return(
+      <div className="p-8 flex flex-col justify-center font-poppins items-center gap-12">
+        <h2 className="text-xl font-semibold">
+          Verifying...
+        </h2>
+      </div>
+    )
+  }
+  if(error){
+    return(
+      <div className="p-8 flex flex-col justify-center font-poppins items-center gap-12">
+        <h2 className="text-xl font-semibold">
+          Invalid Token.
+        </h2>
+        <Button
+        onClick={()=>setError(false)}>Try Again</Button>
+      </div>
+    )
   }
 
   return (
     <div className="p-8 flex flex-col justify-center font-poppins items-center gap-12">
-      <h2 className="text-xl font-semibold">Scan this QR code to set up 2FA:</h2>
-      <img
-        src={props.qrCode}
-        alt="QR code"
-        style={{ width: "256px", height: "256px", objectFit: "contain" }}
-      />
-      <Form {...pinForm}>
+        <h2 className="text-xl font-semibold">
+          Verify 2 Factor Authentication
+        </h2>
+        <Form {...pinForm}>
         <form onSubmit={pinForm.handleSubmit(pinSubmit)} className="w-2/3 space-y-6">
           <FormField
             control={pinForm.control}
@@ -86,11 +115,12 @@ function QrCodeAuth(props: {
               </FormItem>
             )}
           />
-          <Button type="submit">Submit</Button>
+          <Button type="submit">Verify</Button>
         </form>
       </Form>
+      
     </div>
-  );
+  )
 }
 
-export default QrCodeAuth;
+export default TwoFaVarification

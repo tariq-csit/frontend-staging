@@ -1,7 +1,6 @@
 import axios from "axios";
+import { apiRoutes } from "@/lib/routes";
 import { Button } from "@/components/ui/button";
-const twoFaApiUrl = "http://172.86.114.162:4000/api/auth/setup-2fa";
-
 
 function TwoFaAuth(props: {
   tempToken: string,
@@ -17,17 +16,16 @@ function TwoFaAuth(props: {
           onClick={async () => {
             try {
               const response = await axios.post(
-                twoFaApiUrl,
-                {}, // If the body is empty, pass an empty object
+                apiRoutes.twoFa,
+                {},
                 {
                   headers: {
-                    Authorization: `Bearer ${props.tempToken}`, // Add the token to the headers
+                    Authorization: `Bearer ${props.tempToken}`,
                   },
                 }
               );
 
               props.setqrCode(response.data.qrCodeUrl);
-              console.log(response.data.qrCodeUrl);
             } catch (error) {
               console.error("Error setting up 2FA:", error);
             }

@@ -3,17 +3,23 @@ import InitialForm from "./InitialForm";
 import TwoFaAuth from "./2FaAuth";
 import QrCodeAuth from "./QrCodeAuth";
 import SuccessfulMessage from "./SuccessfulMessage";
+import TwoFaVarification from "./TwoFaVarification";
 
 function LoginForm() {
+  const [varificationToken, setvarificationToken] = useState('')
   const [tempToken, settempToken] = useState("");
   const [qrCode, setqrCode] = useState("");
   const [token, settoken] = useState("");
   
   
 
-  if (tempToken === "" && qrCode === "") {
+  if (tempToken === "" && varificationToken === "") {
     return (
-      <InitialForm settempToken={settempToken}/>
+      <InitialForm settempToken={settempToken} setvarificationToken={setvarificationToken}/>
+    );
+  } else if (varificationToken !== "" && tempToken === "") {
+    return (
+      <TwoFaVarification varificationToken={varificationToken}/>
     );
   } else if (tempToken !== "" && qrCode === "") {
     return (
