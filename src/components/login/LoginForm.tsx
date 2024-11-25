@@ -10,16 +10,17 @@ function LoginForm() {
   const [tempToken, settempToken] = useState("");
   const [qrCode, setqrCode] = useState("");
   const [token, settoken] = useState("");
+  const [email, setEmail] = useState('');
   
   
 
   if (tempToken === "" && varificationToken === "") {
     return (
-      <InitialForm settempToken={settempToken} setvarificationToken={setvarificationToken}/>
+      <InitialForm settempToken={settempToken} setvarificationToken={setvarificationToken} setEmail={setEmail}/>
     );
   } else if (varificationToken !== "" && tempToken === "") {
     return (
-      <TwoFaVarification varificationToken={varificationToken}/>
+      <TwoFaVarification varificationToken={varificationToken} email={email}/>
     );
   } else if (tempToken !== "" && qrCode === "") {
     return (

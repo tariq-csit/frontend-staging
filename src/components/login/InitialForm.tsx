@@ -34,10 +34,10 @@ const formSchema = z.object({
 
 function InitialForm(props:{
   settempToken: Function,
-  setvarificationToken: Function
+  setvarificationToken: Function,
+  setEmail : Function
 }) {
   const [showPassword, setShowPassword] = useState(false);
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -52,6 +52,7 @@ function InitialForm(props:{
         password: values.password,
       });
       props.setvarificationToken(response.data.token);
+      props.setEmail(values.email)
       sessionStorage.setItem("user", JSON.stringify(response.data.user));
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
