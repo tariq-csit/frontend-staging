@@ -1,34 +1,30 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import { Routes, Route } from 'react-router-dom';
+import Layout from './components/layout/Layout';
+import Pentests from './components/pentests/Pentests';
+import VulnerabilityReports from './components/vulenerabilityReports/VulnerabilityReports';
+import ClientLists from './components/clientLists/ClientLists';
+import PentestersList from './components/pentestersList/PentestersList';
+import Settings from './components/settings/Settings';
+import ActivePentests from './components/activePentests/ActivePentests';
+import Login from './components/login/Login';
+
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Afnan</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 10)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div>
+      <Routes>
+        <Route path='/login' element={<Login/>}/>
+        <Route path='/' element={<Layout/>}>
+          <Route path='dashboard' element={<ActivePentests/>}/>
+          <Route path='dashboard/pentests' element={<Pentests/>}/>
+          <Route path='dashboard/vulnerability-reports' element={<VulnerabilityReports/>}/>
+          <Route path='dashboard/client-lists' element={<ClientLists/>}/>
+          <Route path='dashboard/pentesters-list' element={<PentestersList/>}/>
+          <Route path='dashboard/settings' element={<Settings/>}/>
+        </Route>
+      </Routes>
+    </div>
   )
 }
 
