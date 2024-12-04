@@ -54,6 +54,7 @@ function InitialForm(props:{
       props.setvarificationToken(response.data.token);
       props.setEmail(values.email)
       sessionStorage.setItem("user", JSON.stringify(response.data.user));
+      sessionStorage.setItem('refreshToken', response.data.refreshToken)
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
         if (error.response.data.message === "2FA setup required") {
