@@ -8,7 +8,6 @@ function Layout() {
 
   useEffect(() => {
     if (!sessionStorage.getItem("token")) {
-
       navigate("/login");
     }
   }, [navigate]);
