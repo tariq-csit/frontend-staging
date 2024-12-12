@@ -1,14 +1,15 @@
 
 import { useEditor, EditorContent, type Editor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
+import Placeholder from '@tiptap/extension-placeholder';
 import {
   FontBoldIcon,
   FontItalicIcon,
   ListBulletIcon,
   QuoteIcon,
   CodeIcon,
+  FileIcon,
 } from "@radix-ui/react-icons"
-import { ListOrderedIcon } from 'lucide-react'
 import { Toggle } from '@/components/ui/toggle'
     
 const Toolbar = ({editor}: {editor: Editor | null}) => {
@@ -30,6 +31,9 @@ const Toolbar = ({editor}: {editor: Editor | null}) => {
       <Toggle onPressedChange={() => editor.chain().focus().toggleCodeBlock().run()} pressed={editor.isActive("orderedList")} aria-label="Toggle ordered list">
         <CodeIcon className="h-4 w-4" />
       </Toggle>
+      <Toggle>
+        <FileIcon className="h-4 w-4" />
+      </Toggle>
       <Toggle onPressedChange={() => editor.chain().focus().toggleBulletList().run()} pressed={editor.isActive("bulletList")} aria-label="Toggle bullet list">
         <ListBulletIcon className="h-4 w-4" />
       </Toggle>
@@ -44,16 +48,25 @@ const Tiptap = (props: {
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        orderedList: {
+        blockquote: {
           HTMLAttributes: {
-            class: 'list-decimal ml-6',
-          }
+            class: 'border-l-4 border-gray-400 pl-4 italic text-gray-600',
+          },
+        },
+        codeBlock: {
+          HTMLAttributes: {
+            class: 'bg-gray-100 p-2 rounded-md font-mono text-sm',
+          },
         },
         bulletList: {
           HTMLAttributes: {
             class: 'list-disc ml-6',
           }
         },
+      }),
+      Placeholder.configure({
+        placeholder: 'Start typing here...', // Set your placeholder text
+        emptyEditorClass: 'text-gray-400', // Optional styling for the placeholder
       }),
     ],
     content: props.description,

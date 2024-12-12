@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import FileAttachmentPreview from "./fileAttachmentsPreview";
 
 interface data {
   affectedHost: string[]; // Array of affected host strings
@@ -146,6 +147,7 @@ function formPreview(props: { data: data | undefined; setPreview: (value: boolea
         </div>
 
         <h1 className="text-2xl font-medium mb-6">6. Attachments</h1>
+        <FileAttachmentPreview attachments={props.data?.attachments}/>
       </div>
 
       <div className="bg-white rounded-md p-6 flex flex-col gap-6 h-fit sm:w-3/12">
