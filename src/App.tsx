@@ -4,7 +4,7 @@ import Layout from './components/layout/Layout';
 import Pentests from './components/pentests/Pentests';
 import VulnerabilityReports from './components/vulenerabilityReports/VulnerabilityReports';
 import ClientLists from './components/clientLists/ClientLists';
-import PentestersList from './components/pentestersList/PentestersList';
+import PentestersList from './components/pentests/pentestersList/PentestersList';
 import Settings from './components/settings/Settings';
 import ActivePentests from './components/activePentests/ActivePentests';
 import Login from './components/login/Login';
