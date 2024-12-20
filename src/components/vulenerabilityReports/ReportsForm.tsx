@@ -24,27 +24,27 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import Tiptap from "./subcomponents/tiptap";
-import FormPreview from "./subcomponents/formPreview";
 import { X } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import FormPreview from "./subcomponents/FormPreview";
 interface data {
-  affectedHost: string[]; // Array of affected host strings
-  attachments: FileList; // FileList object for attachments
-  attackComplexity: string; // e.g., "low", "medium", "high"
-  attackVector: string; // e.g., "network", "local"
-  availability: string; // Impact on availability, e.g., "none"
-  confidentiality: string; // Impact on confidentiality, e.g., "none"
-  description: string; // HTML content as a string
-  impact: string; // General impact description
-  integrity: string; // Impact on integrity, e.g., "none"
-  likeliHood: string; // Likelihood of attack, e.g., "low", "medium", "high"
-  privilegesRequired: string; // Privilege requirement, e.g., "none", "low"
-  recommendedSolution: string; // HTML content for solutions
-  scope: string; // Scope impact, e.g., "unchanged", "changed"
-  severity: string; // Severity level, e.g., "low", "medium", "high"
-  stepToReproduce: string; // HTML content for reproduction steps
-  title: string; // Title of the report
-  userInterction: string; // User interaction requirement, e.g., "none"
+  affectedHost: string[];
+  attachments: FileList;
+  attackComplexity: string;
+  attackVector: string;
+  availability: string;
+  confidentiality: string;
+  description: string; 
+  impact: string; 
+  integrity: string; 
+  likeliHood: string; 
+  privilegesRequired: string; 
+  recommendedSolution: string;
+  scope: string; 
+  severity: string; 
+  stepToReproduce: string; 
+  title: string; 
+  userInterction: string; 
 }
 const formSchema = z.object({
   affectedHost: z.array(z.string()),
@@ -71,7 +71,7 @@ const formSchema = z.object({
 function ReportsForm(props: { setForm: Function }) {
   const [preview, setPreview] = useState(false);
   const [data, setData] = useState<data | undefined>(undefined);
-  const [hosts, setHosts] = useState<Array<string>>(["10x.digitalcircle.com"]);
+  const [hosts, setHosts] = useState<Array<string>>([]);
 
   const handleValueChange = (value: string) => {
     setHosts((prevHosts) => {
@@ -111,8 +111,9 @@ function ReportsForm(props: { setForm: Function }) {
     },
   });
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    setData(values);
+    form.setValue("affectedHost", hosts); // Sync affectedHost with hosts state
+    console.log({ ...values, affectedHost: hosts });
+    setData({ ...values, affectedHost: hosts });
     setPreview(true);
   }
   if (!preview) {
@@ -157,10 +158,10 @@ function ReportsForm(props: { setForm: Function }) {
                 </SelectGroup>
               </SelectContent>
             </Select>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               {hosts.map((host) => {
                 return (
-                  <Badge key={host} variant="secondary" className="">
+                  <Badge key={host} variant="secondary" className="flex justify-between">
                     {host}
                     <Button
                       className="ml-2 w-7 h-7 p-0 bg-inherit rounded-full"
@@ -642,7 +643,7 @@ function ReportsForm(props: { setForm: Function }) {
                 >
                   Go Back
                 </Button>
-                <Button type="submit">Submit Vulnerability</Button>
+                <Button type="submit" className="w-2/3">Submit Vulnerability</Button>
               </div>
             </div>
           </div>

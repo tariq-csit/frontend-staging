@@ -38,6 +38,7 @@ function InitialForm(props:{
   setEmail : Function
 }) {
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState(false)
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -55,15 +56,19 @@ function InitialForm(props:{
       props.setEmail(values.email)
       sessionStorage.setItem("user", JSON.stringify(response.data.user));
       sessionStorage.setItem('refreshToken', response.data.refreshToken)
+      setError(false)
     } catch (error: unknown) {
       if (axios.isAxiosError(error) && error.response) {
         if (error.response.data.message === "2FA setup required") {
           props.settempToken(error.response.data.tempToken);
+          setError(false)
         } else {
           console.log(error.response.data.message);
+          setError(true)
         }
       } else {
         console.log(error);
+        
       }
     }
   }
@@ -134,9 +139,11 @@ function InitialForm(props:{
                           </div>
                         </FormControl>
                         <FormMessage />
+                        {error && <span className="text-red-600 pt-12">Invalid username and password</span>}
                       </FormItem>
                     )}
                   />
+                  
                   <div className="flex justify-end self-stretch">
                     <a
                       href="/login"
