@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import FileAttachmentPreview from "./fileAttachmentsPreview";
+import FileAttachmentPreview from "./FileAttachmentsPreview";
 
 interface data {
   affectedHost: string[]; // Array of affected host strings

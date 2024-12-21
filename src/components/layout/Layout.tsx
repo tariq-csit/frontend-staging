@@ -13,7 +13,6 @@ function Layout() {
   useEffect(()=>{
     ;(async ()=>{
       const response = await axiosInstance.get(apiRoutes.user);
-      console.log(response)
       setUserName(response.data.name)
       setUserImage(response.data.img)
       setUserRole(response.data.role)
