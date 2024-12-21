@@ -26,6 +26,7 @@ export default {
   			statusSilver: ' rgba(93, 93, 93, 0.15)',
   			statusTextSilver: '#5D5D5D',
   			inputBorder: '#787486',
+				previewText: '#787486',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
