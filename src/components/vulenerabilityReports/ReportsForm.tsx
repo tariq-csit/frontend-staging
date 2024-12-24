@@ -34,17 +34,17 @@ interface data {
   attackVector: string;
   availability: string;
   confidentiality: string;
-  description: string; 
-  impact: string; 
-  integrity: string; 
-  likeliHood: string; 
-  privilegesRequired: string; 
+  description: string;
+  impact: string;
+  integrity: string;
+  likeliHood: string;
+  privilegesRequired: string;
   recommendedSolution: string;
-  scope: string; 
-  severity: string; 
-  stepToReproduce: string; 
-  title: string; 
-  userInterction: string; 
+  scope: string;
+  severity: string;
+  stepToReproduce: string;
+  title: string;
+  userInterction: string;
 }
 const formSchema = z.object({
   affectedHost: z.array(z.string()),
@@ -65,15 +65,17 @@ const formSchema = z.object({
   availability: z.string().min(1, "This is a reqired field."),
   attachments: z
     .custom<FileList>((val) => val instanceof FileList, "Please upload a file")
-    .refine((files) => files.length > 0, "File is required"),
+    .refine((files) => files.length > 0, "At least one file is required"),
 });
 
 function ReportsForm(props: { setForm: Function }) {
   const [preview, setPreview] = useState(false);
   const [data, setData] = useState<data | undefined>(undefined);
   const [hosts, setHosts] = useState<Array<string>>([]);
+  const [hostsError, setHostsError] = useState(false)
 
   const handleValueChange = (value: string) => {
+    setHostsError(false)
     setHosts((prevHosts) => {
       // Check if the value is already in the array
       if (!prevHosts.includes(value)) {
@@ -111,10 +113,15 @@ function ReportsForm(props: { setForm: Function }) {
     },
   });
   function onSubmit(values: z.infer<typeof formSchema>) {
+    if(hosts.length===0)
+      setHostsError(true)
+    else{
+      setHostsError(false)
     form.setValue("affectedHost", hosts); // Sync affectedHost with hosts state
     console.log({ ...values, affectedHost: hosts });
     setData({ ...values, affectedHost: hosts });
     setPreview(true);
+    }
   }
   if (!preview) {
     return (
@@ -158,10 +165,15 @@ function ReportsForm(props: { setForm: Function }) {
                 </SelectGroup>
               </SelectContent>
             </Select>
+            {hostsError && <span className="text-red-600 -my-5">Add atleast one host</span>}
             <div className="flex flex-col sm:flex-row gap-2">
               {hosts.map((host) => {
                 return (
-                  <Badge key={host} variant="secondary" className="flex justify-between">
+                  <Badge
+                    key={host}
+                    variant="secondary"
+                    className="flex justify-between"
+                  >
                     {host}
                     <Button
                       className="ml-2 w-7 h-7 p-0 bg-inherit rounded-full"
@@ -575,20 +587,39 @@ function ReportsForm(props: { setForm: Function }) {
                 control={form.control}
                 name="attachments"
                 render={({ field }) => (
-                  <FormItem className="flex w-full sm:col-span-3  flex-col items-start gap-2 ">
+                  <FormItem className="flex w-full sm:col-span-3 flex-col items-start gap-2">
                     <FormLabel>Attachments</FormLabel>
                     <FormControl>
-                      <div className="flex flex-col items-center justify-center gap-2  rounded-formInput border border-dashed bg-[#F5F5F5] border-inputBorder p-2.5 self-stretch">
-                        <div className="flex flex-col items-center gap-2 self-stretch ">
+                      <div className="flex flex-col items-center justify-center gap-2 rounded-formInput border border-dashed bg-[#F5F5F5] border-inputBorder p-2.5 self-stretch">
+                        <div className="flex flex-col items-center gap-2 self-stretch">
                           <img className="" src="/papers.svg" />
-                          <div className="flex w-3/5 sm:w-auto  px-4 justify-center items-center  sm:gap-8 border rounded-formInput border-[#353086]">
+                          <div className="flex w-3/5 sm:w-auto px-4 justify-center items-center sm:gap-8 border rounded-formInput border-[#353086]">
                             <img src={fileIcon} />
                             <Input
                               type="file"
+                              multiple
                               placeholder="Choose files"
-                              className=" border-none"
-                              onChange={(e) => field.onChange(e.target.files)}
-                            ></Input>
+                              className="border-none"
+                              onChange={(e) => {
+                                const newFiles = e.target.files;
+                                const currentFiles =
+                                  field.value || new DataTransfer().files; // Use an empty FileList if none
+                                const dataTransfer = new DataTransfer();
+
+                                // Append existing files
+                                Array.from(currentFiles).forEach((file) => {
+                                  dataTransfer.items.add(file);
+                                });
+
+                                // Append new files
+                                Array.from(newFiles || []).forEach((file) => {
+                                  dataTransfer.items.add(file);
+                                });
+
+                                // Update the field with the combined FileList
+                                field.onChange(dataTransfer.files);
+                              }}
+                            />
                           </div>
                           <label className="font-poppins text-inputBorder text-base lowercase font-medium">
                             or drop files here
@@ -643,7 +674,9 @@ function ReportsForm(props: { setForm: Function }) {
                 >
                   Go Back
                 </Button>
-                <Button type="submit" className="w-2/3">Submit Vulnerability</Button>
+                <Button type="submit" className="w-2/3">
+                  Submit Vulnerability
+                </Button>
               </div>
             </div>
           </div>
