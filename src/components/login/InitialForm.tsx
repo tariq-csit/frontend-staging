@@ -101,7 +101,6 @@ function InitialForm(props:{
                             className="w-full"
                             placeholder="Email"
                             {...field}
-                            onChange={()=>setError(false)}
                           />
                         </FormControl>
                         <FormMessage />
