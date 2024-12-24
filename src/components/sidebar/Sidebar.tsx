@@ -7,7 +7,11 @@ import smallLogo from "/logo-small.png";
 import ProfileNav from "./ProfileNav";
 import bars from '/bars-solid.svg'
 import cross from '/xmark-solid.svg'
-function Sidebar() {
+function Sidebar(props: {
+  name: string,
+  image: string,
+  role: string
+}) {
   const [collapsed, setCollapsed] = useState(true);
 
   const navComponents = [
@@ -89,7 +93,7 @@ function Sidebar() {
           />
         </div>
       </div>
-      <ProfileNav collapsed={collapsed}/>
+      <ProfileNav image={props.image} role={props.role} name={props.name} collapsed={collapsed}/>
     </div>
     </>
   );

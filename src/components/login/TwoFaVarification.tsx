@@ -60,6 +60,7 @@ function TwoFaVarification(props:{
       navigate('/dashboard')
       setLoading(false)
       pinForm.reset();
+      console.log(response)
       
     } catch (error) {
       console.error("Error setting up 2FA:", error);
