@@ -72,7 +72,7 @@ const Tiptap = (props: {
     content: props.description,
     editorProps: {
       attributes: {
-        class: 'min-h-[200px] border border-input rounded-md p-4 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent',
+        class: 'min-h-[200px] border-b border-t border-input rounded-md p-4 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent',
       },
     },
     onUpdate({ editor }) {
