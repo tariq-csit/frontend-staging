@@ -125,6 +125,7 @@ function ReportsForm(props: { setForm: Function }) {
   }
   if (!preview) {
     return (
+      <div>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -684,6 +685,7 @@ function ReportsForm(props: { setForm: Function }) {
           </div>
         </form>
       </Form>
+      </div>
     );
   } else {
     return (

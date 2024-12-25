@@ -8,6 +8,7 @@ type propsType = {
   collapsed: boolean;
   icon: string;
   navText: string;
+  setCollapsed: (status:boolean)=>void;
 };
 
 function SidebarNav(props: propsType) {
@@ -24,8 +25,9 @@ function SidebarNav(props: propsType) {
       className={`${style} ${
         active
           ? "bg-primary-100 font-poppins text-primary-900"
-          : "bg-white hover:bg-primary-100 text-[#64748B]"
+          : "bg-white text-[#34465f] sm:opacity-75 hover:opacity-100"
       }`}
+      onClick={()=>props.setCollapsed(true)}
     >
       {/* Icon */}
       <img

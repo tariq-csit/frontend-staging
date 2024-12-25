@@ -4,8 +4,6 @@ import setting from "/tage=setting.svg";
 import largeLogo from "/logo-large.png";
 import smallLogo from "/logo-small.png";
 import ProfileNav from "./ProfileNav";
-import bars from '/bars-solid.svg'
-import cross from '/xmark-solid.svg'
 function Sidebar(props: {
   name: string,
   image: string,
@@ -43,10 +41,8 @@ function Sidebar(props: {
   ];
   return (
     <>
-    <div className="sm:hidden bg-secondary z-50 rounded-full p-2 absolute top-2 left-2"
-    onClick={()=>props.setCollapsed(!props.collapsed)}><img className="w-3 h-3" src={props.collapsed?bars:cross} /></div>
     <div
-      className={`sm:flex sm:visible bg-white w-[18.5rem] fixed z-40  duration-75 ${
+      className={`sm:flex bg-white w-[18.5rem] fixed z-10  duration-75 ${
         props.collapsed? "hidden sm:w-[4.75rem]":'visible flex sm:w-[15rem] lg:w-[17.5rem]'} h-auto min-h-screen flex-col justify-between items-start shrink-0 rounded-component`}
     >
       <div className="flex flex-col justify-center gap-6 self-stretch ">
@@ -77,6 +73,7 @@ function Sidebar(props: {
                 navText={nav.text}
                 icon={nav.icon}
                 collapsed={props.collapsed}
+                setCollapsed={props.setCollapsed}
               />
             );
           })}
@@ -90,6 +87,7 @@ function Sidebar(props: {
             navText="Settings"
             icon={setting}
             collapsed={props.collapsed}
+            setCollapsed={props.setCollapsed}
           />
         </div>
       </div>

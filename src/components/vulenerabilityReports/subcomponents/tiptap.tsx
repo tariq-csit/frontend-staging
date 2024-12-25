@@ -28,7 +28,7 @@ const Toolbar = ({editor}: {editor: Editor | null}) => {
       <Toggle onPressedChange={() => editor.chain().focus().toggleBlockquote().run()} pressed={editor.isActive("blockquote")} aria-label="Toggle blockquote">
         <QuoteIcon className="h-4 w-4" />
       </Toggle>
-      <Toggle onPressedChange={() => editor.chain().focus().toggleCodeBlock().run()} pressed={editor.isActive("orderedList")} aria-label="Toggle ordered list">
+      <Toggle onPressedChange={() => editor.chain().focus().toggleCodeBlock().run()} pressed={editor.isActive("codeBlock")} aria-label="Toggle codeBlock">
         <CodeIcon className="h-4 w-4" />
       </Toggle>
       <Toggle>
@@ -72,7 +72,7 @@ const Tiptap = (props: {
     content: props.description,
     editorProps: {
       attributes: {
-        class: 'min-h-[200px] border-b border-t border-input rounded-md p-4 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent',
+        class: 'min-h-[200px] border-b border-t border-input rounded-md p-4 focus:outline-none',
       },
     },
     onUpdate({ editor }) {
