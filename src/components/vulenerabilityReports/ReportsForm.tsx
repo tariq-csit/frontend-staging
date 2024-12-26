@@ -125,6 +125,7 @@ function ReportsForm(props: { setForm: Function }) {
   }
   if (!preview) {
     return (
+      <div>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
@@ -142,7 +143,8 @@ function ReportsForm(props: { setForm: Function }) {
                 fields are mandatory unless marked as optional.{" "}
               </p>
             </div>
-            <h1 className="text-2xl font-medium mb-6">1. Affected Host (s)</h1>
+            <div className="flex flex-col gap-6">
+            <h1 className="text-2xl font-medium">1. Affected Host (s)</h1>
             <label>Affected Host (s)</label>
             <Select value="" onValueChange={handleValueChange}>
               <SelectTrigger className="sm:w-3/5">
@@ -184,6 +186,7 @@ function ReportsForm(props: { setForm: Function }) {
                   </Badge>
                 );
               })}
+            </div>
             </div>
             <div className="flex flex-col gap-6">
               <h1 className="text-2xl font-medium">2. Basic Details</h1>
@@ -682,6 +685,7 @@ function ReportsForm(props: { setForm: Function }) {
           </div>
         </form>
       </Form>
+      </div>
     );
   } else {
     return (
