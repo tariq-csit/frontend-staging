@@ -27,11 +27,14 @@ function SidebarNav(props: propsType) {
           ? "bg-primary-100 font-poppins text-primary-900"
           : "bg-white text-[#34465f] sm:opacity-75 hover:opacity-100"
       }`}
-      onClick={()=>props.setCollapsed(true)}
+      onClick={()=>{
+        const isMobile = window.innerWidth < 640;
+        isMobile && props.setCollapsed(true)
+      }}
     >
       {/* Icon */}
       <img
-        className={`w-5 h-5 transition-transform duration-300 ${
+        className={`w-5 h-5 ${
           props.collapsed ? "scale-150" : ""
         }`}
         src={props.icon}

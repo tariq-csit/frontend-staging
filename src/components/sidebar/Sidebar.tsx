@@ -42,8 +42,8 @@ function Sidebar(props: {
   return (
     <>
     <div
-      className={`sm:flex bg-white w-[18.5rem] fixed z-10  duration-75 ${
-        props.collapsed? "hidden sm:w-[4.75rem]":'visible flex sm:w-[15rem] lg:w-[17.5rem]'} h-auto min-h-screen flex-col justify-between items-start shrink-0 rounded-component`}
+      className={`sm:flex bg-white w-[18.5rem] fixed z-10  ${
+        props.collapsed? "hidden sm:w-[4.75rem]":'flex sm:w-[15rem] lg:w-[17.5rem]'} h-auto min-h-screen flex-col justify-between items-start shrink-0 rounded-component`}
     >
       <div className="flex flex-col justify-center gap-6 self-stretch ">
         <div className="flex  items-center gap-[0.75rem] self-stretch">

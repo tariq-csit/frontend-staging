@@ -19,6 +19,7 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { useState } from 'react';
+import { Loader } from 'lucide-react';
 
 const pinSchema = z.object({
   pin: z.string().length(6, {
@@ -72,11 +73,9 @@ function TwoFaVarification(props:{
 
   if(loading){
     return(
-      <div className="p-8 flex flex-col justify-center font-poppins items-center gap-12">
-        <h2 className="text-4xl font-semibold">
-          Verifying...
-        </h2>
-      </div>
+      <div className="p-8 flex flex-col justify-center font-poppins items-center gap-12 h-[80vh] sm:h-auto">
+        <Loader/>
+      </div> 
     )
   }
   if(error){
