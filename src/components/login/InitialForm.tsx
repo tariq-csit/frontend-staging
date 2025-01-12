@@ -16,6 +16,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 const formSchema = z.object({
   email: z
     .string()
@@ -34,8 +35,8 @@ const formSchema = z.object({
 
 function InitialForm(props:{
   settempToken: Function,
-  setvarificationToken: Function,
-  setEmail : Function
+  setvarificationToken: (token: string)=>void,
+  setEmail : (email: string)=>void
 }) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(false)
@@ -73,7 +74,7 @@ function InitialForm(props:{
     }
   }
   return (
-    <div>
+    <div className="flex flex-col gap-16">
         <div className="flex px-10 flex-col items-start justify-center gap-8 flex-component self-start font-poppins">
           <div className="flex flex-col items-start gap-8 self-stretch">
             <div className="flex flex-col justify-center items-start gap-3 self-stretch">
@@ -96,10 +97,10 @@ function InitialForm(props:{
                     name="email"
                     render={({ field }) => (
                       <FormItem>
+                        <FormLabel>Enter your Email</FormLabel>
                         <FormControl>
                           <Input
                             className="w-full"
-                            placeholder="Email"
                             {...field}
                           />
                         </FormControl>
@@ -112,11 +113,11 @@ function InitialForm(props:{
                     name="password"
                     render={({ field }) => (
                       <FormItem>
+                  <FormLabel>Enter your Password</FormLabel>
                         <FormControl>
                           <div className="relative">
                             <Input
                               type={showPassword ? "text" : "password"}
-                              placeholder="Password"
                               className="pr-10"
                               {...field}
                             />
@@ -178,10 +179,10 @@ function InitialForm(props:{
             </Form>
             <p className="font-poppins text-inputBorder ">
               Don’t have an account?
-              <a className="text-primary-900 font-medium cursor-pointer">
+              <Link to={'/signup'} className="text-primary-900 font-medium cursor-pointer">
                 {" "}
                 Signup Now!
-              </a>
+              </Link>
             </p>
             <div className="flex flex-col items-start gap-[0.5625rem] self-stretch">
               <div className="flex justify-center items-center gap-3 self-stretch text-inputBorder">
@@ -198,6 +199,9 @@ function InitialForm(props:{
             </div>
           </div>
         </div>
+        <p className="text-center w-full text-primary-900 font-inter">
+            Copyright © 2024 Slash
+      </p>
       </div>
   )
 }
