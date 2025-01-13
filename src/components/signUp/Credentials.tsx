@@ -44,7 +44,7 @@ function Credentials(props:{
     props.setCredentials(values.toString());
   }
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col w-full gap-8">
     <div className="flex flex-col items-start gap-8 self-stretch min-h-screen">
       <div className="flex flex-col justify-center items-start gap-3 self-stretch">
         <h1 className="font-poppins text-[2.5rem] font-semibold">
