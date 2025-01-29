@@ -5,6 +5,7 @@ import { Outlet, useNavigate } from "react-router-dom";
 import axiosInstance from "@/lib/AxiosInstance";
 import { apiRoutes } from "@/lib/routes";
 import bars from "/bars-solid.svg";
+import { useQuery } from "@tanstack/react-query";
 
 function Layout() {
   const [collapsed, setCollapsed] = useState(true); // State to manage sidebar collapse
@@ -16,14 +17,17 @@ function Layout() {
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   // Fetch user details
-  useEffect(() => {
-    (async () => {
+  const {  } = useQuery({
+    queryKey: ["userData"], 
+    queryFn: async () => {
       const response = await axiosInstance.get(apiRoutes.user);
       setUserName(response.data.name);
-      setUserImage(response.data.img);
+      setUserImage(response.data.profilePicture);
       setUserRole(response.data.role);
-    })();
-  }, []);
+      console.log(response)
+      return response.data;
+    },
+  });
 
   // Redirect to login if no token
   useEffect(() => {

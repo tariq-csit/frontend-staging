@@ -16,9 +16,10 @@ function SignUp() {
     }
   }, [navigate]);
   return (
-    <div className="flex flex-col sm:flex-row sm:min-h-screen">
+    <div className="flex flex-col sm:flex-row h-screen">
       <div className="bg-[url('/login-image.png')] bg-cover bg-center h-[20vh] sm:h-auto sm:w-1/2"></div>
-      <div className="flex flex-col  sm:w-1/2 py-12 px-6 sm:px-16 items-center justify-center shrink-0 self-stretch bg-[#F5F5F5]">
+      <div className="flex flex-col overflow-y-scroll sm:w-1/2 py-12 px-6 sm:px-16 self-stretch bg-[#F5F5F5]">
+      <div className="">
         {signUpCode === "" && credentials === "" ? (
           <Code setSignUpCode={setSignUpCode} />
         ) : signUpCode != "" && credentials === "" ? (
@@ -26,6 +27,7 @@ function SignUp() {
         ) : (
           <SignUpForm setSignUpData={setSignUpData} />
         )}
+        </div>
       </div>
     </div>
   );

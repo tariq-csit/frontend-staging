@@ -23,10 +23,10 @@ import {
 } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
-import Tiptap from "./subcomponents/tiptap";
+import Tiptap from "./tiptap";
 import { X } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
-import FormPreview from "./subcomponents/FormPreview";
+import FormPreview from "./FormPreview";
 interface data {
   affectedHost: string[];
   attachments: FileList;
@@ -637,8 +637,8 @@ function ReportsForm(props: { setForm: Function }) {
             </div>
           </div>
 
-          <div className="bg-white rounded-md p-6 flex flex-col gap-6 h-fit sm:w-3/12">
-            <div className="flex flex-col gap-6">
+          <div className=" flex flex-col gap-6 h-fit sm:w-3/12">
+            <div className="flex flex-col gap-6 fixed bg-white rounded-md p-6 right-5 sm:w-3/12">
               <div className="flex flex-col gap-4">
                 <div className="flex gap-4 items-center h-auto">
                   <img

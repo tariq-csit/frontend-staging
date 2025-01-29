@@ -26,7 +26,7 @@ const formSchema = z.object({
     .max(50),
   logo: z
     .custom<FileList>((val) => val instanceof FileList, "Please upload a file")
-    .refine((files) => files.length > 0, "File is required"),
+    .refine((files) => files.length > 0, "File is required").optional(),
 });
 
 function Credentials(props:{
@@ -46,9 +46,10 @@ function Credentials(props:{
   return (
     <div className="flex flex-col w-full gap-8">
     <div className="flex flex-col items-start gap-8 self-stretch min-h-screen">
-      <div className="flex flex-col justify-center items-start gap-3 self-stretch">
+      <div className="flex flex-col justify-center items-start font-inter self-stretch">
+        <p>Step 2/3</p>
         <h1 className="font-poppins text-[2.5rem] font-semibold">
-          Enter your credentials
+          Company Details
         </h1>
       </div>
       <Form {...form}>
@@ -90,7 +91,7 @@ function Credentials(props:{
               name="logo"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Upload your Logo</FormLabel>
+                  <FormLabel>Upload your Logo (optional)</FormLabel>
                   <FormControl>
                     <div className="flex flex-col items-center justify-center gap-2  rounded-formInput border border-dashed bg-[#F5F5F5] border-inputBorder p-2.5  self-stretch">
                       <div className="flex flex-col items-center gap-2 self-stretch p-4 sm:p-12">

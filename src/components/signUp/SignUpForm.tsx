@@ -54,7 +54,7 @@ function SignUpForm(props:{
     <div className="flex flex-col items-start gap-16 self-stretch min-h-screen">
       <div className="flex flex-col justify-center items-start gap-3 self-stretch">
         <h1 className="font-poppins text-[2.5rem] font-semibold">
-        Welcome Back!
+          Create a User
         </h1>
         <p className="text-inputBorder text-lg">Please sign up to streamline the management and monitoring of penetration tests.</p>
       </div>
