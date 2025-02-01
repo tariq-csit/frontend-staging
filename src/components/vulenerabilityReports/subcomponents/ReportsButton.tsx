@@ -1,14 +1,15 @@
 import { PlusIcon } from "lucide-react"
-import { Button } from '@/components/ui/button'
 
 function ReportsButton(props: {
   setForm: Function
 }) {
   return (
-        <Button variant='default' className='flex gap-[10px]' onClick={()=>props.setForm(true)}>
-          <PlusIcon className="h-4 w-4" />
-          <span>Add Vulnerabiities</span>
-        </Button>
+        <button className='sm:w-1/2 self-stretch rounded-lg border border-dashed border-primary-900 bg-primary-900/20 flex justify-center items-center min-h-60' onClick={()=>props.setForm(true)}>
+          <div className="flex items-center gap-[10px]">
+          <PlusIcon className="h-6 w-6" />
+          <span className="text-2xl text-primary-900">Add Vulnerabiities</span>
+          </div>
+        </button>
   )
 }
 
