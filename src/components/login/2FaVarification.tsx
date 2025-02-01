@@ -73,7 +73,7 @@ function TwoFaVarification(props:{
 
   if(loading){
     return(
-      <div className="p-8 flex flex-col justify-center font-poppins items-center gap-12 h-[80vh] sm:h-auto">
+      <div className="p-8 flex flex-col justify-center font-poppins items-center gap-12 h-screen">
         <Loader/>
       </div> 
     )
@@ -100,7 +100,7 @@ function TwoFaVarification(props:{
         Authenticate Your Account
         </h2>
         <p className='text-inputBorder font-poppins text-lg self-stretch'>
-        Please confirm your account by the authorization code sent to <span className='font-semibold'>{props.email}</span>
+        Enter the code from you authenticator app
         </p>
         </div>
         <Form {...pinForm}>
@@ -127,8 +127,7 @@ function TwoFaVarification(props:{
             )}
           />
           <FormDescription className='text-inputBorder font-popins text-lg self-stretch'>
-                <p>It may take a minute to receive your code.</p>
-                <p>Haven’t received the email yet? <span className='text-primary-900 font-medium'>Resend</span></p>
+                <p>If you want to reset your 2FA setup contact support@securitywall.co</p>
                 </FormDescription>
           <Button type="submit" className='text-xl' size={'lg'}>Submit</Button>
         </form>

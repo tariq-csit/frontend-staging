@@ -9,14 +9,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
-const pinSchema = z.object({
-  pin: z.string().length(6, {
-    message: "Your sign-up code must be 6 characters.",
+import { Input } from "@/components/ui/input";
+const formSchema = z.object({
+  signUpCode: z.string().min(2, {
+    message: "Sign Up code must be atleast 9 charaters long.",
   }),
 });
 
@@ -26,14 +22,14 @@ const Code = (props:{
   setSignUpCode: (code:string)=>void,
 })=>{
 
-  const pinForm = useForm<z.infer<typeof pinSchema>>({
-    resolver: zodResolver(pinSchema),
-    defaultValues: {
-      pin: "",
-    },
-  });
+   const form = useForm<z.infer<typeof formSchema>>({
+      resolver: zodResolver(formSchema),
+      defaultValues: {
+        signUpCode: "",
+      },
+    });
 
-  const pinSubmit=(data: z.infer<typeof pinSchema>)=>{
+  const pinSubmit=(data: z.infer<typeof formSchema>)=>{
     props.setSignUpCode(data.toString())
   }
 
@@ -47,24 +43,15 @@ const Code = (props:{
           Enter your signup code
         </h2>
         </div>
-        <Form {...pinForm}>
-        <form onSubmit={pinForm.handleSubmit(pinSubmit)} className="flex flex-col justify-center gap-6 self-stretch">
+        <Form {...form}>
+        <form onSubmit={form.handleSubmit(pinSubmit)} className="flex flex-col justify-center gap-6 self-stretch">
           <FormField
-            control={pinForm.control}
-            name="pin"
+            control={form.control}
+            name="signUpCode"
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <InputOTP maxLength={6} {...field}>
-                    <InputOTPGroup >
-                      <InputOTPSlot index={0} />
-                      <InputOTPSlot index={1} />
-                      <InputOTPSlot index={2} />
-                      <InputOTPSlot index={3} />
-                      <InputOTPSlot index={4} />
-                      <InputOTPSlot index={5} />
-                    </InputOTPGroup>
-                  </InputOTP>
+                <Input {...field} className="bg-white" placeholder="i.e, xxi-jjh-ttk" />
                 </FormControl>
                 <FormMessage />
               </FormItem>

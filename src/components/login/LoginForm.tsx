@@ -3,7 +3,7 @@ import InitialForm from "./InitialForm";
 import TwoFaAuth from "./2FaAuth";
 import QrCodeAuth from "./QrCodeAuth";
 import SuccessfulMessage from "./SuccessfulMessage";
-import TwoFaVarification from "./TwoFaVarification";
+import TwoFaVarification from "./2FaVarification";
 
 function LoginForm() {
   const [varificationToken, setvarificationToken] = useState('')
