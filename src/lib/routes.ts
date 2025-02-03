@@ -1,4 +1,4 @@
-const API_URL= process.env.API_URL
+const API_URL = import.meta.env.VITE_API_URL
 export const apiRoutes = {
   login : `${API_URL}/auth/login`,
   twoFa : `${API_URL}/auth/setup-2fa`,
