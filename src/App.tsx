@@ -4,10 +4,11 @@ import Layout from './components/layout/Layout';
 import Pentests from './components/pentests/Pentests';
 import VulnerabilityReports from './components/vulenerabilityReports/VulnerabilityReports';
 import ClientLists from './components/clientLists/ClientLists';
-import PentestersList from './components/pentestersList/PentestersList';
+import PentestersList from './components/pentests/pentestersList/PentestersList';
 import Settings from './components/settings/Settings';
 import ActivePentests from './components/activePentests/ActivePentests';
 import Login from './components/login/Login';
+import SignUp from './components/signUp/SignUp';
 
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
     <div>
       <Routes>
         <Route path='/login' element={<Login/>}/>
+        <Route path='/signup' element={<SignUp/>}/>
         <Route path='/' element={<Layout/>}>
           <Route path='dashboard' element={<ActivePentests/>}/>
           <Route path='dashboard/pentests' element={<Pentests/>}/>

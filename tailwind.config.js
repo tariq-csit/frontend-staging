@@ -19,13 +19,18 @@ export default {
   			},
   			button: '#4943A4',
   			listBg: '#FAFAFB',
-  			statusGreen: 'rgba(0, 128, 0, 0.30)',
-  			statusTextGreen: '#008000',
-  			statusOrange: 'rgba(255, 140, 4, 0.30)',
-  			statusTextOrange: '#FF5E04',
-  			statusSilver: ' rgba(93, 93, 93, 0.15)',
-  			statusTextSilver: '#5D5D5D',
+  			statusGreen: '#86EFAC',
+  			statusTextGreen: '#166534',
+  			statusOrange: '#FDE68A',
+  			statusTextOrange: '#92400E',
+  			statusSilver: '#E5E7EB',
+  			statusTextSilver: '#6B7280',
+				priorityRed: "rgba(254, 202, 202, 1)",
+				priorityTextRed: "#991B1B",
+				priorityBlue: "rgba(59, 130, 246, 0.2)",
+				priorityTextBlue: "#3B82F6",
   			inputBorder: '#787486',
+				previewText: '#787486',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
@@ -131,5 +136,5 @@ export default {
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: ["tailwindcss-animate"],
 }
