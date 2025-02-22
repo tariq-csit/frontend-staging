@@ -8,8 +8,12 @@ export const apiRoutes = {
   recentActivities: `/admin/latest-activities`,
   user: `/auth/me`,
   logout: `/auth/logout`,
-  allVulnerabilities: `/admin/all-vulnerabilities`,
-  addVulnerability: (pentestId: string) => `/api/admin/pentests/${pentestId}/vulnerability`,
+  allVulnerabilities: (pentestId: string) => `/admin/pentests/${pentestId}/vulnerabilities`,
+  vulnerabilityDetails: (pentestId: string, vulnerabilityId: string) => `/admin/pentests/${pentestId}/vulnerabilities/${vulnerabilityId}`,
+  allPentests: `/admin/pentests/all`,
+  pentestDetails: (pentestId: string) => `/admin/pentests/${pentestId}`,
   uploadLogo: `/upload/company-logo`,
   signup: `/auth/signup`,
+  createVulnerabilityReport: (pentestId: string) => `/admin/pentests/${pentestId}/vulnerability`,
+  uploadVulnerabilityAttachment: "/upload/attachment"
 }

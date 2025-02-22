@@ -24,7 +24,6 @@ function Layout() {
       setUserName(response.data.name);
       setUserImage(response.data.profilePicture);
       setUserRole(response.data.role);
-      console.log(response)
       return response.data;
     },
   });

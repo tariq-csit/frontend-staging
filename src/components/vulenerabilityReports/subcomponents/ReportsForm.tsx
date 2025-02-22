@@ -27,7 +27,12 @@ import Tiptap from "./tiptap";
 import { X } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import FormPreview from "./FormPreview";
-interface data {
+import { apiRoutes } from "@/lib/routes";
+import axiosInstance from "@/lib/AxiosInstance";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "@/hooks/use-toast";
+
+interface Data {
   affectedHost: string[];
   attachments: FileList;
   attackComplexity: string;
@@ -46,6 +51,7 @@ interface data {
   title: string;
   userInterction: string;
 }
+
 const formSchema = z.object({
   affectedHost: z.array(z.string()),
   title: z.string().min(3, "Title must be atleast three characters long."),
@@ -68,11 +74,82 @@ const formSchema = z.object({
     .refine((files) => files.length > 0, "At least one file is required"),
 });
 
-function ReportsForm(props: { setForm: Function }) {
+async function uploadFiles(files: FileList): Promise<Array<{url: string, name: string}>> {
+  const formData = new FormData();
+  Array.from(files).forEach(file => {
+    formData.append('files', file);
+  });
+
+  try {
+    const response = await axiosInstance.post('/upload/attachments', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data.map((fileData: {url: string, name: string}) => ({
+      url: fileData.url,
+      name: fileData.name
+    }));
+  } catch (error) {
+    console.error('Error uploading files:', error);
+    throw error;
+  }
+}
+
+function ReportsForm(props: { setForm: Function, pentestId: string }) {
   const [preview, setPreview] = useState(false);
-  const [data, setData] = useState<data | undefined>(undefined);
+  const [data, setData] = useState<Data | undefined>(undefined);
   const [hosts, setHosts] = useState<Array<string>>([]);
   const [hostsError, setHostsError] = useState(false)
+
+  const mutation = useMutation({
+    mutationFn: async (values: z.infer<typeof formSchema>) => {
+      // First upload the files
+      const attachmentUrls = await uploadFiles(values.attachments);
+      
+      // Format the data according to the API requirements
+      const formattedData = {
+        affected_host: values.affectedHost.join(','), // Join array into comma-separated string
+        title: values.title,
+        description: values.description,
+        severity: values.severity,
+        cvss_metric: {
+          attackVector: values.attackVector.charAt(0).toUpperCase(), // Convert to single letter format
+          attackComplexity: values.attackComplexity.charAt(0).toUpperCase(),
+          privilegesRequired: values.privilegesRequired.charAt(0).toUpperCase(),
+          userInteraction: values.userInterction.charAt(0).toUpperCase(),
+          scope: values.scope.charAt(0).toUpperCase(),
+          confidentiality: values.confidentiality.charAt(0).toUpperCase(),
+          integrity: values.integrity.charAt(0).toUpperCase(),
+          availability: values.availability.charAt(0).toUpperCase(),
+        },
+        attachments: attachmentUrls,
+        impact: values.impact,
+        likelihood: values.likeliHood,
+        recommended_solution: values.recommendedSolution,
+        steps_to_reproduce: values.stepToReproduce,
+      };
+
+      // Send the formatted data to the API
+      return axiosInstance.post(
+        apiRoutes.createVulnerabilityReport(props.pentestId), 
+        formattedData
+      );
+    },
+    onSuccess: () => {
+      toast({
+        title: "Vulnerability report created successfully",
+      });
+      props.setForm(false); // Close the form on success
+    },
+    onError: (error) => {
+      console.error('Error creating vulnerability report:', error);
+      toast({
+        title: "Failed to create vulnerability report",
+        variant: "destructive",
+      });
+    }
+  });
 
   const handleValueChange = (value: string) => {
     setHostsError(false)
@@ -112,533 +189,539 @@ function ReportsForm(props: { setForm: Function }) {
       userInterction: "none",
     },
   });
+
   function onSubmit(values: z.infer<typeof formSchema>) {
-    if(hosts.length===0)
-      setHostsError(true)
-    else{
-      setHostsError(false)
+    if (hosts.length === 0) {
+      setHostsError(true);
+      return;
+    }
+    
+    setHostsError(false);
     form.setValue("affectedHost", hosts); // Sync affectedHost with hosts state
-    console.log({ ...values, affectedHost: hosts });
+    
+    // Start the mutation
+    mutation.mutate(values);
+    
+    // Set preview data
     setData({ ...values, affectedHost: hosts });
     setPreview(true);
-    }
   }
+
   if (!preview) {
     return (
       <div>
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="flex flex-col sm:flex-row gap-8 font-poppins sm:mx-6"
-        >
-          <div className="sm:w-9/12 flex flex-col gap-6 p-6 bg-white rounded-lg">
-            <div className="flex flex-col gap-2">
-              <h2 className="text-2xl font-medium">
-                Submit vulnerability report
-              </h2>
-              <p>
-                Provide detailed information to ensure easy validation and
-                review. Include affected hosts, severity, CVSS metrics, steps to
-                reproduce, and relevant attachments for a thorough report. All
-                fields are mandatory unless marked as optional.{" "}
-              </p>
-            </div>
-            <div className="flex flex-col gap-6">
-            <h1 className="text-2xl font-medium">1. Affected Host (s)</h1>
-            <label>Affected Host (s)</label>
-            <Select value="" onValueChange={handleValueChange}>
-              <SelectTrigger className="sm:w-3/5">
-                <SelectValue placeholder="Select from the pre-defined list of hosts" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectItem value="sub3.digitalcircle.com">
-                    sub3.digitalcircle.com
-                  </SelectItem>
-                  <SelectItem value="sub2.digitalcircle.com">
-                    sub2.digitalcircle.com
-                  </SelectItem>
-                  <SelectItem value="sub1.digitalcircle.com">
-                    sub1.digitalcircle.com
-                  </SelectItem>
-                  <SelectItem value="10x.digitalcircle.com">
-                    10x.digitalcircle.com
-                  </SelectItem>
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-            {hostsError && <span className="text-red-600 -my-5">Add atleast one host</span>}
-            <div className="flex flex-col sm:flex-row gap-2">
-              {hosts.map((host) => {
-                return (
-                  <Badge
-                    key={host}
-                    variant="secondary"
-                    className="flex justify-between"
-                  >
-                    {host}
-                    <Button
-                      className="ml-2 w-7 h-7 p-0 bg-inherit rounded-full"
-                      onClick={() => handleUnselect(host)}
-                    >
-                      <X className="h-5 w-5 text-black hover:text-white" />
-                    </Button>
-                  </Badge>
-                );
-              })}
-            </div>
-            </div>
-            <div className="flex flex-col gap-6">
-              <h1 className="text-2xl font-medium">2. Basic Details</h1>
-              <div className="flex gap-6 flex-col lg:flex-row">
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem className="sm:w-3/5">
-                      <FormLabel>Title</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Add a title" {...field} />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="severity"
-                  render={({ field }) => (
-                    <FormItem className="sm:w-2/5">
-                      <FormLabel>Severity</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex"
-                          {...field}
-                        >
-                          {["Low", "Medium", "High", "Critical"].map(
-                            (level) => (
-                              <FormLabel
-                                key={level.toLowerCase()}
-                                htmlFor={level.toLowerCase()}
-                                className="cursor-pointer rounded px-4 py-2 text-xs sm:text-sm border transition-colors [&:has(:checked)]:bg-primary-900 [&:has(:checked)]:text-primary-foreground hover:bg-muted"
-                              >
-                                <RadioGroupItem
-                                  value={level.toLowerCase()}
-                                  id={level.toLowerCase()}
-                                  className="sr-only"
-                                />
-                                {level}
-                              </FormLabel>
-                            )
-                          )}
-                        </RadioGroup>
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="grid grid-cols-12 gap-6 font-poppins sm:mx-6"
+          >
+            <div className="col-span-9 flex flex-col gap-6 p-6 bg-white rounded-lg">
+              <div className="flex flex-col gap-2">
+                <h2 className="text-2xl font-medium">
+                  Submit vulnerability report
+                </h2>
+                <p>
+                  Provide detailed information to ensure easy validation and
+                  review. Include affected hosts, severity, CVSS metrics, steps to
+                  reproduce, and relevant attachments for a thorough report. All
+                  fields are mandatory unless marked as optional.{" "}
+                </p>
               </div>
-
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      {/* Tiptap Editor */}
-                      <Tiptap
-                        description={field.value}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <h1 className="text-2xl font-medium">
-                3. Recommendations and Steps to Reproduce
-              </h1>
-
-              <FormField
-                control={form.control}
-                name="stepToReproduce"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>steps to Reproduce</FormLabel>
-                    <FormControl>
-                      {/* Tiptap Editor */}
-                      <Tiptap
-                        description={field.value}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="recommendedSolution"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Recommended Solution</FormLabel>
-                    <FormControl>
-                      {/* Tiptap Editor */}
-                      <Tiptap
-                        description={field.value}
-                        onChange={field.onChange}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <h1 className="text-2xl font-medium">4. Impact and Likelihood</h1>
-              <div className="flex flex-col sm:flex-row gap-6 sm:w-10/12">
-                <FormField
-                  control={form.control}
-                  name="impact"
-                  render={({ field }) => (
-                    <FormItem className="sm:w-2/5">
-                      <FormLabel>Impact</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} className="h-20" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="likeliHood"
-                  render={({ field }) => (
-                    <FormItem className="3/5">
-                      <FormLabel>LikeliHood</FormLabel>
-                      <FormControl>
-                        <Textarea {...field} className="h-20" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
               <div className="flex flex-col gap-6">
-                <h1 className="text-2xl font-medium">5. CVSS Metrics</h1>
+                <h1 className="text-2xl font-medium">1. Affected Host (s)</h1>
+                <label>Affected Host (s)</label>
+                <Select value="" onValueChange={handleValueChange}>
+                  <SelectTrigger className="sm:w-3/5">
+                    <SelectValue placeholder="Select from the pre-defined list of hosts" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      <SelectItem value="sub3.digitalcircle.com">
+                        sub3.digitalcircle.com
+                      </SelectItem>
+                      <SelectItem value="sub2.digitalcircle.com">
+                        sub2.digitalcircle.com
+                      </SelectItem>
+                      <SelectItem value="sub1.digitalcircle.com">
+                        sub1.digitalcircle.com
+                      </SelectItem>
+                      <SelectItem value="10x.digitalcircle.com">
+                        10x.digitalcircle.com
+                      </SelectItem>
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                {hostsError && <span className="text-red-600 -my-5">Add atleast one host</span>}
+                <div className="flex flex-col sm:flex-row gap-2">
+                  {hosts.map((host) => {
+                    return (
+                      <Badge
+                        key={host}
+                        variant="secondary"
+                        className="flex justify-between"
+                      >
+                        {host}
+                        <Button
+                          className="ml-2 w-7 h-7 p-0 bg-inherit rounded-full"
+                          onClick={() => handleUnselect(host)}
+                        >
+                          <X className="h-5 w-5 text-black hover:text-white" />
+                        </Button>
+                      </Badge>
+                    );
+                  })}
+                </div>
+              </div>
+              <div className="flex flex-col gap-6">
+                <h1 className="text-2xl font-medium">2. Basic Details</h1>
+                <div className="flex gap-6 flex-col lg:flex-row">
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem className="sm:w-3/5">
+                        <FormLabel>Title</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Add a title" {...field} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="severity"
+                    render={({ field }) => (
+                      <FormItem className="sm:w-2/5">
+                        <FormLabel>Severity</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="flex"
+                            {...field}
+                          >
+                            {["Low", "Medium", "High", "Critical"].map(
+                              (level) => (
+                                <FormLabel
+                                  key={level.toLowerCase()}
+                                  htmlFor={level.toLowerCase()}
+                                  className="cursor-pointer rounded px-4 py-2 text-xs sm:text-sm border transition-colors [&:has(:checked)]:bg-primary-900 [&:has(:checked)]:text-primary-foreground hover:bg-muted"
+                                >
+                                  <RadioGroupItem
+                                    value={level.toLowerCase()}
+                                    id={level.toLowerCase()}
+                                    className="sr-only"
+                                  />
+                                  {level}
+                                </FormLabel>
+                              )
+                            )}
+                          </RadioGroup>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
                 <FormField
                   control={form.control}
-                  name="attackVector"
+                  name="description"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col sm:flex-row sm:items-center sm:gap-12">
-                      <FormLabel className="w-40">Attack Vector</FormLabel>
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
                       <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex"
-                          {...field}
-                        >
-                          {["Network", "Adjacent", "Local", "Physical"].map(
-                            (level) => (
+                        {/* Tiptap Editor */}
+                        <Tiptap
+                          description={field.value}
+                          onChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <h1 className="text-2xl font-medium">
+                  3. Recommendations and Steps to Reproduce
+                </h1>
+
+                <FormField
+                  control={form.control}
+                  name="stepToReproduce"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>steps to Reproduce</FormLabel>
+                      <FormControl>
+                        {/* Tiptap Editor */}
+                        <Tiptap
+                          description={field.value}
+                          onChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="recommendedSolution"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Recommended Solution</FormLabel>
+                      <FormControl>
+                        {/* Tiptap Editor */}
+                        <Tiptap
+                          description={field.value}
+                          onChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <h1 className="text-2xl font-medium">4. Impact and Likelihood</h1>
+                <div className="flex flex-col sm:flex-row gap-6 sm:w-10/12">
+                  <FormField
+                    control={form.control}
+                    name="impact"
+                    render={({ field }) => (
+                      <FormItem className="sm:w-2/5">
+                        <FormLabel>Impact</FormLabel>
+                        <FormControl>
+                          <Textarea {...field} className="h-20" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="likeliHood"
+                    render={({ field }) => (
+                      <FormItem className="3/5">
+                        <FormLabel>LikeliHood</FormLabel>
+                        <FormControl>
+                          <Textarea {...field} className="h-20" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-6">
+                  <h1 className="text-2xl font-medium">5. CVSS Metrics</h1>
+                  <FormField
+                    control={form.control}
+                    name="attackVector"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col sm:flex-row sm:items-center sm:gap-12">
+                        <FormLabel className="w-40">Attack Vector</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="flex"
+                            {...field}
+                          >
+                            {["Network", "Adjacent", "Local", "Physical"].map(
+                              (level) => (
+                                <FormLabel
+                                  key={level.toLowerCase()}
+                                  htmlFor={level.toLowerCase()}
+                                  className="cursor-pointer rounded px-4 py-2 text-xs sm:text-sm border transition-colors [&:has(:checked)]:bg-primary-900 [&:has(:checked)]:text-primary-foreground hover:bg-muted"
+                                >
+                                  <RadioGroupItem
+                                    value={level.toLowerCase()}
+                                    id={level.toLowerCase()}
+                                    className="sr-only"
+                                  />
+                                  {level}
+                                </FormLabel>
+                              )
+                            )}
+                          </RadioGroup>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="attackComplexity"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col sm:flex-row sm:items-center sm:gap-12">
+                        <FormLabel className="w-40">Attack Complexity</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            value={field.value}
+                            className="flex"
+                          >
+                            {["Low", "High"].map((level) => (
                               <FormLabel
                                 key={level.toLowerCase()}
-                                htmlFor={level.toLowerCase()}
+                                htmlFor={`attackComplexity-${level.toLowerCase()}`}
                                 className="cursor-pointer rounded px-4 py-2 text-xs sm:text-sm border transition-colors [&:has(:checked)]:bg-primary-900 [&:has(:checked)]:text-primary-foreground hover:bg-muted"
                               >
                                 <RadioGroupItem
                                   value={level.toLowerCase()}
-                                  id={level.toLowerCase()}
+                                  id={`attackComplexity-${level.toLowerCase()}`} // Matches the unique ID
                                   className="sr-only"
                                 />
                                 {level}
                               </FormLabel>
-                            )
-                          )}
-                        </RadioGroup>
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="attackComplexity"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col sm:flex-row sm:items-center sm:gap-12">
-                      <FormLabel className="w-40">Attack Complexity</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          value={field.value}
-                          className="flex"
-                        >
-                          {["Low", "High"].map((level) => (
-                            <FormLabel
-                              key={level.toLowerCase()}
-                              htmlFor={`attackComplexity-${level.toLowerCase()}`}
-                              className="cursor-pointer rounded px-4 py-2 text-xs sm:text-sm border transition-colors [&:has(:checked)]:bg-primary-900 [&:has(:checked)]:text-primary-foreground hover:bg-muted"
-                            >
-                              <RadioGroupItem
-                                value={level.toLowerCase()}
-                                id={`attackComplexity-${level.toLowerCase()}`} // Matches the unique ID
-                                className="sr-only"
-                              />
-                              {level}
-                            </FormLabel>
-                          ))}
-                        </RadioGroup>
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+                            ))}
+                          </RadioGroup>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
 
+                  <FormField
+                    control={form.control}
+                    name="privilegesRequired"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col sm:flex-row sm:items-center sm:gap-12">
+                        <FormLabel className="w-40">
+                          Privileges Required
+                        </FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="flex"
+                          >
+                            {["None", "Low", "High"].map((level) => (
+                              <FormLabel
+                                key={level.toLowerCase()}
+                                htmlFor={`privilegesRequired-${level.toLowerCase()}`}
+                                className="cursor-pointer rounded px-4 py-2 text-xs sm:text-sm border transition-colors [&:has(:checked)]:bg-primary-900 [&:has(:checked)]:text-primary-foreground hover:bg-muted"
+                              >
+                                <RadioGroupItem
+                                  value={level.toLowerCase()}
+                                  id={`privilegesRequired-${level.toLowerCase()}`}
+                                  className="sr-only"
+                                />
+                                {level}
+                              </FormLabel>
+                            ))}
+                          </RadioGroup>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="userInterction"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col sm:flex-row sm:items-center sm:gap-12">
+                        <FormLabel className="w-40">User interction</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="flex"
+                          >
+                            {["None", "Reqired"].map((level) => (
+                              <FormLabel
+                                key={level.toLowerCase()}
+                                htmlFor={`userInterction-${level.toLowerCase()}`}
+                                className="cursor-pointer rounded px-4 py-2 text-xs sm:text-sm border transition-colors [&:has(:checked)]:bg-primary-900 [&:has(:checked)]:text-primary-foreground hover:bg-muted"
+                              >
+                                <RadioGroupItem
+                                  value={level.toLowerCase()}
+                                  id={`userInterction-${level.toLowerCase()}`}
+                                  className="sr-only"
+                                />
+                                {level}
+                              </FormLabel>
+                            ))}
+                          </RadioGroup>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="scope"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col sm:flex-row sm:items-center sm:gap-12">
+                        <FormLabel className="w-40">Scope</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="flex"
+                          >
+                            {["Unchanged", "Changed"].map((level) => (
+                              <FormLabel
+                                key={level.toLowerCase()}
+                                htmlFor={`scope-${level.toLowerCase()}`}
+                                className="cursor-pointer rounded px-4 py-2 text-xs sm:text-sm border transition-colors [&:has(:checked)]:bg-primary-900 [&:has(:checked)]:text-primary-foreground hover:bg-muted"
+                              >
+                                <RadioGroupItem
+                                  value={level.toLowerCase()}
+                                  id={`scope-${level.toLowerCase()}`}
+                                  className="sr-only"
+                                />
+                                {level}
+                              </FormLabel>
+                            ))}
+                          </RadioGroup>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="confidentiality"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col sm:flex-row sm:items-center sm:gap-12">
+                        <FormLabel className="w-40">Confidentiality</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="flex"
+                          >
+                            {["None", "Low", "High"].map((level) => (
+                              <FormLabel
+                                key={level.toLowerCase()}
+                                htmlFor={`confidentiality-${level.toLowerCase()}`}
+                                className="cursor-pointer rounded px-4 py-2 text-xs sm:text-sm border transition-colors [&:has(:checked)]:bg-primary-900 [&:has(:checked)]:text-primary-foreground hover:bg-muted"
+                              >
+                                <RadioGroupItem
+                                  value={level.toLowerCase()}
+                                  id={`confidentiality-${level.toLowerCase()}`}
+                                  className="sr-only"
+                                />
+                                {level}
+                              </FormLabel>
+                            ))}
+                          </RadioGroup>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="integrity"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col sm:flex-row sm:items-center sm:gap-12">
+                        <FormLabel className="w-40">Integrity</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="flex"
+                          >
+                            {["None", "Low", "High"].map((level) => (
+                              <FormLabel
+                                key={level.toLowerCase()}
+                                htmlFor={`integrity-${level.toLowerCase()}`}
+                                className="cursor-pointer rounded px-4 py-2 text-xs sm:text-sm border transition-colors [&:has(:checked)]:bg-primary-900 [&:has(:checked)]:text-primary-foreground hover:bg-muted"
+                              >
+                                <RadioGroupItem
+                                  value={level.toLowerCase()}
+                                  id={`integrity-${level.toLowerCase()}`}
+                                  className="sr-only"
+                                />
+                                {level}
+                              </FormLabel>
+                            ))}
+                          </RadioGroup>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="availability"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col sm:flex-row sm:items-center sm:gap-12">
+                        <FormLabel className="w-40">Availability</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="flex"
+                          >
+                            {["None", "Low", "High"].map((level) => (
+                              <FormLabel
+                                key={level.toLowerCase()}
+                                htmlFor={`availability-${level.toLowerCase()}`}
+                                className="cursor-pointer rounded px-4 py-2 text-xs sm:text-sm border transition-colors [&:has(:checked)]:bg-primary-900 [&:has(:checked)]:text-primary-foreground hover:bg-muted"
+                              >
+                                <RadioGroupItem
+                                  value={level.toLowerCase()}
+                                  id={`availability-${level.toLowerCase()}`}
+                                  className="sr-only"
+                                />
+                                {level}
+                              </FormLabel>
+                            ))}
+                          </RadioGroup>
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <h1 className="text-2xl font-medium">6. Attachments</h1>
                 <FormField
                   control={form.control}
-                  name="privilegesRequired"
+                  name="attachments"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col sm:flex-row sm:items-center sm:gap-12">
-                      <FormLabel className="w-40">
-                        Privileges Required
-                      </FormLabel>
+                    <FormItem className="flex w-full sm:col-span-3 flex-col items-start gap-2">
+                      <FormLabel>Attachments</FormLabel>
                       <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex"
-                        >
-                          {["None", "Low", "High"].map((level) => (
-                            <FormLabel
-                              key={level.toLowerCase()}
-                              htmlFor={`privilegesRequired-${level.toLowerCase()}`}
-                              className="cursor-pointer rounded px-4 py-2 text-xs sm:text-sm border transition-colors [&:has(:checked)]:bg-primary-900 [&:has(:checked)]:text-primary-foreground hover:bg-muted"
-                            >
-                              <RadioGroupItem
-                                value={level.toLowerCase()}
-                                id={`privilegesRequired-${level.toLowerCase()}`}
-                                className="sr-only"
+                        <div className="flex flex-col items-center justify-center gap-2 rounded-formInput border border-dashed bg-[#F5F5F5] border-inputBorder p-2.5 self-stretch">
+                          <div className="flex flex-col items-center gap-2 self-stretch">
+                            <img className="" src="/papers.svg" />
+                            <div className="flex w-3/5 sm:w-auto px-4 justify-center items-center sm:gap-8 border rounded-formInput border-[#353086]">
+                              <img src={fileIcon} />
+                              <Input
+                                type="file"
+                                multiple
+                                placeholder="Choose files"
+                                className="border-none"
+                                onChange={(e) => {
+                                  const newFiles = e.target.files;
+                                  const currentFiles =
+                                    field.value || new DataTransfer().files; // Use an empty FileList if none
+                                  const dataTransfer = new DataTransfer();
+
+                                  // Append existing files
+                                  Array.from(currentFiles).forEach((file) => {
+                                    dataTransfer.items.add(file);
+                                  });
+
+                                  // Append new files
+                                  Array.from(newFiles || []).forEach((file) => {
+                                    dataTransfer.items.add(file);
+                                  });
+
+                                  // Update the field with the combined FileList
+                                  field.onChange(dataTransfer.files);
+                                }}
                               />
-                              {level}
-                            </FormLabel>
-                          ))}
-                        </RadioGroup>
+                            </div>
+                            <label className="font-poppins text-inputBorder text-base lowercase font-medium">
+                              or drop files here
+                            </label>
+                          </div>
+                        </div>
                       </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="userInterction"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col sm:flex-row sm:items-center sm:gap-12">
-                      <FormLabel className="w-40">User interction</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex"
-                        >
-                          {["None", "Reqired"].map((level) => (
-                            <FormLabel
-                              key={level.toLowerCase()}
-                              htmlFor={`userInterction-${level.toLowerCase()}`}
-                              className="cursor-pointer rounded px-4 py-2 text-xs sm:text-sm border transition-colors [&:has(:checked)]:bg-primary-900 [&:has(:checked)]:text-primary-foreground hover:bg-muted"
-                            >
-                              <RadioGroupItem
-                                value={level.toLowerCase()}
-                                id={`userInterction-${level.toLowerCase()}`}
-                                className="sr-only"
-                              />
-                              {level}
-                            </FormLabel>
-                          ))}
-                        </RadioGroup>
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="scope"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col sm:flex-row sm:items-center sm:gap-12">
-                      <FormLabel className="w-40">Scope</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex"
-                        >
-                          {["Unchanged", "Changed"].map((level) => (
-                            <FormLabel
-                              key={level.toLowerCase()}
-                              htmlFor={`scope-${level.toLowerCase()}`}
-                              className="cursor-pointer rounded px-4 py-2 text-xs sm:text-sm border transition-colors [&:has(:checked)]:bg-primary-900 [&:has(:checked)]:text-primary-foreground hover:bg-muted"
-                            >
-                              <RadioGroupItem
-                                value={level.toLowerCase()}
-                                id={`scope-${level.toLowerCase()}`}
-                                className="sr-only"
-                              />
-                              {level}
-                            </FormLabel>
-                          ))}
-                        </RadioGroup>
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="confidentiality"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col sm:flex-row sm:items-center sm:gap-12">
-                      <FormLabel className="w-40">Confidentiality</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex"
-                        >
-                          {["None", "Low", "High"].map((level) => (
-                            <FormLabel
-                              key={level.toLowerCase()}
-                              htmlFor={`confidentiality-${level.toLowerCase()}`}
-                              className="cursor-pointer rounded px-4 py-2 text-xs sm:text-sm border transition-colors [&:has(:checked)]:bg-primary-900 [&:has(:checked)]:text-primary-foreground hover:bg-muted"
-                            >
-                              <RadioGroupItem
-                                value={level.toLowerCase()}
-                                id={`confidentiality-${level.toLowerCase()}`}
-                                className="sr-only"
-                              />
-                              {level}
-                            </FormLabel>
-                          ))}
-                        </RadioGroup>
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="integrity"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col sm:flex-row sm:items-center sm:gap-12">
-                      <FormLabel className="w-40">Integrity</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex"
-                        >
-                          {["None", "Low", "High"].map((level) => (
-                            <FormLabel
-                              key={level.toLowerCase()}
-                              htmlFor={`integrity-${level.toLowerCase()}`}
-                              className="cursor-pointer rounded px-4 py-2 text-xs sm:text-sm border transition-colors [&:has(:checked)]:bg-primary-900 [&:has(:checked)]:text-primary-foreground hover:bg-muted"
-                            >
-                              <RadioGroupItem
-                                value={level.toLowerCase()}
-                                id={`integrity-${level.toLowerCase()}`}
-                                className="sr-only"
-                              />
-                              {level}
-                            </FormLabel>
-                          ))}
-                        </RadioGroup>
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="availability"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col sm:flex-row sm:items-center sm:gap-12">
-                      <FormLabel className="w-40">Availability</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex"
-                        >
-                          {["None", "Low", "High"].map((level) => (
-                            <FormLabel
-                              key={level.toLowerCase()}
-                              htmlFor={`availability-${level.toLowerCase()}`}
-                              className="cursor-pointer rounded px-4 py-2 text-xs sm:text-sm border transition-colors [&:has(:checked)]:bg-primary-900 [&:has(:checked)]:text-primary-foreground hover:bg-muted"
-                            >
-                              <RadioGroupItem
-                                value={level.toLowerCase()}
-                                id={`availability-${level.toLowerCase()}`}
-                                className="sr-only"
-                              />
-                              {level}
-                            </FormLabel>
-                          ))}
-                        </RadioGroup>
-                      </FormControl>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
-              <h1 className="text-2xl font-medium">6. Attachments</h1>
-              <FormField
-                control={form.control}
-                name="attachments"
-                render={({ field }) => (
-                  <FormItem className="flex w-full sm:col-span-3 flex-col items-start gap-2">
-                    <FormLabel>Attachments</FormLabel>
-                    <FormControl>
-                      <div className="flex flex-col items-center justify-center gap-2 rounded-formInput border border-dashed bg-[#F5F5F5] border-inputBorder p-2.5 self-stretch">
-                        <div className="flex flex-col items-center gap-2 self-stretch">
-                          <img className="" src="/papers.svg" />
-                          <div className="flex w-3/5 sm:w-auto px-4 justify-center items-center sm:gap-8 border rounded-formInput border-[#353086]">
-                            <img src={fileIcon} />
-                            <Input
-                              type="file"
-                              multiple
-                              placeholder="Choose files"
-                              className="border-none"
-                              onChange={(e) => {
-                                const newFiles = e.target.files;
-                                const currentFiles =
-                                  field.value || new DataTransfer().files; // Use an empty FileList if none
-                                const dataTransfer = new DataTransfer();
-
-                                // Append existing files
-                                Array.from(currentFiles).forEach((file) => {
-                                  dataTransfer.items.add(file);
-                                });
-
-                                // Append new files
-                                Array.from(newFiles || []).forEach((file) => {
-                                  dataTransfer.items.add(file);
-                                });
-
-                                // Update the field with the combined FileList
-                                field.onChange(dataTransfer.files);
-                              }}
-                            />
-                          </div>
-                          <label className="font-poppins text-inputBorder text-base lowercase font-medium">
-                            or drop files here
-                          </label>
-                        </div>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
-          </div>
 
-          <div className=" flex flex-col gap-6 h-fit sm:w-3/12">
-            <div className="flex flex-col gap-6 fixed bg-white rounded-md p-6 right-5 sm:w-3/12">
+            <div className="flex flex-col gap-6 bg-white rounded-md h-fit p-6 col-span-3">
               <div className="flex flex-col gap-4">
                 <div className="flex gap-4 items-center h-auto">
                   <img
@@ -677,21 +760,22 @@ function ReportsForm(props: { setForm: Function }) {
                 >
                   Go Back
                 </Button>
-                <Button type="submit" className="w-2/3">
-                  Submit Vulnerability
+                <Button 
+                  type="submit" 
+                  className="w-2/3" 
+                  disabled={mutation.isPending}
+                >
+                  {mutation.isPending ? "Submitting..." : "Submit Vulnerability"}
                 </Button>
               </div>
             </div>
-          </div>
-        </form>
-      </Form>
+          </form>
+        </Form>
       </div>
     );
   } else {
     return (
-      <>
-        <FormPreview data={data} setPreview={setPreview} />
-      </>
+      <FormPreview data={data} setPreview={setPreview} />
     );
   }
 }

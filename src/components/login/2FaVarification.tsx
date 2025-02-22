@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button'
 import { apiRoutes } from '@/lib/routes';
-import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
