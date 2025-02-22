@@ -1,9 +1,8 @@
 import axios from 'axios';
 import { apiRoutes } from './routes';
-import { useNavigate } from 'react-router-dom';
 
 const axiosInstance = axios.create({
-  baseURL: 'http://172.86.114.162:4000/api',
+  baseURL: import.meta.env.VITE_API_URL,
 });
 
 

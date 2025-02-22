@@ -12,10 +12,14 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
+import { SignUpData } from "@/types/types";
+import axiosInstance from "@/lib/AxiosInstance";
+import { apiRoutes } from "@/lib/routes";
+import { useState } from "react";
 
 const formSchema = z.object({
-  comapanyName: z.string().min(2, {
-    message: "Please enter your comapany's name.",
+  companyName: z.string().min(2, {
+    message: "Please enter your company's name.",
   }),
   email: z
     .string()
@@ -24,25 +28,59 @@ const formSchema = z.object({
     })
     .min(2)
     .max(50),
-  logo: z
+  logoUrl: z
     .custom<FileList>((val) => val instanceof FileList, "Please upload a file")
     .refine((files) => files.length > 0, "File is required").optional(),
 });
 
-function Credentials(props:{
-  setCredentials: (creds:string)=>void
+
+function Credentials(props: {
+  setSignUpData: (data: Partial<SignUpData>) => void,
+  signUpData: SignUpData,
 }) {
+  
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      comapanyName: "",
+      companyName: "",
       email: "",
+      logoUrl: undefined,
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    props.setCredentials(values.toString());
+    // Todo: Upload logo to storage
+    if (!values.logoUrl) {
+      return;
+    }
+    const formData = new FormData();
+    formData.append("logo", values.logoUrl[0]); // Assuming logoUrl is a FileList
+
+    setUploadingLogo(true);
+    try {
+      // First, upload the logo
+      const logoResponse = await axiosInstance.post(apiRoutes.uploadLogo, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      props.setSignUpData({
+        ...props.signUpData,
+        companyName: values.companyName,
+        poc_email: values.email,
+        logoUrl: logoResponse.data.url,
+      });
+
+    } catch (error) {
+      console.error('Error during logo upload or user signup:', error);
+    } finally {
+      setUploadingLogo(false);
+    }
   }
+
+
   return (
     <div className="flex flex-col w-full gap-8">
     <div className="flex flex-col items-start gap-8 self-stretch min-h-screen">
@@ -60,7 +98,7 @@ function Credentials(props:{
           <div className="flex flex-col items-center gap-6 self-stretch">
             <FormField
               control={form.control}
-              name="comapanyName"
+              name="companyName"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Enter your company name</FormLabel>
@@ -88,7 +126,7 @@ function Credentials(props:{
 
             <FormField
               control={form.control}
-              name="logo"
+              name="logoUrl"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Upload your Logo (optional)</FormLabel>
@@ -115,7 +153,7 @@ function Credentials(props:{
               )}
             />
           </div>
-          <Button className="w-full text-lg py-4" type="submit">
+          <Button disabled={uploadingLogo} className="w-full text-lg py-4" type="submit">
             Continue
           </Button>
         </form>

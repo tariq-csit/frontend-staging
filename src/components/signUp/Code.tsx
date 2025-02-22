@@ -10,6 +10,9 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SignUpData } from "@/types/types";
+
+
 const formSchema = z.object({
   signUpCode: z.string().min(2, {
     message: "Sign Up code must be atleast 9 charaters long.",
@@ -17,10 +20,10 @@ const formSchema = z.object({
 });
 
 
-
-const Code = (props:{
-  setSignUpCode: (code:string)=>void,
-})=>{
+const Code = (props: {
+  setSignUpData: (data: Partial<SignUpData>) => void,
+  signUpData: SignUpData,
+}) => {
 
    const form = useForm<z.infer<typeof formSchema>>({
       resolver: zodResolver(formSchema),
@@ -29,8 +32,11 @@ const Code = (props:{
       },
     });
 
-  const pinSubmit=(data: z.infer<typeof formSchema>)=>{
-    props.setSignUpCode(data.toString())
+  const pinSubmit = (data: z.infer<typeof formSchema>) => {
+    props.setSignUpData({
+      ...props.signUpData,
+      signUpCode: data.signUpCode,
+    });
   }
 
   return(
@@ -51,7 +57,7 @@ const Code = (props:{
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                <Input {...field} className="bg-white" placeholder="i.e, xxi-jjh-ttk" />
+                <Input {...field} className="bg-white" placeholder="eg: 5fc5277cb2c5983918c25c92c31b018413ce4b4" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
