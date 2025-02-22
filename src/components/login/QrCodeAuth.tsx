@@ -3,7 +3,6 @@ import { apiRoutes } from "@/lib/routes";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import axios from "axios";
 import {
   Form,
   FormControl,
@@ -17,6 +16,7 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
+import axiosInstance from "@/lib/AxiosInstance";
 
 const pinSchema = z.object({
   pin: z.string().length(6, {
@@ -38,7 +38,7 @@ function QrCodeAuth(props: {
 
   async function pinSubmit(data: z.infer<typeof pinSchema>) {
     try {
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         apiRoutes.setup2FaVerify,
         { token: data.pin },
         {

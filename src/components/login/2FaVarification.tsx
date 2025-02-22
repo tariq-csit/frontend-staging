@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/input-otp";
 import { useState } from 'react';
 import { Loader } from 'lucide-react';
+import axiosInstance from '@/lib/AxiosInstance';
 
 const pinSchema = z.object({
   pin: z.string().length(6, {
@@ -47,7 +48,7 @@ function TwoFaVarification(props:{
     setLoading(true)
     setError(false)
     try {
-      const response = await axios.post(
+      const response = await axiosInstance.post(
         apiRoutes.verify2Fa,
         {'token':data.pin},
         {

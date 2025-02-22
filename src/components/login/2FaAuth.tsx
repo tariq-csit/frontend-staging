@@ -1,6 +1,6 @@
-import axios from "axios";
 import { apiRoutes } from "@/lib/routes";
 import { Button } from "@/components/ui/button";
+import axiosInstance from "@/lib/AxiosInstance";
 
 function TwoFaAuth(props: {
   tempToken: string,
@@ -15,7 +15,7 @@ function TwoFaAuth(props: {
           className="px-8 shadow-6"
           onClick={async () => {
             try {
-              const response = await axios.post(
+              const response = await axiosInstance.post(
                 apiRoutes.twoFa,
                 {},
                 {

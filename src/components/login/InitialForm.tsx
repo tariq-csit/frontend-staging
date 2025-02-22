@@ -13,10 +13,12 @@ import {
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import axiosInstance from "@/lib/AxiosInstance";
+import { isAxiosError } from "axios";
+
 const formSchema = z.object({
   email: z
     .string()
@@ -47,32 +49,34 @@ function InitialForm(props:{
       password: "",
     },
   });
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      const response = await axios.post(apiRoutes.login, {
+      const response = await axiosInstance.post(apiRoutes.login, {
         email: values.email,
         password: values.password,
       });
       props.setvarificationToken(response.data.token);
-      props.setEmail(values.email)
+      props.setEmail(values.email);
       sessionStorage.setItem("user", JSON.stringify(response.data.user));
-      sessionStorage.setItem('refreshToken', response.data.refreshToken)
-      setError(false)
+      sessionStorage.setItem("refreshToken", response.data.refreshToken);
+      setError(false);
     } catch (error: unknown) {
-      if (axios.isAxiosError(error) && error.response) {
-        if (error.response.data.message === "2FA setup required") {
+      if (isAxiosError(error) && error.response) {
+        const errorMessage = error.response.data.message;
+        if (errorMessage === "2FA setup required") {
           props.settempToken(error.response.data.tempToken);
-          setError(false)
+          setError(false);
         } else {
-          console.log(error.response.data.message);
-          setError(true)
+          console.log(errorMessage);
+          setError(true);
         }
       } else {
         console.log(error);
-        
       }
     }
   }
+
   return (
     <div className="flex flex-col gap-16">
         <div className="flex px-10 flex-col items-start justify-center gap-8 flex-component self-start font-poppins">
