@@ -23,14 +23,20 @@ function App() {
         <Route path='/signup' element={<SignUp/>}/>
         <Route path='/' element={<Layout/>}>
           <Route path='dashboard' element={<DashboardHome/>}/>
+
           <Route path='dashboard/pentests' element={<PentestsList/>}/>
           <Route path='dashboard/pentests/:pentestId/' element={<PentestDetails/>}/>
           <Route path='dashboard/pentests/:pentestId/vulnerabilities' element={<VulnerabilitiesInPentest/>}/>
           <Route path='dashboard/pentests/create' element={<NewPentestsForm/>}/>
+
           <Route path='dashboard/vulnerability-reports/:pentestId/vulnerabilities/:vulnerabilityId' element={<VulnerabilityDetails/>}/>
           <Route path='dashboard/vulnerability-reports/:pentestId' element={<VulnerabilityReports/>}/>
+          <Route path='dashboard/vulnerability-reports/' element={<VulnerabilityReports/>}/>
+
           <Route path='dashboard/client-lists' element={<ClientLists/>}/>
+
           <Route path='dashboard/pentesters-list' element={<PentestersList/>}/>
+
           <Route path='dashboard/settings' element={<Settings/>}/>
         </Route>
       </Routes>
