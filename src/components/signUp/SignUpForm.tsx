@@ -112,7 +112,7 @@ function SignUpForm(props: {
                 name="email"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Point of Contact Email</FormLabel>
+                    <FormLabel>Email</FormLabel>
                     <FormControl>
                       <Input className="w-full" {...field} />
                     </FormControl>

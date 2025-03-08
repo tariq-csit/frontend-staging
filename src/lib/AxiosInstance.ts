@@ -6,7 +6,6 @@ const axiosInstance = axios.create({
 });
 
 
-
 async function refreshToken() {
   try {
     const response = await axios.post(apiRoutes.refreshToken, {
