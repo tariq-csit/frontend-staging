@@ -14,7 +14,7 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axiosInstance from "@/lib/AxiosInstance";
 import { isAxiosError } from "axios";
@@ -49,6 +49,13 @@ function InitialForm(props:{
       password: "",
     },
   });
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
+    script.async = true;
+    document.body.appendChild(script);
+  }, []);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -158,6 +165,7 @@ function InitialForm(props:{
                     </a>
                   </div>
                 </div>
+                <div className="cf-turnstile" data-sitekey="0x4AAAAAABAY4zDtElrDH2g0"></div>
                 <Button className="w-full text-lg py-4" type="submit">
                   Sign in
                 </Button>

@@ -5,21 +5,40 @@ import Image from "@tiptap/extension-image"
 import { useCallback, useRef } from "react"
 import { FontBoldIcon, FontItalicIcon, ListBulletIcon, QuoteIcon, CodeIcon, FileIcon } from "@radix-ui/react-icons"
 import { Toggle } from "@/components/ui/toggle"
-import type React from "react" // Import React
+import type React from "react"
+import { apiRoutes } from "@/lib/routes"
+import axiosInstance from "@/lib/AxiosInstance"
+
+// Function to upload image and return URL
+async function uploadImage(file: File): Promise<{ url: string }> {
+  // TODO: Uncomment this when the backend is ready
+  // const formData = new FormData()
+  // formData.append('file', file)
+  
+  // const response = await axiosInstance.post(apiRoutes.uploadVulnerabilityAttachment, formData)
+
+  // if (response.status !== 200) {
+  //   throw new Error('Failed to upload image')
+  // }
+
+  // return response.data
+
+  return { url: "https://via.placeholder.com/150" }
+}
 
 const Toolbar = ({ editor }: { editor: any }) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0] && editor) {
-      const file = event.target.files[0]
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        if (typeof e.target?.result === "string") {
-          editor.chain().focus().setImage({ src: e.target.result }).run()
-        }
+      try {
+        const file = event.target.files[0]
+        const { url } = await uploadImage(file)
+        const imageName = file.name.replace(/\.[^/.]+$/, "") // Remove file extension
+        editor.chain().focus().insertContent(`![${imageName}](${url})`).run()
+      } catch (error) {
+        console.error('Failed to upload image:', error)
       }
-      reader.readAsDataURL(file)
     }
   }
 
@@ -103,7 +122,7 @@ const Tiptap = (props: {
       }),
       Image.configure({
         inline: true,
-        allowBase64: true,
+        allowBase64: false,
       }),
     ],
     content: props.description,
@@ -118,19 +137,19 @@ const Tiptap = (props: {
   })
 
   const handleDrop = useCallback(
-    (event: React.DragEvent) => {
+    async (event: React.DragEvent) => {
       event.preventDefault()
       event.stopPropagation()
 
       if (event.dataTransfer.files && event.dataTransfer.files[0]) {
-        const file = event.dataTransfer.files[0]
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          if (typeof e.target?.result === "string" && editor) {
-            editor.chain().focus().setImage({ src: e.target.result }).run()
-          }
+        try {
+          const file = event.dataTransfer.files[0]
+          const { url } = await uploadImage(file)
+          const imageName = file.name.replace(/\.[^/.]+$/, "") // Remove file extension
+          editor?.chain().focus().insertContent(`![${imageName}](${url})`).run()
+        } catch (error) {
+          console.error('Failed to upload image:', error)
         }
-        reader.readAsDataURL(file)
       }
     },
     [editor],
@@ -142,17 +161,17 @@ const Tiptap = (props: {
   }, [])
 
   const handlePaste = useCallback(
-    (event: React.ClipboardEvent) => {
+    async (event: React.ClipboardEvent) => {
       if (event.clipboardData && event.clipboardData.files && event.clipboardData.files[0]) {
         event.preventDefault()
-        const file = event.clipboardData.files[0]
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          if (typeof e.target?.result === "string" && editor) {
-            editor.chain().focus().setImage({ src: e.target.result }).run()
-          }
+        try {
+          const file = event.clipboardData.files[0]
+          const { url } = await uploadImage(file)
+          const imageName = 'Pasted image'
+          editor?.chain().focus().insertContent(`![${imageName}](${url})`).run()
+        } catch (error) {
+          console.error('Failed to upload image:', error)
         }
-        reader.readAsDataURL(file)
       }
     },
     [editor],
