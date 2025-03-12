@@ -12,18 +12,20 @@ import axiosInstance from "@/lib/AxiosInstance"
 // Function to upload image and return URL
 async function uploadImage(file: File): Promise<{ url: string }> {
   // TODO: Uncomment this when the backend is ready
-  // const formData = new FormData()
-  // formData.append('file', file)
-  
-  // const response = await axiosInstance.post(apiRoutes.uploadVulnerabilityAttachment, formData)
+  const formData = new FormData()
+  formData.append('attachment', file) // Changed 'file' to 'attachment' as per the request
 
-  // if (response.status !== 200) {
-  //   throw new Error('Failed to upload image')
-  // }
+  const response = await axiosInstance.post(apiRoutes.uploadVulnerabilityAttachment, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    }
+  })
 
-  // return response.data
+  if (response.status !== 200) {
+    throw new Error('Failed to upload image')
+  }
 
-  return { url: "https://via.placeholder.com/150" }
+  return response.data
 }
 
 const Toolbar = ({ editor }: { editor: any }) => {
