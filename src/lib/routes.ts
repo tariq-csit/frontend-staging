@@ -29,7 +29,9 @@ export const apiRoutes = {
     all: `/admin/clients`,
   },
 
-  pentesters: `/admin/users/pentester`,
+  pentesters: {
+    all: `/admin/users/pentester`
+  },
 
   // Upload Routes
   uploadLogo: `/upload/company-logo`,
