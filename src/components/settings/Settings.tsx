@@ -1,98 +1,259 @@
-import { Link } from "react-router-dom";
+"use client"
 
-function Settings() {
-  const userManagementLinks=[
-    {
-      text: 'Authentication settings',
-      link: '/dashboard/settings'
-    },
-    {
-      text: 'Client management settings',
-      link: '/dashboard/settings'
-    },
-    {
-      text: 'Pentester management settings',
-      link: '/dashboard/settings'
-    },
-    {
-      text: 'User activities and logs',
-      link: '/dashboard/settings'
-    },
-  ];
+import { useState } from "react"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import * as z from "zod"
 
-  const notificationsLink= [
-    {
-      text: 'Vulnerability alerts',
-      link: '/dashboard/settings'
-    },
-    {
-      text: 'Pentests completion notifications',
-      link: '/dashboard/settings'
-    },
-  ]
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Switch } from "@/components/ui/switch"
 
-  const DataPrivacyLinks=[
-    {
-      text: 'Data retention and deletion',
-      link: '/dashboard/settings'
+// Form schemas
+const nameFormSchema = z.object({
+  currentName: z.string().min(1, { message: "Current name is required" }),
+  newName: z.string().min(1, { message: "New name is required" }),
+})
+
+const emailFormSchema = z.object({
+  currentEmail: z.string().email({ message: "Valid email is required" }),
+  newEmail: z.string().email({ message: "Valid email is required" }),
+})
+
+const passwordFormSchema = z
+  .object({
+    currentPassword: z.string().min(1, { message: "Current password is required" }),
+    newPassword: z.string().min(8, { message: "Password must be at least 8 characters" }),
+    confirmPassword: z.string().min(8, { message: "Password must be at least 8 characters" }),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  })
+
+export default function SettingsPage() {
+  const [vulnerabilityAlerts, setVulnerabilityAlerts] = useState(true)
+
+  // Name form
+  const nameForm = useForm<z.infer<typeof nameFormSchema>>({
+    resolver: zodResolver(nameFormSchema),
+    defaultValues: {
+      currentName: "",
+      newName: "",
     },
-    {
-      text: 'Privacy policy management',
-      link: '/dashboard/settings'
+  })
+
+  // Email form
+  const emailForm = useForm<z.infer<typeof emailFormSchema>>({
+    resolver: zodResolver(emailFormSchema),
+    defaultValues: {
+      currentEmail: "",
+      newEmail: "",
     },
-    {
-      text: 'Compliance and legal requests',
-      link: '/dashboard/settings'
+  })
+
+  // Password form
+  const passwordForm = useForm<z.infer<typeof passwordFormSchema>>({
+    resolver: zodResolver(passwordFormSchema),
+    defaultValues: {
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
     },
-    {
-      text: 'Encryption and data security',
-      link: '/dashboard/settings'
-    },
-  ];
-  const sections=[
-    {
-      settingHeading: true,
-      heading: 'User Management',
-      links: userManagementLinks
-    }, 
-    {
-      heading: 'User Management',
-      links: notificationsLink
-    }, 
-    {
-      heading: 'User Management',
-      links: DataPrivacyLinks
-    }, 
-  ]
+  })
+
+  // Form submission handlers
+  const onNameSubmit = (data: z.infer<typeof nameFormSchema>) => {
+    console.log("Name update:", data)
+    // Handle name update logic here
+    nameForm.reset()
+  }
+
+  const onEmailSubmit = (data: z.infer<typeof emailFormSchema>) => {
+    console.log("Email update:", data)
+    // Handle email update logic here
+    emailForm.reset()
+  }
+
+  const onPasswordSubmit = (data: z.infer<typeof passwordFormSchema>) => {
+    console.log("Password update:", data)
+    // Handle password update logic here
+    passwordForm.reset()
+  }
+
   return (
-    <div className='flex flex-col px-5 sm:px-10 items-start gap-6 shrink-0 self-stretch'>
-      {
-        sections.map((section, i)=>{
-          return(
-            <div key={i} className='flex p-6 flex-col items-start gap-3 self-stretch rounded-settingsSection bg-white shadow-6'>
-        
-        <div className="flex flex-col items-start gap-6 self-stretch">
-          {section.settingHeading && <h4 className="self-stretch font-poppins text-xl sm:text-2xl font-medium">Settings</h4>}
-          <h5 className="self-stretch font-poppins sm:text-xl font-medium">{section.heading}</h5>
-        </div>
+    <div className="mx-4 py-8 px-4 bg-white rounded-lg shadow-md">
+      <h1 className="text-2xl font-bold mb-6">Settings</h1>
 
-        {
-          section.links.map((link, i)=>{
-            return(
-              <Link key={i} className="flex p-3 justify-between items-center self-stretch border-b border-[#77887733]/20" to={link.link}>
-                <span className="text-xs sm:text-base font-poppins">{link.text}</span>
-                <img src="/arrow.svg" />
-              </Link>
-            )
-          })
-        }
+      {/* User Management Section */}
+      <div className="mb-8">
+        <h2 className="text-xl font-bold mb-4">User Management</h2>
+        <Card className="shadow-sm">
+          <CardContent className="p-0">
+            <Accordion type="single" collapsible className="w-full">
+              {/* Change Name */}
+              <AccordionItem value="name" className="border-b">
+                <AccordionTrigger className="px-4 py-4 hover:no-underline">
+                  <span className="text-base font-medium">Change Name</span>
+                </AccordionTrigger>
+                <AccordionContent className="px-4 pb-4">
+                  <Form {...nameForm}>
+                    <form onSubmit={nameForm.handleSubmit(onNameSubmit)} className="space-y-4 max-w-md">
+                      <FormField
+                        control={nameForm.control}
+                        name="currentName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Enter Current Name</FormLabel>
+                            <FormControl>
+                              <Input {...field} className="w-full" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={nameForm.control}
+                        name="newName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Enter New Name</FormLabel>
+                            <FormControl>
+                              <Input {...field} className="w-full" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button type="submit" className="w-full bg-indigo-700 hover:bg-indigo-800">
+                        Update
+                      </Button>
+                    </form>
+                  </Form>
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Change Email */}
+              <AccordionItem value="email" className="border-b">
+                <AccordionTrigger className="px-4 py-4 hover:no-underline">
+                  <span className="text-base font-medium">Change Email</span>
+                </AccordionTrigger>
+                <AccordionContent className="px-4 pb-4">
+                  <Form {...emailForm}>
+                    <form onSubmit={emailForm.handleSubmit(onEmailSubmit)} className="space-y-4 max-w-md">
+                      <FormField
+                        control={emailForm.control}
+                        name="currentEmail"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Enter Current Email</FormLabel>
+                            <FormControl>
+                              <Input {...field} type="email" className="w-full" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={emailForm.control}
+                        name="newEmail"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Enter New Email</FormLabel>
+                            <FormControl>
+                              <Input {...field} type="email" className="w-full" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button type="submit" className="w-full bg-indigo-700 hover:bg-indigo-800">
+                        Update
+                      </Button>
+                    </form>
+                  </Form>
+                </AccordionContent>
+              </AccordionItem>
+
+              {/* Change Password */}
+              <AccordionItem value="password" className="border-b-0">
+                <AccordionTrigger className="px-4 py-4 hover:no-underline">
+                  <span className="text-base font-medium">Change Password</span>
+                </AccordionTrigger>
+                <AccordionContent className="px-4 pb-4">
+                  <Form {...passwordForm}>
+                    <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4 max-w-md">
+                      <FormField
+                        control={passwordForm.control}
+                        name="currentPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Enter Current Password</FormLabel>
+                            <FormControl>
+                              <Input {...field} type="password" className="w-full" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={passwordForm.control}
+                        name="newPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Enter New Password</FormLabel>
+                            <FormControl>
+                              <Input {...field} type="password" className="w-full" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={passwordForm.control}
+                        name="confirmPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Re-enter New Password</FormLabel>
+                            <FormControl>
+                              <Input {...field} type="password" className="w-full" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <Button type="submit" className="w-full bg-indigo-700 hover:bg-indigo-800">
+                        Update
+                      </Button>
+                    </form>
+                  </Form>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </CardContent>
+        </Card>
       </div>
-          )
-        })
-      }
-            
+
+      {/* Notification Preferences Section */}
+      <div>
+        <h2 className="text-xl font-bold mb-4">Notification Preferences</h2>
+        <Card className="shadow-sm">
+          <CardContent className="pb-0">
+            <div className="flex items-center justify-between py-4">
+              <span className="text-base font-medium">Vulnerability alerts</span>
+              <Switch
+                checked={vulnerabilityAlerts}
+                onCheckedChange={setVulnerabilityAlerts}
+                className="data-[state=checked]:bg-primary"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
 
-export default Settings

@@ -25,12 +25,12 @@ export default {
   			statusTextOrange: '#92400E',
   			statusSilver: '#E5E7EB',
   			statusTextSilver: '#6B7280',
-				priorityRed: "rgba(254, 202, 202, 1)",
-				priorityTextRed: "#991B1B",
-				priorityBlue: "rgba(59, 130, 246, 0.2)",
-				priorityTextBlue: "#3B82F6",
+  			priorityRed: 'rgba(254, 202, 202, 1)',
+  			priorityTextRed: '#991B1B',
+  			priorityBlue: 'rgba(59, 130, 246, 0.2)',
+  			priorityTextBlue: '#3B82F6',
   			inputBorder: '#787486',
-				previewText: '#787486',
+  			previewText: '#787486',
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
@@ -73,66 +73,43 @@ export default {
   			reportItem: '1rem',
   			activity: '0.5rem',
   			input: '0.375rem',
-				settingsSection: '0.5rem',
+  			settingsSection: '0.5rem',
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
   		},
-  		// padding: {
-  		// 	nav: '0.75rem 1rem',// px-4 py-3
-  		// 	component: '1.5rem',// p-6
-  		// 	chart: '1.5rem 0.75rem',// py-6 px-3
-  		// 	listItem: '0.625rem',// p-2.5
-  		// 	form: '2rem',// p-8
-  		// 	formInput: '0rem 0.9375rem',
-  		// 	reportsComponent: '1.25rem',
-  		// 	reoprtItem: '1.25rem',
-  		// 	settingSection: '3.75rem',
-  		// 	input: '0.9375rem',
-			// 	formBtn: '0.5rem 1rem'
-  		// },
-  		// height: {
-  		// 	icon: '1.25rem',
-  		// 	iconContainer: '3.75rem',
-  		// 	activity: '6rem',
-  		// 	tableVarients: '3.125rem',
-  		// 	team: '2.1875rem',
-  		// 	input: '2.625rem',
-  		// 	textArea: '8.75rem',
-			// 	attachmentsField: '10.4375rem'
-  		// },
-  		// gap: {
-  		// 	nav: '0.625rem',
-  		// 	component: '1.5rem',
-  		// 	listItem: '0.625rem',
-  		// 	form: '0.625rem',
-  		// 	reoprtItem: '2rem',
-  		// 	settingSection: '0.75rem',
-  		// 	teamIcons: '0.9375rem'
-  		// },
   		boxShadow: {
   			component: '0px 5px 10px 0px rgba(0, 0, 0, 0.08)',
-				otpSlot: '0px 4px 4px 0px rgba(0, 0, 0, 0.25);'
+  			otpSlot: '0px 4px 4px 0px rgba(0, 0, 0, 0.25);'
   		},
-  		// width: {
-  		// 	form: '64.5625rem',
-  		// 	iconContainer: '',
-  		// 	activityIcon: '',
-  		// 	tableVarients: '',
-  		// 	team: '',
-  		// 	formField: ''
-  		// },
-  		// fontSize: {
-  		// 	'2xs': '0.65rem',
-  		// 	'3xs': '0.5rem',
-  		// 	'4xs': '0.425rem'
-  		// },
   		flex: {
   			component: '1 0% 0%'
   		},
   		fontFamily: {
   			poppins: 'Poppins',
-				inter: 'Inter'
+  			inter: 'Inter'
+  		},
+  		keyframes: {
+  			'accordion-down': {
+  				from: {
+  					height: '0'
+  				},
+  				to: {
+  					height: 'var(--radix-accordion-content-height)'
+  				}
+  			},
+  			'accordion-up': {
+  				from: {
+  					height: 'var(--radix-accordion-content-height)'
+  				},
+  				to: {
+  					height: '0'
+  				}
+  			}
+  		},
+  		animation: {
+  			'accordion-down': 'accordion-down 0.2s ease-out',
+  			'accordion-up': 'accordion-up 0.2s ease-out'
   		}
   	}
   },
