@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, Form } from "@/components/ui/form";
 import { apiRoutes } from "@/lib/routes";
 import axiosInstance from "@/lib/AxiosInstance";
+import { PlusIcon } from "lucide-react";
 
 const formSchema = z.object({
   companyName: z.string().min(1),
@@ -50,7 +51,10 @@ export default function SendCode() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="default">Send Signup Code</Button>
+        <Button variant="default" className="gap-2">
+          <PlusIcon />
+          <span>Add Client</span>
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
         <DialogHeader className="px-6 pt-6 pb-4 border-b">
