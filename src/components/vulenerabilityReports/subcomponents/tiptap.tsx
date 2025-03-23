@@ -1,9 +1,9 @@
-import { useEditor, EditorContent } from "@tiptap/react"
+import { useEditor, EditorContent, Extension } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Placeholder from "@tiptap/extension-placeholder"
 import Image from "@tiptap/extension-image"
-import { useCallback, useRef } from "react"
-import { FontBoldIcon, FontItalicIcon, ListBulletIcon, QuoteIcon, CodeIcon, FileIcon } from "@radix-ui/react-icons"
+import { useCallback, useRef, useState } from "react"
+import { FontBoldIcon, FontItalicIcon, ListBulletIcon, QuoteIcon, CodeIcon, FileIcon, EyeOpenIcon } from "@radix-ui/react-icons"
 import { Toggle } from "@/components/ui/toggle"
 import type React from "react"
 import { apiRoutes } from "@/lib/routes"
@@ -11,9 +11,8 @@ import axiosInstance from "@/lib/AxiosInstance"
 
 // Function to upload image and return URL
 async function uploadImage(file: File): Promise<{ url: string }> {
-  // TODO: Uncomment this when the backend is ready
   const formData = new FormData()
-  formData.append('attachment', file) // Changed 'file' to 'attachment' as per the request
+  formData.append('attachment', file)
 
   const response = await axiosInstance.post(apiRoutes.uploadVulnerabilityAttachment, formData, {
     headers: {
@@ -28,7 +27,32 @@ async function uploadImage(file: File): Promise<{ url: string }> {
   return response.data
 }
 
-const Toolbar = ({ editor }: { editor: any }) => {
+// Custom extension to handle markdown preview
+const MarkdownImagePreview = Extension.create({
+  name: 'markdownImagePreview',
+
+  addGlobalAttributes() {
+    return [
+      {
+        types: ['image'],
+        attributes: {
+          markdown: {
+            default: null,
+            renderHTML: (attributes) => ({
+              'data-markdown': attributes.markdown,
+            }),
+          },
+        },
+      },
+    ]
+  },
+})
+
+const Toolbar = ({ editor, previewMode, onTogglePreview }: { 
+  editor: any, 
+  previewMode: boolean,
+  onTogglePreview: () => void 
+}) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,7 +61,16 @@ const Toolbar = ({ editor }: { editor: any }) => {
         const file = event.target.files[0]
         const { url } = await uploadImage(file)
         const imageName = file.name.replace(/\.[^/.]+$/, "") // Remove file extension
-        editor.chain().focus().insertContent(`![${imageName}](${url})`).run()
+        const markdownText = `![${imageName}](${url})`
+        
+        editor.chain().focus().insertContent({
+          type: 'image',
+          attrs: {
+            src: url,
+            alt: imageName,
+            markdown: markdownText,
+          },
+        }).run()
       } catch (error) {
         console.error('Failed to upload image:', error)
       }
@@ -90,6 +123,13 @@ const Toolbar = ({ editor }: { editor: any }) => {
       >
         <ListBulletIcon className="h-4 w-4" />
       </Toggle>
+      <Toggle
+        onPressedChange={onTogglePreview}
+        pressed={previewMode}
+        aria-label="Toggle image preview"
+      >
+        <EyeOpenIcon className="h-4 w-4" />
+      </Toggle>
       <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" style={{ display: "none" }} />
     </div>
   )
@@ -99,6 +139,8 @@ const Tiptap = (props: {
   description: string
   onChange: (description: string) => void
 }) => {
+  const [previewMode, setPreviewMode] = useState(true)
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -125,7 +167,11 @@ const Tiptap = (props: {
       Image.configure({
         inline: true,
         allowBase64: false,
+        HTMLAttributes: {
+          class: 'max-w-full h-auto',
+        },
       }),
+      MarkdownImagePreview,
     ],
     content: props.description,
     editorProps: {
@@ -138,6 +184,34 @@ const Tiptap = (props: {
     },
   })
 
+  // Function to toggle preview mode
+  const togglePreview = useCallback(() => {
+    setPreviewMode(!previewMode)
+    if (editor) {
+      const images = editor.view.dom.querySelectorAll('img')
+      images.forEach((img: HTMLImageElement) => {
+        const parent = img.parentElement
+        if (parent) {
+          const markdown = img.getAttribute('data-markdown')
+          if (!previewMode) {
+            img.style.display = 'block'
+            if (parent.querySelector('.markdown-text')) {
+              parent.removeChild(parent.querySelector('.markdown-text')!)
+            }
+          } else {
+            img.style.display = 'none'
+            const markdownSpan = document.createElement('span')
+            markdownSpan.className = 'markdown-text'
+            markdownSpan.style.fontFamily = 'monospace'
+            markdownSpan.style.color = '#666'
+            markdownSpan.textContent = markdown || `![${img.alt}](${img.src})`
+            parent.insertBefore(markdownSpan, img)
+          }
+        }
+      })
+    }
+  }, [previewMode, editor])
+
   const handleDrop = useCallback(
     async (event: React.DragEvent) => {
       event.preventDefault()
@@ -147,8 +221,18 @@ const Tiptap = (props: {
         try {
           const file = event.dataTransfer.files[0]
           const { url } = await uploadImage(file)
-          const imageName = file.name.replace(/\.[^/.]+$/, "") // Remove file extension
-          editor?.chain().focus().insertContent(`![${imageName}](${url})`).run()
+          const imageName = file.name.replace(/\.[^/.]+$/, "")
+          const markdownText = `![${imageName}](${url})`
+          
+          editor?.chain().focus().insertContent({
+            type: 'image',
+            attrs: {
+              src: url,
+              alt: imageName,
+              markdown: markdownText,
+              'data-markdown': markdownText,
+            },
+          }).run()
         } catch (error) {
           console.error('Failed to upload image:', error)
         }
@@ -170,7 +254,17 @@ const Tiptap = (props: {
           const file = event.clipboardData.files[0]
           const { url } = await uploadImage(file)
           const imageName = 'Pasted image'
-          editor?.chain().focus().insertContent(`![${imageName}](${url})`).run()
+          const markdownText = `![${imageName}](${url})`
+          
+          editor?.chain().focus().insertContent({
+            type: 'image',
+            attrs: {
+              src: url,
+              alt: imageName,
+              markdown: markdownText,
+              'data-markdown': markdownText,
+            },
+          }).run()
         } catch (error) {
           console.error('Failed to upload image:', error)
         }
@@ -186,8 +280,22 @@ const Tiptap = (props: {
       onDragOver={handleDragOver}
       onPaste={handlePaste}
     >
-      <Toolbar editor={editor} />
-      <EditorContent editor={editor} />
+      <Toolbar editor={editor} previewMode={previewMode} onTogglePreview={togglePreview} />
+      <div className="relative">
+        <EditorContent editor={editor} />
+        <style>{`
+          .ProseMirror img {
+            display: ${previewMode ? 'block' : 'none'};
+            max-width: 100%;
+            height: auto;
+          }
+          .markdown-text {
+            display: ${previewMode ? 'none' : 'block'};
+            white-space: pre-wrap;
+            padding: 4px 0;
+          }
+        `}</style>
+      </div>
       <div className="px-4 py-2">
         <p className="text-sm">Embed images by dragging & dropping, selecting, or pasting them.</p>
       </div>

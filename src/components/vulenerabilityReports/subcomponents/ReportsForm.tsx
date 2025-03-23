@@ -81,7 +81,7 @@ async function uploadFiles(files: FileList): Promise<Array<{url: string, name: s
   });
 
   try {
-    const response = await axiosInstance.post('/upload/attachments', formData, {
+    const response = await axiosInstance.post(apiRoutes.uploadVulnerabilityAttachment, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -132,7 +132,7 @@ function ReportsForm(props: { setForm: Function, pentestId: string }) {
 
       // Send the formatted data to the API
       return axiosInstance.post(
-        apiRoutes.createVulnerabilityReport(props.pentestId), 
+        apiRoutes.pentests.vulnerabilities.createReport(props.pentestId), 
         formattedData
       );
     },
@@ -140,7 +140,7 @@ function ReportsForm(props: { setForm: Function, pentestId: string }) {
       toast({
         title: "Vulnerability report created successfully",
       });
-      props.setForm(false); // Close the form on success
+      // props.setForm(false); // Close the form on success
     },
     onError: (error) => {
       console.error('Error creating vulnerability report:', error);
@@ -203,8 +203,8 @@ function ReportsForm(props: { setForm: Function, pentestId: string }) {
     mutation.mutate(values);
     
     // Set preview data
-    setData({ ...values, affectedHost: hosts });
-    setPreview(true);
+    // setData({ ...values, affectedHost: hosts });
+    // setPreview(true);
   }
 
   if (!preview) {
@@ -222,7 +222,7 @@ function ReportsForm(props: { setForm: Function, pentestId: string }) {
                 </h2>
                 <p>
                   Provide detailed information to ensure easy validation and
-                  review. Include affected hosts, severity, CVSS metrics, steps to
+                  review. Include affected hosts,severity, CVSS metrics, steps to
                   reproduce, and relevant attachments for a thorough report. All
                   fields are mandatory unless marked as optional.{" "}
                 </p>
