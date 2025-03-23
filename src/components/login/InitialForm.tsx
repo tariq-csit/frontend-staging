@@ -124,12 +124,12 @@ function InitialForm(props:{
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                  <FormLabel>Enter your Password</FormLabel>
+                        <FormLabel>Enter your Password</FormLabel>
                         <FormControl>
                           <div className="relative">
                             <Input
                               type={showPassword ? "text" : "password"}
-                              className="pr-10"
+                              className="pr-10 w-full"
                               {...field}
                             />
                             <Button

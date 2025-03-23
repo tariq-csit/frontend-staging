@@ -32,6 +32,13 @@ function Sidebar(props: {
       link: "dashboard/client-lists",
       text: "Client Lists",
       icon: "/state=clients.svg",
+      subItems: [
+        {
+          link: "dashboard/client-lists/users",
+          icon: "/state=clients.svg",
+          text: "Client Users"
+        }
+      ]
     },
     {
       link: "dashboard/pentesters-list",
@@ -74,6 +81,7 @@ function Sidebar(props: {
                 icon={nav.icon}
                 collapsed={props.collapsed}
                 setCollapsed={props.setCollapsed}
+                subItems={nav.subItems}
               />
             );
           })}

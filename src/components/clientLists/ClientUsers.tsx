@@ -1,54 +1,27 @@
-import { ChevronRight, MoreVertical, Plus, Shield, Users } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import axiosInstance from "@/lib/AxiosInstance"
-import { useQuery } from "@tanstack/react-query"
-import { apiRoutes } from "@/lib/routes"
-import SendCode from "./SendCode"
-import AddClientDialog from "./AddClientDialog"
+import { ChevronRight, MoreVertical } from "lucide-react"
+import AddClientUserDialog from "./AddClientUserDialog";
 
-export default function ClientDashboard() {
-  const {data: clients} = useQuery({
-    queryKey: ["clients"],
-    queryFn: () => axiosInstance.get(apiRoutes.clients.all).then((res) => res.data)
-  })
-
-  console.log(clients)
-
+export default function ClientUsers() {
   return (
-    <div className="bg-gray-100 min-h-screen p-4">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <StatCard icon={<Users className="h-6 w-6 text-indigo-600" />} value="200+" label="Clients" />
-        <StatCard icon={<Shield className="h-6 w-6 text-indigo-600" />} value="30" label="Requested Pentests" />
-        <StatCard icon={<Shield className="h-6 w-6 text-indigo-600" />} value="90+" label="Ongoing Pentests" />
-        <StatCard icon={<Shield className="h-6 w-6 text-indigo-600" />} value="12+" label="Scheduled Pentests" />
-      </div>
+    <div className="p-4">
 
-      {/* Client List Section */}
+      {/* Client Users Section */}
       <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-xl font-semibold mb-4">Client List</h2>
-
-        {/* Tabs */}
-        <div className="border-b mb-4">
-          <div className="flex">
-            <TabButton active={true} label="All Clients" count="12" />
-            <TabButton label="Signup Codes Sent" count="24" />
-          </div>
-        </div>
+        <h2 className="text-xl font-semibold mb-4">Client User List</h2>
 
         {/* Search and Actions */}
         <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
           <div className="w-full md:w-1/2">
-            <Input placeholder="Search for Client" className="w-full" />
+            <Input placeholder="Search for Client User" className="w-full" />
           </div>
           <div className="flex gap-2">
             <Button variant="outline" className="flex items-center gap-2">
               <FilterIcon />
               Filter
             </Button>
-            <SendCode />
-            <AddClientDialog />
+            <AddClientUserDialog />
           </div>
         </div>
 
@@ -57,17 +30,16 @@ export default function ClientDashboard() {
           <table className="w-full">
             <thead>
               <tr className="text-sm text-gray-500">
-                <th className="text-left py-3 px-4 font-normal">Client</th>
+                <th className="text-left py-3 px-4 font-normal">User</th>
                 <th className="text-left py-3 px-4 font-normal">Point of Contact</th>
-                <th className="text-left py-3 px-4 font-normal">Client Users</th>
-                <th className="text-left py-3 px-4 font-normal">Active Pentests</th>
-                <th className="text-left py-3 px-4 font-normal">Requested Pentests</th>
+                <th className="text-left py-3 px-4 font-normal">Client</th>
+                <th className="text-left py-3 px-4 font-normal">2FA Status</th>
                 <th className="text-left py-3 px-4 font-normal"></th>
               </tr>
             </thead>
             <tbody>
               {[1, 2, 3, 4, 5].map((item) => (
-                <ClientRow key={item} />
+                <ClientUserRow key={item} />
               ))}
             </tbody>
           </table>
@@ -134,25 +106,35 @@ function FilterIcon() {
   )
 }
 
-function ClientRow() {
+function ClientUserRow() {
   return (
     <tr className="border-t hover:bg-gray-50">
       <td className="py-4 px-4">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
-            <VWLogo />
+            <img src="https://ui-avatars.com/api/?name=Hammad+Mahmood" alt="User avatar" className="w-full h-full object-cover" />
           </div>
-          <span className="font-medium">Wols Wagon</span>
+          <span className="font-medium">Hammad Mahmood</span>
         </div>
       </td>
       <td className="py-4 px-4 text-gray-600">hammad65@gmail.com</td>
       <td className="py-4 px-4">
-        <span className="text-blue-600">10</span>
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
+            <VWLogo />
+          </div>
+          <span>Wols Wagon</span>
+        </div>
       </td>
       <td className="py-4 px-4">
-        <span className="text-blue-600">15</span>
+        <span className={`px-3 py-1 rounded-full text-sm ${
+          Math.random() > 0.5 
+            ? "bg-[#DCFCE7] text-[#166534]" 
+            : "bg-[#F3F4F6] text-[#6B7280]"
+        }`}>
+          {Math.random() > 0.5 ? "Active" : "In-Active"}
+        </span>
       </td>
-      <td className="py-4 px-4">-</td>
       <td className="py-4 px-4 text-right">
         <button className="p-1 rounded-full hover:bg-gray-100">
           <MoreVertical className="h-5 w-5 text-gray-400" />
@@ -170,4 +152,3 @@ function VWLogo() {
     </svg>
   )
 }
-

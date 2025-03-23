@@ -13,6 +13,7 @@ import PentestDetails from './components/pentests/PentestDetails';
 import VulnerabilitiesInPentest from './components/vulenerabilityReports/VulnerabilityDetails';
 import VulnerabilityReports from './components/vulenerabilityReports/VulnerabilityReports';
 import NewPentestsForm from './components/pentests/newPentestsForm/NewPentestsForm';
+import ClientUsers from './components/clientLists/ClientUsers';
 
 
 function App() {
@@ -34,6 +35,7 @@ function App() {
           <Route path='dashboard/vulnerability-reports/' element={<VulnerabilityReports/>}/>
 
           <Route path='dashboard/client-lists' element={<ClientLists/>}/>
+          <Route path='dashboard/client-lists/users' element={<ClientUsers/>}/>
 
           <Route path='dashboard/pentesters-list' element={<PentestersList/>}/>
 
