@@ -1,4 +1,4 @@
-import { ChevronRight, MoreVertical, Plus, Shield, Users } from "lucide-react"
+import { ChevronRight, MoreVertical, Shield, Users } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import axiosInstance from "@/lib/AxiosInstance"
@@ -16,7 +16,7 @@ export default function ClientDashboard() {
   console.log(clients)
 
   return (
-    <div className="bg-gray-100 min-h-screen p-4">
+    <div className="px-4">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <StatCard icon={<Users className="h-6 w-6 text-indigo-600" />} value="200+" label="Clients" />

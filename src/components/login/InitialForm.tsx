@@ -50,11 +50,23 @@ function InitialForm(props:{
     },
   });
 
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
     script.async = true;
     document.body.appendChild(script);
+
+    const interval = setInterval(() => {
+      const token = (window as any).turnstile?.getResponse();
+      if (token) {
+        setTurnstileToken(token);
+        clearInterval(interval);
+      }
+    }, 500);
+
+    return () => clearInterval(interval);
   }, []);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -62,6 +74,7 @@ function InitialForm(props:{
       const response = await axiosInstance.post(apiRoutes.login, {
         email: values.email,
         password: values.password,
+        "cf-turnstile-response": turnstileToken,
       });
       props.setvarificationToken(response.data.token);
       props.setEmail(values.email);
