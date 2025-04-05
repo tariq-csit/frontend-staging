@@ -9,6 +9,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage, Form } from "
 import { apiRoutes } from "@/lib/routes";
 import axiosInstance from "@/lib/AxiosInstance";
 import { PlusIcon } from "lucide-react";
+import { useMutation } from "@tanstack/react-query";
 
 const formSchema = z.object({
   companyName: z.string().min(1),
@@ -16,7 +17,7 @@ const formSchema = z.object({
   uploadLogo: z.string().min(1),
 })
 
-export default function SendCode() {
+export default function SendCode({refetch}: {refetch: () => void}) {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -27,11 +28,25 @@ export default function SendCode() {
     },
   })
 
+  const {mutate: addClient} = useMutation({
+    mutationFn: async (values: z.infer<typeof formSchema>) => {
+      const res = await axiosInstance.post(apiRoutes.clients.all, {
+        "name": values.companyName,
+        "poc_email": values.email,
+        "logoUrl": values.uploadLogo,
+      });
+      return res.data;
+    },
+    onSuccess: () => {
+      // refetch the clients list
+      refetch();
+    }
+  })
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const formData = new FormData();
-    formData.append("logo", values.uploadLogo[0]);
     try {
-      // First, upload the logo
+      const formData = new FormData();
+      formData.append("logo", values.uploadLogo[0]);
       const logoResponse = await axiosInstance.post(apiRoutes.uploadLogo, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -39,13 +54,12 @@ export default function SendCode() {
       });
 
       form.setValue("uploadLogo", logoResponse.data.url);
+      
+      addClient(values);
 
     } catch (error) {
       console.error('Error during logo upload or user signup:', error);
     }
-
-    // TODO: add the logic to add the pentester when you have the api
-    console.log(values)
   }
 
   return (
@@ -58,7 +72,7 @@ export default function SendCode() {
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
         <DialogHeader className="px-6 pt-6 pb-4 border-b">
-          <DialogTitle className="text-xl font-bold">Send Signup Code</DialogTitle>
+          <DialogTitle className="text-xl font-bold">Add Client</DialogTitle>
         </DialogHeader>
 
         <Form {...form}>

@@ -8,7 +8,7 @@ import SendCode from "./SendCode"
 import AddClientDialog from "./AddClientDialog"
 
 export default function ClientDashboard() {
-  const {data: clients} = useQuery({
+  const {data: clients, refetch} = useQuery({
     queryKey: ["clients"],
     queryFn: () => axiosInstance.get(apiRoutes.clients.all).then((res) => res.data)
   })
@@ -48,7 +48,7 @@ export default function ClientDashboard() {
               Filter
             </Button>
             <SendCode />
-            <AddClientDialog />
+            <AddClientDialog refetch={refetch}/>
           </div>
         </div>
 

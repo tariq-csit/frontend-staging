@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogHeader, DialogTitle, DialogContent, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -6,12 +5,17 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, Form } from "@/components/ui/form";
+import { useMutation } from "@tanstack/react-query";
+import axiosInstance from "@/lib/AxiosInstance";
+import { apiRoutes } from "@/lib/routes";
+import { useState } from "react";
 
 const formSchema = z.object({
     email: z.string().email(),
 })
 
 export default function SendCode() {
+    const [open, setOpen] = useState(true);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -20,13 +24,28 @@ export default function SendCode() {
         },
     })
 
+    const { mutate: sendSignupCode } = useMutation({
+        mutationFn: async (values: z.infer<typeof formSchema>) => {
+            const response = await axiosInstance.post(apiRoutes.clients.sendSignupCode, {
+                email: values.email
+            });
+            return response.data;
+        },
+        onSuccess: () => {
+            form.reset();
+            setOpen(false);
+        },
+        onError: (error) => {
+            console.error('Error sending signup code:', error);
+        }
+    });
+
     function onSubmit(values: z.infer<typeof formSchema>) {
-        // TODO: add the logic to add the pentester when you have the api
-        console.log(values)
+        sendSignupCode(values);
     }
 
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 <Button variant="outline">Send Signup Code</Button>
             </DialogTrigger>

@@ -27,6 +27,8 @@ export const apiRoutes = {
 
   clients: {
     all: `/admin/clients`,
+    sendSignupCode: `/api/admin/signup-code`,
+    onboardUser: `/api/admin/users/onboard-client`,
   },
 
   pentesters: {

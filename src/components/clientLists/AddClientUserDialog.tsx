@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogHeader, DialogTitle, DialogContent, DialogTrigger, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -7,9 +6,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, Form } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRoutes } from "@/lib/routes";
 import axiosInstance from "@/lib/AxiosInstance";
+import { useState } from "react";
 
 const formSchema = z.object({
   username: z.string().min(1),
@@ -17,7 +17,8 @@ const formSchema = z.object({
   client: z.string().min(1),
 })
 
-export default function SendCode() {
+export default function AddClientUserDialog() {
+  const [open, setOpen] = useState(true);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -33,13 +34,32 @@ export default function SendCode() {
     queryFn: () => axiosInstance.get(apiRoutes.clients.all),
   })
 
+  const { mutate: onboardClientUser } = useMutation({
+    mutationFn: async (values: z.infer<typeof formSchema>) => {
+      const response = await axiosInstance.post(apiRoutes.clients.onboardUser, {
+        name: values.username,
+        email: values.email,
+        password: "password", // Default password that user can change later
+        profilePicture: "", // Can be updated by user later
+        clientId: values.client,
+      });
+      return response.data;
+    },
+    onSuccess: () => {
+      form.reset();
+      setOpen(false);
+    },
+    onError: (error) => {
+      console.error('Error onboarding client user:', error);
+    }
+  });
+
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // TODO: add the logic to add the pentester when you have the api
-    console.log(values)
+    onboardClientUser(values);
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="default">Add Client User</Button>
       </DialogTrigger>
