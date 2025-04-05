@@ -15,7 +15,7 @@ const formSchema = z.object({
 })
 
 export default function SendCode() {
-    const [open, setOpen] = useState(true);
+    const [open, setOpen] = useState(false);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
