@@ -70,3 +70,18 @@ export interface Pentest {
   integrations: any[],
 }
 
+export interface Pentest {
+  _id: string;
+  name: string;
+  type: string;
+  status: string;
+  startDate: string;
+  endDate: string;
+  service: string;
+  decision: string;
+  clients: string[];
+  vulnerabilityCount: number;
+  hasReport: boolean;
+  hasRetestReport: boolean;
+  hasJiraIntegration: boolean;
+}

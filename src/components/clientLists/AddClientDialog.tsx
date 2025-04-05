@@ -10,6 +10,7 @@ import { apiRoutes } from "@/lib/routes";
 import axiosInstance from "@/lib/AxiosInstance";
 import { PlusIcon } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
+import { useState } from "react";
 
 const formSchema = z.object({
   companyName: z.string().min(1),
@@ -17,7 +18,8 @@ const formSchema = z.object({
   uploadLogo: z.string().min(1),
 })
 
-export default function SendCode({refetch}: {refetch: () => void}) {
+export default function AddClientDialog({refetch}: {refetch: () => void}) {
+  const [open, setOpen] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -40,6 +42,8 @@ export default function SendCode({refetch}: {refetch: () => void}) {
     onSuccess: () => {
       // refetch the clients list
       refetch();
+      form.reset();
+      setOpen(false);
     }
   })
 
@@ -63,7 +67,7 @@ export default function SendCode({refetch}: {refetch: () => void}) {
   }
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="default" className="gap-2">
           <PlusIcon />

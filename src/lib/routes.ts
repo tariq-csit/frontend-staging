@@ -32,7 +32,8 @@ export const apiRoutes = {
   },
 
   pentesters: {
-    all: `/admin/users/pentester`
+    all: `/admin/users/pentester`,
+    onboardUser: `/api/admin/users/onboard-pentester`,
   },
 
   // Upload Routes
