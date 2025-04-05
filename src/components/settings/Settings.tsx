@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
@@ -11,6 +12,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
+import axiosInstance from "@/lib/AxiosInstance"
+import { apiRoutes } from "@/lib/routes"
 
 // Form schemas
 const nameFormSchema = z.object({
@@ -36,6 +39,14 @@ const passwordFormSchema = z
 
 export default function SettingsPage() {
   const [vulnerabilityAlerts, setVulnerabilityAlerts] = useState(true)
+
+  const {data: userData} = useQuery({
+    queryKey: ['user'],
+    queryFn: () => axiosInstance.get(apiRoutes.user).then((res) => res.data),
+  })
+
+  const queryClient = useQueryClient()
+
 
   // Name form
   const nameForm = useForm<z.infer<typeof nameFormSchema>>({
@@ -66,23 +77,116 @@ export default function SettingsPage() {
   })
 
   // Form submission handlers
-  const onNameSubmit = (data: z.infer<typeof nameFormSchema>) => {
-    console.log("Name update:", data)
-    // Handle name update logic here
-    nameForm.reset()
+  const onNameSubmit = async (data: z.infer<typeof nameFormSchema>) => {
+    try {
+      // Validate current name matches
+      if (data.currentName !== userData?.name) {
+        nameForm.setError('currentName', {
+          type: 'manual',
+          message: 'Current name does not match'
+        });
+        return;
+      }
+
+      await axiosInstance.put(apiRoutes.user, {
+        ...userData,
+        name: data.newName
+      });
+
+      // Invalidate user query to refetch updated data
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+      nameForm.reset();
+    } catch (error) {
+      console.error('Error updating name:', error);
+      nameForm.setError('root', {
+        type: 'manual',
+        message: 'Failed to update name'
+      });
+    }
   }
 
-  const onEmailSubmit = (data: z.infer<typeof emailFormSchema>) => {
-    console.log("Email update:", data)
-    // Handle email update logic here
-    emailForm.reset()
+  const onEmailSubmit = async (data: z.infer<typeof emailFormSchema>) => {
+    try {
+      // Validate current email matches
+      if (data.currentEmail !== userData?.email) {
+        emailForm.setError('currentEmail', {
+          type: 'manual',
+          message: 'Current email does not match'
+        });
+        return;
+      }
+
+      await axiosInstance.put(apiRoutes.user, {
+        ...userData,
+        email: data.newEmail
+      });
+
+      // Invalidate user query to refetch updated data
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+      emailForm.reset();
+    } catch (error) {
+      console.error('Error updating email:', error);
+      emailForm.setError('root', {
+        type: 'manual',
+        message: 'Failed to update email'
+      });
+    }
   }
 
-  const onPasswordSubmit = (data: z.infer<typeof passwordFormSchema>) => {
-    console.log("Password update:", data)
-    // Handle password update logic here
-    passwordForm.reset()
+  const onPasswordSubmit = async (data: z.infer<typeof passwordFormSchema>) => {
+    try {
+      await axiosInstance.put(apiRoutes.user, {
+        ...userData,
+        currentPassword: data.currentPassword,
+        password: data.newPassword
+      });
+
+      // Invalidate user query to refetch updated data
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+      passwordForm.reset();
+    } catch (error: any) {
+      console.error('Error updating password:', error);
+      // Check if error is due to incorrect current password
+      if (error.response?.status === 401) {
+        passwordForm.setError('currentPassword', {
+          type: 'manual',
+          message: 'Current password is incorrect'
+        });
+      } else {
+        passwordForm.setError('root', {
+          type: 'manual',
+          message: 'Failed to update password'
+        });
+      }
+    }
   }
+
+  const onVulnerabilityAlertsChange = async (checked: boolean) => {
+    try {
+      await axiosInstance.put(apiRoutes.user, {
+        ...userData,
+        notificationPreferences: {
+          ...userData?.notificationPreferences,
+          vulnerabilitySubmissionNotification: checked
+        }
+      });
+
+      setVulnerabilityAlerts(checked);
+      // Invalidate user query to refetch updated data
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+    } catch (error) {
+      console.error('Error updating notification preferences:', error);
+      // Revert the switch if update fails
+      setVulnerabilityAlerts(!checked);
+    }
+  }
+
+  // Initialize vulnerability alerts from user data
+  useEffect(() => {
+    if (userData?.notificationPreferences?.vulnerabilitySubmissionNotification !== undefined) {
+      setVulnerabilityAlerts(userData.notificationPreferences.vulnerabilitySubmissionNotification);
+    }
+  }, [userData]);
 
   return (
     <div className="mx-4 py-8 px-4 bg-white rounded-lg shadow-md">
@@ -246,7 +350,7 @@ export default function SettingsPage() {
               <span className="text-base font-medium">Vulnerability alerts</span>
               <Switch
                 checked={vulnerabilityAlerts}
-                onCheckedChange={setVulnerabilityAlerts}
+                onCheckedChange={onVulnerabilityAlertsChange}
                 className="data-[state=checked]:bg-primary"
               />
             </div>
