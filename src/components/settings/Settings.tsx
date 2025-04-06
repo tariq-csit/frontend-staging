@@ -17,12 +17,10 @@ import { apiRoutes } from "@/lib/routes"
 
 // Form schemas
 const nameFormSchema = z.object({
-  currentName: z.string().min(1, { message: "Current name is required" }),
   newName: z.string().min(1, { message: "New name is required" }),
 })
 
 const emailFormSchema = z.object({
-  currentEmail: z.string().email({ message: "Valid email is required" }),
   newEmail: z.string().email({ message: "Valid email is required" }),
 })
 
@@ -58,7 +56,6 @@ export default function SettingsPage() {
   const nameForm = useForm<z.infer<typeof nameFormSchema>>({
     resolver: zodResolver(nameFormSchema),
     defaultValues: {
-      currentName: "",
       newName: "",
     },
   })
@@ -67,7 +64,6 @@ export default function SettingsPage() {
   const emailForm = useForm<z.infer<typeof emailFormSchema>>({
     resolver: zodResolver(emailFormSchema),
     defaultValues: {
-      currentEmail: "",
       newEmail: "",
     },
   })
@@ -85,15 +81,6 @@ export default function SettingsPage() {
   // Form submission handlers
   const onNameSubmit = async (data: z.infer<typeof nameFormSchema>) => {
     try {
-      // Validate current name matches
-      if (data.currentName !== userData?.name) {
-        nameForm.setError('currentName', {
-          type: 'manual',
-          message: 'Current name does not match'
-        });
-        return;
-      }
-
       await axiosInstance.put(apiRoutes.user, {
         ...userData,
         name: data.newName
@@ -113,15 +100,6 @@ export default function SettingsPage() {
 
   const onEmailSubmit = async (data: z.infer<typeof emailFormSchema>) => {
     try {
-      // Validate current email matches
-      if (data.currentEmail !== userData?.email) {
-        emailForm.setError('currentEmail', {
-          type: 'manual',
-          message: 'Current email does not match'
-        });
-        return;
-      }
-
       await axiosInstance.put(apiRoutes.user, {
         ...userData,
         email: data.newEmail
@@ -222,19 +200,10 @@ export default function SettingsPage() {
                 <AccordionContent className="px-4 pb-4">
                   <Form {...nameForm}>
                     <form onSubmit={nameForm.handleSubmit(onNameSubmit)} className="space-y-4 max-w-md">
-                      <FormField
-                        control={nameForm.control}
-                        name="currentName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Enter Current Name</FormLabel>
-                            <FormControl>
-                              <Input {...field} className="w-full" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-gray-700">Current Name</p>
+                        <p className="text-sm text-gray-900">{userData?.name}</p>
+                      </div>
                       <FormField
                         control={nameForm.control}
                         name="newName"
@@ -264,19 +233,10 @@ export default function SettingsPage() {
                 <AccordionContent className="px-4 pb-4">
                   <Form {...emailForm}>
                     <form onSubmit={emailForm.handleSubmit(onEmailSubmit)} className="space-y-4 max-w-md">
-                      <FormField
-                        control={emailForm.control}
-                        name="currentEmail"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Enter Current Email</FormLabel>
-                            <FormControl>
-                              <Input {...field} type="email" className="w-full" />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium text-gray-700">Current Email</p>
+                        <p className="text-sm text-gray-900">{userData?.email}</p>
+                      </div>
                       <FormField
                         control={emailForm.control}
                         name="newEmail"
