@@ -61,7 +61,7 @@ export default function SendCode() {
                             name="email"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Point of Contact</FormLabel>
+                                    <FormLabel>Email</FormLabel>
                                     <FormControl>
                                         <Input
                                             className="w-full"

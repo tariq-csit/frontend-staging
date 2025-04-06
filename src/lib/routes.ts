@@ -27,13 +27,13 @@ export const apiRoutes = {
 
   clients: {
     all: `/admin/clients`,
-    sendSignupCode: `/api/admin/signup-code`,
-    onboardUser: `/api/admin/users/onboard-client`,
+    sendSignupCode: `/admin/signup-code`,
+    onboardUser: `/admin/users/onboard-client`,
   },
 
   pentesters: {
     all: `/admin/users/pentester`,
-    onboardUser: `/api/admin/users/onboard-pentester`,
+    onboardUser: `/admin/users/onboard-pentester`,
   },
 
   // Upload Routes

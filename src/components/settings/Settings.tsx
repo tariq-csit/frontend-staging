@@ -38,12 +38,18 @@ const passwordFormSchema = z
   })
 
 export default function SettingsPage() {
+  // Individual states for each notification preference
+  const [commentNotification, setCommentNotification] = useState(true)
+  const [statusChangeNotification, setStatusChangeNotification] = useState(true)
   const [vulnerabilityAlerts, setVulnerabilityAlerts] = useState(true)
+  const [loginNotification, setLoginNotification] = useState(true)
+  const [reportCommentNotification, setReportCommentNotification] = useState(true)
 
   const {data: userData} = useQuery({
     queryKey: ['user'],
     queryFn: () => axiosInstance.get(apiRoutes.user).then((res) => res.data),
   })
+  console.log(userData)
 
   const queryClient = useQueryClient()
 
@@ -161,30 +167,40 @@ export default function SettingsPage() {
     }
   }
 
-  const onVulnerabilityAlertsChange = async (checked: boolean) => {
+  // Generic handler for all notification preferences
+  const onNotificationPreferenceChange = async (
+    preferenceKey: string,
+    checked: boolean,
+    setterFunction: (value: boolean) => void
+  ) => {
     try {
       await axiosInstance.put(apiRoutes.user, {
         ...userData,
         notificationPreferences: {
           ...userData?.notificationPreferences,
-          vulnerabilitySubmissionNotification: checked
+          [preferenceKey]: checked
         }
       });
 
-      setVulnerabilityAlerts(checked);
+      setterFunction(checked);
       // Invalidate user query to refetch updated data
       queryClient.invalidateQueries({ queryKey: ['user'] });
     } catch (error) {
       console.error('Error updating notification preferences:', error);
       // Revert the switch if update fails
-      setVulnerabilityAlerts(!checked);
+      setterFunction(!checked);
     }
   }
 
-  // Initialize vulnerability alerts from user data
+  // Initialize all notification preferences from user data
   useEffect(() => {
-    if (userData?.notificationPreferences?.vulnerabilitySubmissionNotification !== undefined) {
-      setVulnerabilityAlerts(userData.notificationPreferences.vulnerabilitySubmissionNotification);
+    if (userData?.notificationPreferences) {
+      const prefs = userData.notificationPreferences;
+      setCommentNotification(prefs.commentNotification ?? true);
+      setStatusChangeNotification(prefs.statusChangeNotification ?? true);
+      setVulnerabilityAlerts(prefs.vulnerabilitySubmissionNotification ?? true);
+      setLoginNotification(prefs.loginNotification ?? true);
+      setReportCommentNotification(prefs.reportCommentNotification ?? true);
     }
   }, [userData]);
 
@@ -346,13 +362,57 @@ export default function SettingsPage() {
         <h2 className="text-xl font-bold mb-4">Notification Preferences</h2>
         <Card className="shadow-sm">
           <CardContent className="pb-0">
-            <div className="flex items-center justify-between py-4">
-              <span className="text-base font-medium">Vulnerability alerts</span>
-              <Switch
-                checked={vulnerabilityAlerts}
-                onCheckedChange={onVulnerabilityAlertsChange}
-                className="data-[state=checked]:bg-primary"
-              />
+            <div className="space-y-4">
+              <div className="flex items-center justify-between py-4">
+                <span className="text-base font-medium">Comment notifications</span>
+                <Switch
+                  checked={commentNotification}
+                  onCheckedChange={(checked) => 
+                    onNotificationPreferenceChange('commentNotification', checked, setCommentNotification)
+                  }
+                  className="data-[state=checked]:bg-primary"
+                />
+              </div>
+              <div className="flex items-center justify-between py-4 border-t">
+                <span className="text-base font-medium">Status change notifications</span>
+                <Switch
+                  checked={statusChangeNotification}
+                  onCheckedChange={(checked) => 
+                    onNotificationPreferenceChange('statusChangeNotification', checked, setStatusChangeNotification)
+                  }
+                  className="data-[state=checked]:bg-primary"
+                />
+              </div>
+              <div className="flex items-center justify-between py-4 border-t">
+                <span className="text-base font-medium">Vulnerability alerts</span>
+                <Switch
+                  checked={vulnerabilityAlerts}
+                  onCheckedChange={(checked) => 
+                    onNotificationPreferenceChange('vulnerabilitySubmissionNotification', checked, setVulnerabilityAlerts)
+                  }
+                  className="data-[state=checked]:bg-primary"
+                />
+              </div>
+              <div className="flex items-center justify-between py-4 border-t">
+                <span className="text-base font-medium">Login notifications</span>
+                <Switch
+                  checked={loginNotification}
+                  onCheckedChange={(checked) => 
+                    onNotificationPreferenceChange('loginNotification', checked, setLoginNotification)
+                  }
+                  className="data-[state=checked]:bg-primary"
+                />
+              </div>
+              <div className="flex items-center justify-between py-4 border-t">
+                <span className="text-base font-medium">Report comment notifications</span>
+                <Switch
+                  checked={reportCommentNotification}
+                  onCheckedChange={(checked) => 
+                    onNotificationPreferenceChange('reportCommentNotification', checked, setReportCommentNotification)
+                  }
+                  className="data-[state=checked]:bg-primary"
+                />
+              </div>
             </div>
           </CardContent>
         </Card>
