@@ -25,7 +25,7 @@ const FileAttachmentPreview: React.FC<FileAttachmentPreviewProps> = ({ attachmen
     <div className="attachments-container">
       <div className="flex gap-4">
         {fileArray.map((file, index) => {
-          const fileType = file.type.split("/")[1]?.toUpperCase();
+          const fileType = file.type ? file.type.split("/")[1]?.toUpperCase() : "FILE";
           const fileSize = formatFileSize(file.size);
 
           return (

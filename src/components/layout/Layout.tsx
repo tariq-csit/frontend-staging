@@ -1,6 +1,5 @@
 import { useRef, useEffect, useState } from "react";
 import Sidebar from "../sidebar/Sidebar";
-import Navbar from "../navbar/Navbar";
 import { Outlet, useNavigate } from "react-router-dom";
 import axiosInstance from "@/lib/AxiosInstance";
 import { apiRoutes } from "@/lib/routes";
@@ -98,7 +97,6 @@ useEffect(() => {
           />
         </div>
 
-        <Navbar name={userName} role={userRole} image={userImage} />
         <div className={`flex-1 bg-[#E5E5E5] overflow-hidden relative`}>
           <div className="absolute inset-0 overflow-y-auto pt-6">
             <Outlet />

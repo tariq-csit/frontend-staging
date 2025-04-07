@@ -22,6 +22,7 @@ export const apiRoutes = {
       all: (pentestId: string) => `/admin/pentests/${pentestId}/vulnerabilities`,
       details: (pentestId: string, vulnerabilityId: string) => `/admin/pentests/${pentestId}/vulnerabilities/${vulnerabilityId}`,
       createReport: (pentestId: string) => `/admin/pentests/${pentestId}/vulnerability`,
+      status: (pentestId: string, vulnerabilityId: string) => `/admin/pentests/${pentestId}/vulnerability/${vulnerabilityId}/status/`,
     },
   },
 
@@ -34,8 +35,9 @@ export const apiRoutes = {
   pentesters: {
     all: `/admin/users/pentester`,
     onboardUser: `/admin/users/onboard-pentester`,
-  },
-
+    pentester: (id: string) => `/admin/users/pentester/${id}`,
+    reset2FA: (id: string) => `/admin/users/pentester/${id}/reset-2fa`,
+  }, 
   // Upload Routes
   uploadLogo: `/upload/company-logo`,
   uploadVulnerabilityAttachment: "/upload/attachment"

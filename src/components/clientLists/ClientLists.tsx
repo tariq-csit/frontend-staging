@@ -6,12 +6,16 @@ import { useQuery } from "@tanstack/react-query"
 import { apiRoutes } from "@/lib/routes"
 import SendCode from "./SendCode"
 import AddClientDialog from "./AddClientDialog"
+import { Client } from "@/types/types"
+import { useState } from "react"
 
 export default function ClientDashboard() {
   const {data: clients, refetch} = useQuery({
     queryKey: ["clients"],
     queryFn: () => axiosInstance.get(apiRoutes.clients.all).then((res) => res.data)
   })
+
+  const [search, setSearch] = useState("")
 
   console.log(clients)
 
@@ -40,7 +44,7 @@ export default function ClientDashboard() {
         {/* Search and Actions */}
         <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
           <div className="w-full md:w-1/2">
-            <Input placeholder="Search for Client" className="w-full" />
+            <Input placeholder="Search for Client" className="w-full" value={search} onChange={(e) => setSearch(e.target.value)} />
           </div>
           <div className="flex gap-2">
             <Button variant="outline" className="flex items-center gap-2">
@@ -66,8 +70,8 @@ export default function ClientDashboard() {
               </tr>
             </thead>
             <tbody>
-              {[1, 2, 3, 4, 5].map((item) => (
-                <ClientRow key={item} />
+              {clients?.filter((client: Client) => client.name.toLowerCase().includes(search.toLowerCase())).map((client: Client) => (
+                <ClientRow key={client._id} client={client} />
               ))}
             </tbody>
           </table>
@@ -102,25 +106,6 @@ function TabButton({ label, count, active = false }: { label: string, count: str
   )
 }
 
-function SearchIcon() {
-  return (
-    <svg
-      className="h-5 w-5 text-gray-400"
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke="currentColor"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-      />
-    </svg>
-  )
-}
-
 function FilterIcon() {
   return (
     <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -134,25 +119,27 @@ function FilterIcon() {
   )
 }
 
-function ClientRow() {
+function ClientRow({ client }: { client: Client }) {
   return (
     <tr className="border-t hover:bg-gray-50">
       <td className="py-4 px-4">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
-            <VWLogo />
+            <img src={client.logoUrl} alt={client.name} className="w-full h-full object-cover" />
           </div>
-          <span className="font-medium">Wols Wagon</span>
+          <span className="font-medium">{client.name}</span>
         </div>
       </td>
-      <td className="py-4 px-4 text-gray-600">hammad65@gmail.com</td>
+      <td className="py-4 px-4 text-gray-600">{client.poc_email}</td>
       <td className="py-4 px-4">
-        <span className="text-blue-600">10</span>
+        <span className="text-blue-600">{client.users.length}</span>
       </td>
       <td className="py-4 px-4">
-        <span className="text-blue-600">15</span>
+        <span className="text-blue-600">{client.pentests.length}</span>
       </td>
-      <td className="py-4 px-4">-</td>
+      <td className="py-4 px-4">
+        <span className="text-blue-600">{client.pentests.length}</span>
+      </td>
       <td className="py-4 px-4 text-right">
         <button className="p-1 rounded-full hover:bg-gray-100">
           <MoreVertical className="h-5 w-5 text-gray-400" />

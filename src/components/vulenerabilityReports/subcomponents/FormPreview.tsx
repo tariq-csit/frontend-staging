@@ -1,31 +1,69 @@
 import { Button } from "@/components/ui/button";
 import FileAttachmentPreview from "./FileAttachmentsPreview";
 import CommentSection from "./CommentSection";
+import { Link, useParams } from "react-router-dom";
+import axiosInstance from "@/lib/AxiosInstance";
+import { apiRoutes } from "@/lib/routes";
+import { Vulnerability } from "@/types/types";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { Edit, Trash2, Lock } from "lucide-react";
+import { Select, SelectTrigger, SelectItem, SelectContent, SelectValue } from "@/components/ui/select";
 
-interface data {
-  affectedHost: string[]; // Array of affected host strings
-  attachments: FileList; // FileList object for attachments
-  attackComplexity: string; // e.g., "low", "medium", "high"
-  attackVector: string; // e.g., "network", "local"
-  availability: string; // Impact on availability, e.g., "none"
-  confidentiality: string; // Impact on confidentiality, e.g., "none"
-  description: string; // HTML content as a string
-  impact: string; // General impact description
-  integrity: string; // Impact on integrity, e.g., "none"
-  likeliHood: string; // Likelihood of attack, e.g., "low", "medium", "high"
-  privilegesRequired: string; // Privilege requirement, e.g., "none", "low"
-  recommendedSolution: string; // HTML content for solutions
-  scope: string; // Scope impact, e.g., "unchanged", "changed"
-  severity: string; // Severity level, e.g., "low", "medium", "high"
-  stepToReproduce: string; // HTML content for reproduction steps
-  title: string; // Title of the report
-  userInterction: string; // User interaction requirement, e.g., "none"
+// interface data {
+//   affectedHost: string[]; // Array of affected host strings
+//   attachments: FileList; // FileList object for attachments
+//   attackComplexity: string; // e.g., "low", "medium", "high"
+//   attackVector: string; // e.g., "network", "local"
+//   availability: string; // Impact on availability, e.g., "none"
+//   confidentiality: string; // Impact on confidentiality, e.g., "none"
+//   description: string; // HTML content as a string
+//   impact: string; // General impact description
+//   integrity: string; // Impact on integrity, e.g., "none"
+//   likeliHood: string; // Likelihood of attack, e.g., "low", "medium", "high"
+//   privilegesRequired: string; // Privilege requirement, e.g., "none", "low"
+//   recommendedSolution: string; // HTML content for solutions
+//   scope: string; // Scope impact, e.g., "unchanged", "changed"
+//   severity: string; // Severity level, e.g., "low", "medium", "high"
+//   stepToReproduce: string; // HTML content for reproduction steps
+//   title: string; // Title of the report
+//   userInterction: string; // User interaction requirement, e.g., "none"
+// }
+
+interface StatusOption {
+  value: string;
+  label: string;
+  color: string;
 }
 
-function formPreview(props: {
-  data: data | undefined;
-  setPreview: (value: boolean) => void;
-}) {
+function formPreview() {
+  const {pentestId, vulnerabilityId} = useParams<{pentestId: string, vulnerabilityId: string}>();
+
+  const {data: vulnerability, refetch: refetchVulnerability} = useQuery({
+    queryKey: ["pentest", pentestId, "vulnerability", vulnerabilityId],
+    queryFn: () => axiosInstance.get<Vulnerability>(apiRoutes.pentests.vulnerabilities.details(pentestId!, vulnerabilityId!)).then((res) => res.data)
+  })
+
+  const {mutate: updateVulnerabilityStatus} = useMutation({
+    mutationFn: (status: string) => axiosInstance.patch(apiRoutes.pentests.vulnerabilities.status(pentestId!, vulnerabilityId!),
+      {
+        status: status
+      }
+    ),
+    onSuccess: () => {
+      refetchVulnerability()
+    }
+  })
+
+  console.log("vulnerability", vulnerability)
+
+  const statusOptions: StatusOption[] = [
+    { value: "New", label: "New", color: "bg-gray-100" },
+    { value: "Triaged", label: "Triaged", color: "bg-blue-100" },
+    { value: "Ready For Retest", label: "Ready for Retest", color: "bg-amber-100" },
+    { value: "Resolved", label: "Resolved", color: "bg-green-100" },
+    { value: "Not Applicable", label: "Not Applicable", color: "bg-red-100" },
+  ]
+
   return (
     <div className="flex flex-col sm:flex-row gap-8 font-poppins mx-6">
       <div className="sm:w-9/12 flex flex-col gap-6">
@@ -45,34 +83,37 @@ function formPreview(props: {
           <div className="flex flex-col gap-4">
             <p className="font-medium">Affected Host (s)</p>
             <ul className="px-6">
-              {props.data?.affectedHost.map((host, i) => {
+              {vulnerability?.affected_host.includes(",") ? vulnerability?.affected_host.split(",").map((host, i) => {
                 return (
                   <li key={i} className="text-previewText list-disc">
                     {host}
                   </li>
                 );
-              })}
+              }) : (
+                <li className="text-previewText list-disc">
+                  {vulnerability?.affected_host}
+                </li>
+              )}
             </ul>
           </div>
 
           <h1 className="text-2xl font-medium mb-6">2. Basic Details (s)</h1>
           <div className="flex flex-col gap-2">
             <p className="font-medium">Title</p>
-            <p className="text-previewText">{props.data?.title}</p>
+            <p className="text-previewText">{vulnerability?.title}</p>
           </div>
 
           <div className="flex flex-col gap-2">
             <p className="font-medium">Severity</p>
-            <p className="text-previewText">{props.data?.severity}</p>
+            <p className="text-previewText">{vulnerability?.severity}</p>
           </div>
 
           <div className="flex flex-col gap-2">
             <p className="font-medium">Description</p>
-            {/* <p className="text-previewText">{props.data.description}</p> */}
             <div
               className="text-previewText"
               dangerouslySetInnerHTML={{
-                __html: props.data?.description || "",
+                __html: vulnerability?.description || "",
               }}
             ></div>
           </div>
@@ -85,7 +126,7 @@ function formPreview(props: {
             <div
               className="text-previewText"
               dangerouslySetInnerHTML={{
-                __html: props.data?.stepToReproduce || "",
+                __html: vulnerability?.steps_to_reproduce || "",
               }}
             ></div>
           </div>
@@ -95,7 +136,7 @@ function formPreview(props: {
             <div
               className="text-previewText"
               dangerouslySetInnerHTML={{
-                __html: props.data?.recommendedSolution || "",
+                __html: vulnerability?.recommended_solution || "",
               }}
             ></div>
           </div>
@@ -106,11 +147,11 @@ function formPreview(props: {
           <div className="grid sm:grid-cols-2">
             <div className="flex flex-col gap-2">
               <p className="font-medium">Impact</p>
-              <p className="text-previewText">{props.data?.impact}</p>
+              <p className="text-previewText">{vulnerability?.impact}</p>
             </div>
             <div className="flex flex-col gap-2">
               <p className="font-medium">LikeliHood</p>
-              <p className="text-previewText">{props.data?.likeliHood}</p>
+              <p className="text-previewText">{vulnerability?.likelihood}</p>
             </div>
           </div>
 
@@ -118,102 +159,160 @@ function formPreview(props: {
           <div className="grid grid-cols-2">
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-2">
-                <p className="font-medium">Attack vector</p>
-                <p className="text-previewText">{props.data?.attackVector}</p>
+                <p className="font-medium">Attack Vector</p>
+                <p className="text-previewText">
+                  {vulnerability?.cvssVector?.split('/')[1]?.split(':')[1] === 'A' ? 'Adjacent Network' :
+                   vulnerability?.cvssVector?.split('/')[1]?.split(':')[1] === 'N' ? 'Network' :
+                   vulnerability?.cvssVector?.split('/')[1]?.split(':')[1] === 'L' ? 'Local' :
+                   vulnerability?.cvssVector?.split('/')[1]?.split(':')[1] === 'P' ? 'Physical' : '-'}
+                </p>
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="font-medium">Attack Complexity</p>
+                <p className="text-previewText">
+                  {vulnerability?.cvssVector?.split('/')[2]?.split(':')[1] === 'L' ? 'Low' :
+                   vulnerability?.cvssVector?.split('/')[2]?.split(':')[1] === 'H' ? 'High' : '-'}
+                </p>
               </div>
               <div className="flex flex-col gap-2">
                 <p className="font-medium">Privileges Required</p>
                 <p className="text-previewText">
-                  {props.data?.privilegesRequired}
+                  {vulnerability?.cvssVector?.split('/')[3]?.split(':')[1] === 'N' ? 'None' :
+                   vulnerability?.cvssVector?.split('/')[3]?.split(':')[1] === 'L' ? 'Low' :
+                   vulnerability?.cvssVector?.split('/')[3]?.split(':')[1] === 'H' ? 'High' : '-'}
                 </p>
               </div>
               <div className="flex flex-col gap-2">
-                <p className="font-medium">Scope</p>
-                <p className="text-previewText">{props.data?.scope}</p>
-              </div>
-              <div className="flex flex-col gap-2">
-                <p className="font-medium">Integrity</p>
-                <p className="text-previewText">{props.data?.integrity}</p>
+                <p className="font-medium">User Interaction</p>
+                <p className="text-previewText">
+                  {vulnerability?.cvssVector?.split('/')[4]?.split(':')[1] === 'N' ? 'None' :
+                   vulnerability?.cvssVector?.split('/')[4]?.split(':')[1] === 'R' ? 'Required' : '-'}
+                </p>
               </div>
             </div>
 
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-2">
-                <p className="font-medium">Attack Complexity</p>
+                <p className="font-medium">Scope</p>
                 <p className="text-previewText">
-                  {props.data?.attackComplexity}
+                  {vulnerability?.cvssVector?.split('/')[5]?.split(':')[1] === 'U' ? 'Unchanged' :
+                   vulnerability?.cvssVector?.split('/')[5]?.split(':')[1] === 'C' ? 'Changed' : '-'}
                 </p>
-              </div>
-              <div className="flex flex-col gap-2">
-                <p className="font-medium">User Interction</p>
-                <p className="text-previewText">{props.data?.userInterction}</p>
               </div>
               <div className="flex flex-col gap-2">
                 <p className="font-medium">Confidentiality</p>
                 <p className="text-previewText">
-                  {props.data?.confidentiality}
+                  {vulnerability?.cvssVector?.split('/')[6]?.split(':')[1] === 'N' ? 'None' :
+                   vulnerability?.cvssVector?.split('/')[6]?.split(':')[1] === 'L' ? 'Low' :
+                   vulnerability?.cvssVector?.split('/')[6]?.split(':')[1] === 'H' ? 'High' : '-'}
+                </p>
+              </div>
+              <div className="flex flex-col gap-2">
+                <p className="font-medium">Integrity</p>
+                <p className="text-previewText">
+                  {vulnerability?.cvssVector?.split('/')[7]?.split(':')[1] === 'N' ? 'None' :
+                   vulnerability?.cvssVector?.split('/')[7]?.split(':')[1] === 'L' ? 'Low' :
+                   vulnerability?.cvssVector?.split('/')[7]?.split(':')[1] === 'H' ? 'High' : '-'}
                 </p>
               </div>
               <div className="flex flex-col gap-2">
                 <p className="font-medium">Availability</p>
-                <p className="text-previewText">{props.data?.availability}</p>
+                <p className="text-previewText">
+                  {vulnerability?.cvssVector?.split('/')[8]?.split(':')[1] === 'N' ? 'None' :
+                   vulnerability?.cvssVector?.split('/')[8]?.split(':')[1] === 'L' ? 'Low' :
+                   vulnerability?.cvssVector?.split('/')[8]?.split(':')[1] === 'H' ? 'High' : '-'}
+                </p>
               </div>
             </div>
           </div>
 
           <h1 className="text-2xl font-medium mb-6">6. Attachments</h1>
-          <FileAttachmentPreview attachments={props.data?.attachments} />
+          <FileAttachmentPreview attachments={vulnerability?.attachments} />
         </div>
         <CommentSection />
       </div>
 
-      <div className=" flex flex-col gap-6 h-fit sm:w-3/12">
-        <div className="flex flex-col gap-6 fixed bg-white rounded-md p-6 right-5 sm:w-3/12">
-          {" "}
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-4">
-              <div className="flex gap-4 items-center h-auto">
-                <img
-                  src="https://www.google.com/imgres?q=image&imgurl=https%3A%2F%2Fimages.ctfassets.net%2Fhrltx12pl8hq%2F28ECAQiPJZ78hxatLTa7Ts%2F2f695d869736ae3b0de3e56ceaca3958%2Ffree-nature-images.jpg%3Ffit%3Dfill%26w%3D1200%26h%3D630&imgrefurl=https%3A%2F%2Fwww.shutterstock.com%2Fdiscover%2Ffree-nature-images&docid=uEeA4F2Pf5UbvM&tbnid=0E5dDA82VanW3M&vet=12ahUKEwiu3ZWHpqCKAxUy_7sIHVLoEyQQM3oFCIABEAA..i&w=1200&h=630&hcb=2&ved=2ahUKEwiu3ZWHpqCKAxUy_7sIHVLoEyQQM3oFCIABEAA"
-                  className="w-16 h-16 rounded-full"
-                />
-                <p className="text-2xl font-medium">Pentest Title</p>
-              </div>
-              <p className="text-[#3A3B3D]">
-                A penetration test, or pentest, is a simulated cyber attack
-                against your computer system to check for vulnerabilities that
-                an attacker could exploit. It involves assessing the security of
-                the system by attempting to breach various application systems,
-                including APIs, frontend/backend servers, and network services.
-                The goal is to identify weaknesses before they can be exploited
-                by malicious actors.
-              </p>
+      <div className="max-w-md mx-auto bg-white h-fit rounded-lg shadow-sm p-6">
+      {/* Header with logo and title */}
+      <div className="flex items-center gap-4 mb-6">
+        <div className="w-24 h-24 rounded-full bg-[#f2f9e8] flex items-center justify-center">
+          <div className="relative">
+            <div className="w-12 h-12 rounded-full bg-[#a5d86a] flex items-center justify-center">
+              <Lock className="text-white w-6 h-6" />
             </div>
-            <div>
-              <h4 className="font-medium">Client:</h4>
-              <div className="flex gap-2 items-center">
-                <img
-                  src="https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.freepik.com%2Fimages&psig=AOvVaw3FdtJ4GlxRELqo-1yse3A2&ust=1734026455232000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCKjahIymoIoDFQAAAAAdAAAAABAE"
-                  className="w-8 h-8 rounded-full"
-                />
-                <p>Digital Circle (Cloud Hosting Services)</p>
-              </div>
-            </div>
-
-            <div className="h-0.5 bg-gradient-to-r from-white via-[#3D3D3D47] to-white"></div>
-
-            <div className="flex gap-4">
-              <Button
-                variant={"outline"}
-                onClick={() => props.setPreview(false)}
-              >
-                Go Back
-              </Button>
-              <Button>Submit Vulnerability</Button>
+            <div className="absolute inset-0 w-full h-full">
+              <svg width="100%" height="100%" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" fill="none" stroke="#6bbbf7" strokeWidth="2" strokeDasharray="10 5" />
+              </svg>
             </div>
           </div>
         </div>
+        <h1 className="text-3xl font-bold text-[#1a1a2e]">Pentest Title</h1>
       </div>
+
+      {/* Description */}
+      <p className="text-gray-700 mb-8 text-lg">
+        A Penetration Test, Or Pentest, Is A Simulated Cyber Attack Against Your Computer System To Check For
+        Vulnerabilities That An Attacker Could Exploit. It Involves Assessing The Security O...
+      </p>
+
+      {/* Client info */}
+      <div className="mb-6">
+        <h2 className="text-xl font-bold mb-3">Client:</h2>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center border border-gray-300">
+            <div className="w-6 h-6 rounded-full bg-[#3a4a6b]"></div>
+          </div>
+          <span className="text-lg">Digital Circle (Cloud Hosting Services)</span>
+        </div>
+      </div>
+
+      {/* Status */}
+      <div className="mb-10">
+        <h2 className="text-xl font-bold mb-3">Status:</h2>
+        <Select value={vulnerability?.status} onValueChange={(value) => {
+          updateVulnerabilityStatus(value)
+        }}>
+          <SelectTrigger className={`w-[180px] ${statusOptions.find(option => option.value === vulnerability?.status)?.color} border-none`}>
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+            <SelectContent>
+              {statusOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value} className={`${option.color} my-1 rounded-md`}>
+                  {option.label}
+                </SelectItem>
+              ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Divider */}
+      <div className="border-t border-gray-200 my-6"></div>
+
+      {/* Action buttons */}
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <Button
+          variant="outline"
+          className="border-[#4a3a9c] text-[#4a3a9c] hover:bg-[#f0eeff] flex items-center justify-center gap-2"
+        >
+          <Edit className="h-5 w-5" />
+          Edit
+        </Button>
+        <Button
+          variant="outline"
+          className="border-[#9c3a3a] text-[#9c3a3a] hover:bg-[#ffeeee] flex items-center justify-center gap-2"
+        >
+          <Trash2 className="h-5 w-5" />
+          Delete
+        </Button>
+      </div>
+
+      <Link to={`/dashboard/vulnerability-reports/${pentestId}`}>
+        <Button variant="outline" className="w-full border-[#3a4a6b] text-[#3a4a6b] hover:bg-[#eef0ff]">
+          Go Back
+        </Button>
+      </Link>
+    </div>
     </div>
   );
 }

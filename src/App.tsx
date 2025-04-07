@@ -8,41 +8,47 @@ import Login from './components/login/Login';
 import SignUp from './components/signUp/SignUp';
 import VulnerabilityDetails from './components/vulenerabilityReports/VulnerabilityDetails';
 import PentestsList from './components/pentests/Pentests';
-import DashboardHome from './components/activePentests/ActivePentests';
+import DashboardHome from './components/activePentests/Dashboard';
 import PentestDetails from './components/pentests/PentestDetails';
 import VulnerabilitiesInPentest from './components/vulenerabilityReports/VulnerabilityDetails';
 import VulnerabilityReports from './components/vulenerabilityReports/VulnerabilityReports';
 import NewPentestsForm from './components/pentests/newPentestsForm/NewPentestsForm';
 import ClientUsers from './components/clientLists/ClientUsers';
+import ReportsForm from './components/vulenerabilityReports/subcomponents/VulnerabilityReportForm';
+import { ThemeProvider } from './components/theme-provider';
+import { Toaster } from './components/ui/toaster';
+import FormPreview from './components/vulenerabilityReports/subcomponents/FormPreview';
 
 
 function App() {
   return (
-    <div>
+    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
       <Routes>
-        <Route path='/login' element={<Login/>}/>
-        <Route path='/signup' element={<SignUp/>}/>
-        <Route path='/' element={<Layout/>}>
-          <Route path='dashboard' element={<DashboardHome/>}/>
+        <Route path='/login' element={<Login />} />
+        <Route path='/signup' element={<SignUp />} />
+        <Route path='/' element={<Layout />}>
+          <Route path='dashboard' element={<DashboardHome />} />
 
-          <Route path='dashboard/pentests' element={<PentestsList/>}/>
-          <Route path='dashboard/pentests/:pentestId/' element={<PentestDetails/>}/>
-          <Route path='dashboard/pentests/:pentestId/vulnerabilities' element={<VulnerabilitiesInPentest/>}/>
-          <Route path='dashboard/pentests/create' element={<NewPentestsForm/>}/>
+          <Route path='dashboard/pentests' element={<PentestsList />} />
+          <Route path='dashboard/pentests/:pentestId/' element={<PentestDetails />} />
+          <Route path='dashboard/pentests/:pentestId/vulnerabilities' element={<VulnerabilitiesInPentest />} />
+          <Route path='dashboard/pentests/create' element={<NewPentestsForm />} />
 
-          <Route path='dashboard/vulnerability-reports/:pentestId/vulnerabilities/:vulnerabilityId' element={<VulnerabilityDetails/>}/>
-          <Route path='dashboard/vulnerability-reports/:pentestId' element={<VulnerabilityReports/>}/>
-          <Route path='dashboard/vulnerability-reports/' element={<VulnerabilityReports/>}/>
+          <Route path='dashboard/vulnerability-reports/:pentestId/vulnerabilities/:vulnerabilityId' element={<FormPreview />} />
+          <Route path='dashboard/vulnerability-reports/:pentestId' element={<VulnerabilityReports />} />
+          <Route path='dashboard/vulnerability-reports/' element={<VulnerabilityReports />} />
+          <Route path='dashboard/vulnerability-reports/:pentestId/create' element={<ReportsForm />} />
 
-          <Route path='dashboard/client-lists' element={<ClientLists/>}/>
-          <Route path='dashboard/client-lists/users' element={<ClientUsers/>}/>
+          <Route path='dashboard/client-lists' element={<ClientLists />} />
+          <Route path='dashboard/client-lists/users' element={<ClientUsers />} />
 
-          <Route path='dashboard/pentesters-list' element={<PentestersList/>}/>
+          <Route path='dashboard/pentesters-list' element={<PentestersList />} />
 
-          <Route path='dashboard/settings' element={<Settings/>}/>
+          <Route path='dashboard/settings' element={<Settings />} />
         </Route>
       </Routes>
-    </div>
+      <Toaster />
+    </ThemeProvider>
   )
 }
 
