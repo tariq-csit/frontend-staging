@@ -5,7 +5,7 @@ import AddClientUserDialog from "./AddClientUserDialog";
 
 export default function ClientUsers() {
   return (
-    <div className="p-4">
+    <div className="">
 
       {/* Client Users Section */}
       <div className="bg-white rounded-lg shadow-sm p-6">

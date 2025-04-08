@@ -1,33 +1,15 @@
 import { Button } from "@/components/ui/button";
 import FileAttachmentPreview from "./FileAttachmentsPreview";
 import CommentSection from "./CommentSection";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "@/lib/AxiosInstance";
 import { apiRoutes } from "@/lib/routes";
 import { Vulnerability } from "@/types/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Edit, Trash2, Lock } from "lucide-react";
 import { Select, SelectTrigger, SelectItem, SelectContent, SelectValue } from "@/components/ui/select";
+import { toast } from "@/hooks/use-toast";
 
-// interface data {
-//   affectedHost: string[]; // Array of affected host strings
-//   attachments: FileList; // FileList object for attachments
-//   attackComplexity: string; // e.g., "low", "medium", "high"
-//   attackVector: string; // e.g., "network", "local"
-//   availability: string; // Impact on availability, e.g., "none"
-//   confidentiality: string; // Impact on confidentiality, e.g., "none"
-//   description: string; // HTML content as a string
-//   impact: string; // General impact description
-//   integrity: string; // Impact on integrity, e.g., "none"
-//   likeliHood: string; // Likelihood of attack, e.g., "low", "medium", "high"
-//   privilegesRequired: string; // Privilege requirement, e.g., "none", "low"
-//   recommendedSolution: string; // HTML content for solutions
-//   scope: string; // Scope impact, e.g., "unchanged", "changed"
-//   severity: string; // Severity level, e.g., "low", "medium", "high"
-//   stepToReproduce: string; // HTML content for reproduction steps
-//   title: string; // Title of the report
-//   userInterction: string; // User interaction requirement, e.g., "none"
-// }
 
 interface StatusOption {
   value: string;
@@ -37,6 +19,8 @@ interface StatusOption {
 
 function formPreview() {
   const {pentestId, vulnerabilityId} = useParams<{pentestId: string, vulnerabilityId: string}>();
+
+  const navigate = useNavigate()
 
   const {data: vulnerability, refetch: refetchVulnerability} = useQuery({
     queryKey: ["pentest", pentestId, "vulnerability", vulnerabilityId],
@@ -54,7 +38,19 @@ function formPreview() {
     }
   })
 
-  console.log("vulnerability", vulnerability)
+  // delete mutation
+  const {mutate: deleteVulnerability} = useMutation({
+    mutationFn: () => axiosInstance.delete(apiRoutes.pentests.vulnerabilities.details(pentestId!, vulnerabilityId!)),
+    onSuccess: () => {
+      refetchVulnerability()
+      navigate(`/dashboard/vulnerability-reports/${pentestId}`)
+      toast({
+        title: "Vulnerability deleted successfully",
+        description: "The vulnerability has been deleted successfully",
+      })
+    }
+  })
+
 
   const statusOptions: StatusOption[] = [
     { value: "New", label: "New", color: "bg-gray-100" },
@@ -65,7 +61,7 @@ function formPreview() {
   ]
 
   return (
-    <div className="flex flex-col sm:flex-row gap-8 font-poppins mx-6">
+    <div className="flex flex-col sm:flex-row gap-8 font-poppins">
       <div className="sm:w-9/12 flex flex-col gap-6">
         <div className="w-full flex flex-col gap-6 p-6 bg-white rounded-lg">
           <div className="flex flex-col gap-2">
@@ -301,6 +297,7 @@ function formPreview() {
         <Button
           variant="outline"
           className="border-[#9c3a3a] text-[#9c3a3a] hover:bg-[#ffeeee] flex items-center justify-center gap-2"
+          onClick={() => deleteVulnerability()}
         >
           <Trash2 className="h-5 w-5" />
           Delete

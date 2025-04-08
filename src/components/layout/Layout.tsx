@@ -97,8 +97,8 @@ useEffect(() => {
           />
         </div>
 
-        <div className={`flex-1 bg-[#E5E5E5] overflow-hidden relative`}>
-          <div className="absolute inset-0 overflow-y-auto pt-6">
+        <div className={`flex-1 bg-[#E5E5E5] relative`}>
+          <div className="overflow-y-auto p-4 max-w-[1400px] mx-auto">
             <Outlet />
           </div>
         </div>

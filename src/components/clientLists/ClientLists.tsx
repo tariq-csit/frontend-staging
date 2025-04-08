@@ -20,7 +20,7 @@ export default function ClientDashboard() {
   console.log(clients)
 
   return (
-    <div className="px-4">
+    <div className="">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <StatCard icon={<Users className="h-6 w-6 text-indigo-600" />} value="200+" label="Clients" />
@@ -57,9 +57,11 @@ export default function ClientDashboard() {
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
+        {
+          clients && clients?.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
               <tr className="text-sm text-gray-500">
                 <th className="text-left py-3 px-4 font-normal">Client</th>
                 <th className="text-left py-3 px-4 font-normal">Point of Contact</th>
@@ -76,6 +78,12 @@ export default function ClientDashboard() {
             </tbody>
           </table>
         </div>
+          ) : (
+            <div className="flex justify-center items-center h-full">
+              <p className="text-gray-500">No clients found</p>
+            </div>
+          )
+        }
       </div>
     </div>
   )

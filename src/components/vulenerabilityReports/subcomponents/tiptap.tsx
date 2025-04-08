@@ -8,6 +8,56 @@ import { Toggle } from "@/components/ui/toggle"
 import type React from "react"
 import { apiRoutes } from "@/lib/routes"
 import axiosInstance from "@/lib/AxiosInstance"
+import DOMPurify from 'dompurify'
+
+// Custom extension to prevent unwanted HTML attributes and tags
+const SecureNodesExtension = Extension.create({
+  name: 'secureNodes',
+
+  addGlobalAttributes() {
+    return [
+      {
+        types: ['image'],
+        attributes: {
+          // Only allow specific attributes for images
+          src: {
+            default: null,
+            parseHTML: (element) => {
+              const src = element.getAttribute('src')
+              // Only allow specific domains or patterns
+              if (src && (
+                src.startsWith('https://slash-attachments.s3.amazonaws.com') ||
+                src.startsWith('data:image/')
+              )) {
+                return src
+              }
+              return null
+            },
+          },
+          alt: {
+            default: null,
+          },
+          title: {
+            default: null,
+          },
+        },
+      },
+    ]
+  },
+})
+
+// Function to sanitize HTML content
+const sanitizeHtml = (html: string): string => {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'img', 'blockquote', 'code', 'pre'],
+    ALLOWED_ATTR: ['src', 'alt', 'title', 'class'],
+    ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+    ADD_TAGS: ['img'],
+    ADD_ATTR: ['target'],
+    SANITIZE_DOM: true,
+    WHOLE_DOCUMENT: false,
+  })
+}
 
 // Function to upload image and return URL
 async function uploadImage(file: File): Promise<{ url: string }> {
@@ -171,16 +221,19 @@ const Tiptap = (props: {
           class: 'max-w-full h-auto',
         },
       }),
+      SecureNodesExtension,
       MarkdownImagePreview,
     ],
-    content: props.description,
+    content: sanitizeHtml(props.description),
     editorProps: {
       attributes: {
         class: "min-h-[200px] border-b border-t border-input rounded-md p-4 focus:outline-none",
       },
     },
     onUpdate({ editor }) {
-      props.onChange(editor.getHTML())
+      // Sanitize content before triggering onChange
+      const sanitizedContent = sanitizeHtml(editor.getHTML())
+      props.onChange(sanitizedContent)
     },
   })
 
@@ -188,113 +241,123 @@ const Tiptap = (props: {
   const togglePreview = useCallback(() => {
     setPreviewMode(!previewMode)
     if (editor) {
-      const images = editor.view.dom.querySelectorAll('img')
-      images.forEach((img: HTMLImageElement) => {
-        const parent = img.parentElement
-        if (parent) {
-          const markdown = img.getAttribute('data-markdown')
-          if (!previewMode) {
-            img.style.display = 'block'
-            if (parent.querySelector('.markdown-text')) {
-              parent.removeChild(parent.querySelector('.markdown-text')!)
-            }
-          } else {
-            img.style.display = 'none'
-            const markdownSpan = document.createElement('span')
-            markdownSpan.className = 'markdown-text'
-            markdownSpan.style.fontFamily = 'monospace'
-            markdownSpan.style.color = '#666'
-            markdownSpan.textContent = markdown || `![${img.alt}](${img.src})`
-            parent.insertBefore(markdownSpan, img)
-          }
+      const content = sanitizeHtml(editor.getHTML())
+      const tempDiv = document.createElement('div')
+      tempDiv.innerHTML = content
+
+      // Handle all images in the content
+      const images = tempDiv.getElementsByTagName('img')
+      Array.from(images).forEach((img) => {
+        const markdownText = `![${img.alt}](${img.src})`
+        if (previewMode) {
+          // Switch to markdown mode
+          const textNode = document.createTextNode(markdownText)
+          img.parentNode?.replaceChild(textNode, img)
         }
       })
+
+      if (previewMode) {
+        editor.commands.setContent(tempDiv.innerHTML)
+      } else {
+        // Switch back to preview mode - restore images from markdown
+        const text = editor.getText()
+        const markdownRegex = /!\[(.*?)\]\((.*?)\)/g
+        let lastIndex = 0
+        let newContent = ''
+
+        text.replace(markdownRegex, (match, alt, src, offset) => {
+          newContent += text.slice(lastIndex, offset)
+          // Ensure the src is sanitized
+          if (src && (
+            src.startsWith('https://slash-attachments.s3.amazonaws.com') ||
+            src.startsWith('data:image/')
+          )) {
+            newContent += `<img src="${src}" alt="${DOMPurify.sanitize(alt)}" />`
+          }
+          lastIndex = offset + match.length
+          return match
+        })
+
+        newContent += text.slice(lastIndex)
+        editor.commands.setContent(sanitizeHtml(newContent))
+      }
     }
   }, [previewMode, editor])
 
+  const insertImage = useCallback(async (file: File, imageName: string) => {
+    try {
+      const { url } = await uploadImage(file)
+      if (editor) {
+        // Validate URL before insertion
+        if (!url.startsWith('https://slash-attachments.s3.amazonaws.com')) {
+          throw new Error('Invalid image URL')
+        }
+
+        const sanitizedName = DOMPurify.sanitize(imageName)
+        if (previewMode) {
+          editor.chain().focus().insertContent({
+            type: 'image',
+            attrs: {
+              src: url,
+              alt: sanitizedName,
+            },
+          }).run()
+        } else {
+          const markdownText = `![${sanitizedName}](${url})`
+          editor.chain().focus().insertContent(markdownText).run()
+        }
+      }
+    } catch (error) {
+      console.error('Failed to upload image:', error)
+    }
+  }, [editor, previewMode])
+
   const handleDrop = useCallback(
-    async (event: React.DragEvent) => {
+    (event: React.DragEvent) => {
       event.preventDefault()
       event.stopPropagation()
 
       if (event.dataTransfer.files && event.dataTransfer.files[0]) {
-        try {
-          const file = event.dataTransfer.files[0]
-          const { url } = await uploadImage(file)
-          const imageName = file.name.replace(/\.[^/.]+$/, "")
-          const markdownText = `![${imageName}](${url})`
-          
-          editor?.chain().focus().insertContent({
-            type: 'image',
-            attrs: {
-              src: url,
-              alt: imageName,
-              markdown: markdownText,
-              'data-markdown': markdownText,
-            },
-          }).run()
-        } catch (error) {
-          console.error('Failed to upload image:', error)
-        }
+        const file = event.dataTransfer.files[0]
+        const imageName = file.name.replace(/\.[^/.]+$/, "")
+        insertImage(file, imageName)
       }
     },
-    [editor],
+    [insertImage]
   )
 
-  const handleDragOver = useCallback((event: React.DragEvent) => {
-    event.preventDefault()
-    event.stopPropagation()
-  }, [])
-
-  const handlePaste = useCallback(
-    async (event: React.ClipboardEvent) => {
-      if (event.clipboardData && event.clipboardData.files && event.clipboardData.files[0]) {
-        event.preventDefault()
-        try {
-          const file = event.clipboardData.files[0]
-          const { url } = await uploadImage(file)
-          const imageName = 'Pasted image'
-          const markdownText = `![${imageName}](${url})`
-          
-          editor?.chain().focus().insertContent({
-            type: 'image',
-            attrs: {
-              src: url,
-              alt: imageName,
-              markdown: markdownText,
-              'data-markdown': markdownText,
-            },
-          }).run()
-        } catch (error) {
-          console.error('Failed to upload image:', error)
-        }
+  const handleFileChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      if (event.target.files && event.target.files[0]) {
+        const file = event.target.files[0]
+        const imageName = file.name.replace(/\.[^/.]+$/, "")
+        insertImage(file, imageName)
       }
     },
-    [editor],
+    [insertImage]
+  )
+
+  const handlePaste = useCallback(
+    (event: React.ClipboardEvent) => {
+      if (event.clipboardData && event.clipboardData.files && event.clipboardData.files[0]) {
+        event.preventDefault()
+        const file = event.clipboardData.files[0]
+        insertImage(file, 'Pasted image')
+      }
+    },
+    [insertImage]
   )
 
   return (
     <div
       className="flex flex-col gap-2 py-2 border-input border rounded-md"
       onDrop={handleDrop}
-      onDragOver={handleDragOver}
+      onDragOver={(e) => e.preventDefault()}
       onPaste={handlePaste}
     >
       <Toolbar editor={editor} previewMode={previewMode} onTogglePreview={togglePreview} />
       <div className="relative">
         <EditorContent editor={editor} />
-        <style>{`
-          .ProseMirror img {
-            display: ${previewMode ? 'block' : 'none'};
-            max-width: 100%;
-            height: auto;
-          }
-          .markdown-text {
-            display: ${previewMode ? 'none' : 'block'};
-            white-space: pre-wrap;
-            padding: 4px 0;
-          }
-        `}</style>
       </div>
       <div className="px-4 py-2">
         <p className="text-sm">Embed images by dragging & dropping, selecting, or pasting them.</p>
