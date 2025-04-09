@@ -5,7 +5,7 @@ export interface User {
   profilePicture?: string
 }
 
-interface Attachment {
+export interface Attachment {
   _id: string
   url: string
   name: string

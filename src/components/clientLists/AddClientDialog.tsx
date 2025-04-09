@@ -166,7 +166,7 @@ export default function AddClientDialog({refetch}: {refetch: () => void}) {
             </Button>
           </DialogClose>
           <Button type="submit" onClick={form.handleSubmit(onSubmit)}>
-            Send Signup Code
+            Add Client
           </Button>
         </DialogFooter>
       </DialogContent>
