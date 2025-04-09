@@ -5,8 +5,9 @@ const style = `flex w-full px-4 py-3 gap-4 items-center rounded-nav transition-a
 
 type propsType = {
   link: string;
+  onClick?: () => void;
   collapsed: boolean;
-  icon: string;
+  icon: React.ReactNode | string;
   navText: string;
   setCollapsed: (status:boolean)=>void;
   subItems?: Array<{
@@ -41,16 +42,21 @@ function SidebarNav(props: propsType) {
           const isMobile = window.innerWidth < 640;
           if (isMobile) props.setCollapsed(true);
           if (props.subItems) setShowSubMenu(!showSubMenu);
+          props.onClick?.();
         }}
       >
         {/* Icon */}
-        <img
-          className={`w-5 h-5 ${
-            props.collapsed ? "scale-150" : ""
-          }`}
-          src={props.icon}
-          alt={`${props.navText} icon`}
-        />
+        {typeof props.icon === 'string' ? (
+          <img
+            className={`w-5 h-5 ${
+              props.collapsed ? "scale-150" : ""
+            }`}
+            src={props.icon}
+            alt={`${props.navText} icon`}
+          />
+        ) : (
+          props.icon
+        )}
         
         {/* Text */}
         {!props.collapsed && (

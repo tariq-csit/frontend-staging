@@ -9,6 +9,7 @@ import { useMutation } from "@tanstack/react-query";
 import axiosInstance from "@/lib/AxiosInstance";
 import { apiRoutes } from "@/lib/routes";
 import { useState } from "react";
+import { toast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
     email: z.string().email(),
@@ -34,9 +35,17 @@ export default function SendCode() {
         onSuccess: () => {
             form.reset();
             setOpen(false);
+            toast({
+                title: "Signup code sent",
+                description: "The signup code has been sent to the email address"
+            })
         },
-        onError: (error) => {
-            console.error('Error sending signup code:', error);
+        onError: () => {
+            toast({
+                title: "Error sending signup code",
+                description: "The signup code could not be sent to the email address",
+                variant: "destructive"
+            })
         }
     });
 

@@ -91,6 +91,7 @@ export interface Pentester {
     type: string;
     startDate: string;
     endDate: string;
+    vulnerabilitiesCount: number;
   }[];
 }
 

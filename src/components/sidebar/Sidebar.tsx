@@ -1,9 +1,13 @@
 import leftArrow from "/chevron-left.svg";
 import SidebarNav from "./SidebarNav";
 import setting from "/tage=setting.svg";
+import { LogOut } from "lucide-react";
 import largeLogo from "/logo-large.png";
 import smallLogo from "/logo-small.png";
 import ProfileNav from "./ProfileNav";
+import { apiRoutes } from "@/lib/routes";
+import axiosInstance from "@/lib/AxiosInstance";
+
 function Sidebar(props: {
   name: string,
   image: string,
@@ -96,6 +100,18 @@ function Sidebar(props: {
             icon={setting}
             collapsed={props.collapsed}
             setCollapsed={props.setCollapsed}
+          />
+          <SidebarNav
+            link="#"
+            navText="Logout"
+            icon={<LogOut />}
+            collapsed={props.collapsed}
+            setCollapsed={props.setCollapsed}
+            onClick={() => {
+              sessionStorage.clear();
+              localStorage.clear();
+              axiosInstance.post(apiRoutes.logout);
+            }}
           />
         </div>
       </div>

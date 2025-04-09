@@ -47,22 +47,30 @@ export default function AddClientDialog({refetch}: {refetch: () => void}) {
     }
   })
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
+  const {mutate: uploadLogo} = useMutation({
+    mutationFn: async (file: File) => {
       const formData = new FormData();
-      formData.append("logo", values.uploadLogo[0]);
-      const logoResponse = await axiosInstance.post(apiRoutes.uploadLogo, formData, {
+      formData.append("logo", file);
+      const response = await axiosInstance.post(apiRoutes.uploadLogo, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
+      return response.data;
+    },
+    onSuccess: (data) => {
+      form.setValue("uploadLogo", data.url);
+    },
+    onError: (error) => {
+      console.error('Error uploading logo:', error);
+    }
+  });
 
-      form.setValue("uploadLogo", logoResponse.data.url);
-      
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
       addClient(values);
-
     } catch (error) {
-      console.error('Error during logo upload or user signup:', error);
+      console.error('Error during client creation:', error);
     }
   }
 
@@ -118,7 +126,7 @@ export default function AddClientDialog({refetch}: {refetch: () => void}) {
             <FormField
               control={form.control}
               name="uploadLogo"
-              render={({ field }) => (
+              render={() => (
                 <FormItem className="flex w-full sm:col-span-3 flex-col items-start gap-2">
                   <FormLabel>Attachments</FormLabel>
                   <FormControl>
@@ -132,7 +140,9 @@ export default function AddClientDialog({refetch}: {refetch: () => void}) {
                             placeholder="Choose files"
                             className="border-none"
                             onChange={(e) => {
-                              field.onChange(e.target.files);
+                              if (e.target.files?.[0]) {
+                                uploadLogo(e.target.files[0]);
+                              }
                             }}
                           />
                         </div>
