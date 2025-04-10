@@ -43,7 +43,7 @@ function formPreview() {
     mutationFn: () => axiosInstance.delete(apiRoutes.pentests.vulnerabilities.details(pentestId!, vulnerabilityId!)),
     onSuccess: () => {
       refetchVulnerability()
-      navigate(`/dashboard/vulnerability-reports/${pentestId}`)
+      navigate(`/vulnerability-reports/${pentestId}`)
       toast({
         title: "Vulnerability deleted successfully",
         description: "The vulnerability has been deleted successfully",
@@ -223,9 +223,9 @@ function formPreview() {
           </div>
 
           <h1 className="text-2xl font-medium mb-6">6. Attachments</h1>
-          <FileAttachmentPreview attachments={vulnerability?.attachments} />
+          <FileAttachmentPreview attachments={vulnerability?.attachments ?? []} />
         </div>
-        <CommentSection />
+        <CommentSection pentestId={pentestId ?? ""} vulnerabilityId={vulnerabilityId ?? ""} />
       </div>
 
       <div className="max-w-md mx-auto bg-white h-fit rounded-lg shadow-sm p-6">
@@ -304,7 +304,7 @@ function formPreview() {
         </Button>
       </div>
 
-      <Link to={`/dashboard/vulnerability-reports/${pentestId}`}>
+      <Link to={`/vulnerability-reports/${pentestId}`}>
         <Button variant="outline" className="w-full border-[#3a4a6b] text-[#3a4a6b] hover:bg-[#eef0ff]">
           Go Back
         </Button>

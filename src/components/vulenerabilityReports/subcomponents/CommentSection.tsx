@@ -1,154 +1,62 @@
-import { useState, useRef } from "react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+"use client"
+
+import type React from "react"
+
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { ImageIcon } from "lucide-react"
-
-interface Comment {
-  id: string
-  text: string
-  images: string[]
-  author: {
-    name: string
-    avatar: string
-  }
-  timestamp: Date
-}
-
-export default function CommentSection() {
-  const [comments, setComments] = useState<Comment[]>([])
-  const [newComment, setNewComment] = useState("")
-  const [selectedImages, setSelectedImages] = useState<string[]>([])
-  const [previewImages, setPreviewImages] = useState<string[]>([])
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (files) {
-      const newPreviewImages = Array.from(files).map((file) => URL.createObjectURL(file))
-      setPreviewImages([...previewImages, ...newPreviewImages])
-      setSelectedImages([...selectedImages, ...Array.from(files).map((file) => file.name)])
-    }
-  }
+import { Textarea } from "@/components/ui/textarea"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
+import { Paperclip } from "lucide-react"
+import axiosInstance from "@/lib/AxiosInstance"
+import { apiRoutes } from "@/lib/routes"
+import { useMutation } from "@tanstack/react-query"
+export default function CommentBox({ pentestId, vulnerabilityId }: { pentestId: string, vulnerabilityId: string }) {
+  const [isInternal, setIsInternal] = useState(false)
+  const [comment, setComment] = useState("")
+  const { mutate: addComment } = useMutation({
+    mutationFn: (data: { comment: string, isInternal: boolean }) => axiosInstance.post(apiRoutes.pentests.vulnerabilities.comment(pentestId, vulnerabilityId), data),
+  })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (newComment.trim() || previewImages.length > 0) {
-      const newCommentObj: Comment = {
-        id: Date.now().toString(),
-        text: newComment,
-        images: previewImages,
-        author: {
-          name: "John Doe",
-          avatar: "/placeholder.svg?height=40&width=40",
-        },
-        timestamp: new Date(),
-      }
-      setComments([...comments, newCommentObj])
-      setNewComment("")
-      setSelectedImages([])
-      setPreviewImages([])
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ""
-      }
-    }
+    addComment({ comment, isInternal })
+    setComment("")
   }
 
   return (
-    <div className="p-4 bg-white rounded-lg">
-      <h2 className="text-2xl font-semibold mb-6">Comments</h2>
-
-      {/* Existing Comments */}
-      <div className="space-y-6 mb-8">
-        {comments.map((comment) => (
-          <div key={comment.id} className="space-y-4">
-            <div className="flex items-start gap-4">
-              <Avatar>
-                <AvatarImage src={comment.author.avatar} />
-                <AvatarFallback>JD</AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <h3 className="font-medium">{comment.author.name}</h3>
-                <p className="text-gray-600 mt-1">{comment.text}</p>
-                {comment.images.length > 0 && (
-                  <div className="mt-4 grid gap-4">
-                    {comment.images.map((image, index) => (
-                      <div key={index} className="relative border rounded-lg overflow-hidden">
-                        <img
-                          src={image || "/placeholder.svg"}
-                          alt="Comment attachment"
-                          width={600}
-                          height={400}
-                          className="object-contain"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* New Comment Form */}
+    <div className="w-full">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="relative">
-          <textarea
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Add a comment..."
-            className="w-full min-h-[100px] p-4 pr-12 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <div className="absolute bottom-4 right-4">
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleImageSelect}
-              accept="image/*"
-              multiple
-              className="hidden"
+        <div className="relative rounded-md bg-background text-foreground border border-border">
+          <Textarea
+            placeholder="Add Comment..."
+            className="min-h-[30px] border-none bg-transparent text-foreground resize-none focus-visible:ring-0 focus-visible:ring-offset-0" value={comment} onChange={(e) => setComment(e.target.value)} /> <button type="button" className="absolute right-3 top-3 text-gray-400 hover:text-white" aria-label="Attach file" >
+            <Paperclip className="h-5 w-5" />
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="internal-comment"
+              checked={isInternal}
+              onCheckedChange={setIsInternal}
+              className="data-[state=checked]:bg-indigo-600"
             />
-            <Button type="button" variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()}>
-              <ImageIcon className="h-4 w-4" />
-            </Button>
+            <Label htmlFor="internal-comment" className="text-sm text-gray-500">
+              Make internal comment
+            </Label>
           </div>
+
+          <Button type="submit" className="bg-indigo-700 hover:bg-indigo-800 text-white">
+            Add Comment
+          </Button>
         </div>
 
-        {/* Image Previews */}
-        {previewImages.length > 0 && (
-          <div className="grid gap-4">
-            {previewImages.map((image, index) => (
-              <div key={index} className="relative border rounded-lg overflow-hidden">
-                <img
-                  src={image || "/placeholder.svg"}
-                  alt={`Preview ${index + 1}`}
-                  width={600}
-                  height={400}
-                  className="object-contain"
-                />
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  className="absolute top-2 right-2"
-                  onClick={() => {
-                    const newPreviewImages = previewImages.filter((_, i) => i !== index)
-                    const newSelectedImages = selectedImages.filter((_, i) => i !== index)
-                    setPreviewImages(newPreviewImages)
-                    setSelectedImages(newSelectedImages)
-                  }}
-                >
-                  Remove
-                </Button>
-              </div>
-            ))}
-          </div>
+        {isInternal && (
+          <p className="text-xs text-gray-500">Internal comments will only be shown to your team members</p>
         )}
-
-        <div className="flex justify-end">
-          <Button type="submit">Add Comment</Button>
-        </div>
       </form>
     </div>
   )
 }
-

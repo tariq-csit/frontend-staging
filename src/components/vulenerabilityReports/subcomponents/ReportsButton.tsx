@@ -9,7 +9,7 @@ function ReportsButton({ pentestId }: { pentestId: string }) {
     if (!pentestId) {
       return
     }
-    navigate(`/dashboard/vulnerability-reports/${pentestId}/create`)
+    navigate(`/vulnerability-reports/${pentestId}/create`)
   }
 
   return (

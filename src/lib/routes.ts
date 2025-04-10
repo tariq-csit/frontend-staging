@@ -23,6 +23,7 @@ export const apiRoutes = {
       details: (pentestId: string, vulnerabilityId: string) => `/admin/pentests/${pentestId}/vulnerabilities/${vulnerabilityId}`,
       createReport: (pentestId: string) => `/admin/pentests/${pentestId}/vulnerability`,
       status: (pentestId: string, vulnerabilityId: string) => `/admin/pentests/${pentestId}/vulnerability/${vulnerabilityId}/status/`,
+      comment: (pentestId: string, vulnerabilityId: string) => `/admin/pentests/${pentestId}/vulnerability/${vulnerabilityId}/comment`,
     },
   },
 

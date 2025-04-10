@@ -91,7 +91,7 @@ function VulnerabilitiesList(props: {
               </div>
 
               <div className="col-span-1 flex justify-end items-center">
-                <Link className="text-primary-900 text-sm" to={`/dashboard/vulnerability-reports/${props.pentestId}/vulnerabilities/${vulnerability._id}`}>View details</Link>
+                <Link className="text-primary-900 text-sm" to={`/vulnerability-reports/${props.pentestId}/vulnerabilities/${vulnerability._id}`}>View details</Link>
               </div>
             </div>
           )

@@ -33,22 +33,22 @@ function App() {
         <Route path='/' element={<Layout />}>
           <Route path='dashboard' element={<DashboardHome />} />
 
-          <Route path='dashboard/pentests' element={<PentestsList />} />
-          <Route path='dashboard/pentests/:pentestId/' element={<PentestDetails />} />
-          <Route path='dashboard/pentests/:pentestId/vulnerabilities' element={<VulnerabilitiesInPentest />} />
-          <Route path='dashboard/pentests/create' element={<NewPentestsForm />} />
+          <Route path='/pentests' element={<PentestsList />} />
+          <Route path='/pentests/:pentestId/' element={<PentestDetails />} />
+          <Route path='/pentests/:pentestId/vulnerabilities' element={<VulnerabilitiesInPentest />} />
+          <Route path='/pentests/create' element={<NewPentestsForm />} />
 
-          <Route path='dashboard/vulnerability-reports/:pentestId/vulnerabilities/:vulnerabilityId' element={<FormPreview />} />
-          <Route path='dashboard/vulnerability-reports/:pentestId' element={<VulnerabilityReports />} />
-          <Route path='dashboard/vulnerability-reports/' element={<VulnerabilityReports />} />
-          <Route path='dashboard/vulnerability-reports/:pentestId/create' element={<ReportsForm />} />
+          <Route path='/vulnerability-reports/:pentestId/vulnerabilities/:vulnerabilityId' element={<FormPreview />} />
+          <Route path='/vulnerability-reports/:pentestId' element={<VulnerabilityReports />} />
+          <Route path='/vulnerability-reports/' element={<VulnerabilityReports />} />
+          <Route path='/vulnerability-reports/:pentestId/create' element={<ReportsForm />} />
 
-          <Route path='dashboard/client-lists' element={<ClientLists />} />
-          <Route path='dashboard/client-lists/users' element={<ClientUsers />} />
+          <Route path='/clients' element={<ClientLists />} />
+          <Route path='/clients/users' element={<ClientUsers />} />
 
-          <Route path='dashboard/pentesters-list' element={<PentestersList />} />
+          <Route path='/pentesters' element={<PentestersList />} />
 
-          <Route path='dashboard/settings' element={<Settings />} />
+          <Route path='/settings' element={<Settings />} />
         </Route>
       </Routes>
       <Toaster />

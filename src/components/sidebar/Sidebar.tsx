@@ -18,34 +18,34 @@ function Sidebar(props: {
 
   const navComponents = [
     {
-      link: "dashboard",
+      link: "/dashboard",
       text: "Dashboard",
       icon: "/state=dashboard.svg",
     },
     {
-      link: "dashboard/pentests",
+      link: "/pentests",
       text: "Pentests",
       icon: "/state=pentests.svg",
     },
     {
-      link: "dashboard/vulnerability-reports",
+      link: "/vulnerability-reports",
       text: "Vulnerability Reports",
       icon: "/state=reports.svg",
     },
     {
-      link: "dashboard/client-lists",
+      link: "/clients",
       text: "Client Lists",
       icon: "/state=clients.svg",
       subItems: [
         {
-          link: "dashboard/client-lists/users",
+          link: "/clients/users",
           icon: "/state=clients.svg",
           text: "Client Users"
         }
       ]
     },
     {
-      link: "dashboard/pentesters-list",
+      link: "/pentesters",
       text: "Pentesters List",
       icon: "/state=pentesters.svg",
     },
@@ -95,7 +95,7 @@ function Sidebar(props: {
             } my-3 h-[0.0625rem] bg-secondary`}
           />
           <SidebarNav
-            link="dashboard/settings"
+            link="/settings"
             navText="Settings"
             icon={setting}
             collapsed={props.collapsed}
