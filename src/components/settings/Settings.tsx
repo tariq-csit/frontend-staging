@@ -119,10 +119,9 @@ export default function SettingsPage() {
 
   const onPasswordSubmit = async (data: z.infer<typeof passwordFormSchema>) => {
     try {
-      await axiosInstance.put(apiRoutes.user, {
-        ...userData,
+      await axiosInstance.put(apiRoutes.changePassword, {
         currentPassword: data.currentPassword,
-        password: data.newPassword
+        newPassword: data.newPassword
       });
 
       // Invalidate user query to refetch updated data

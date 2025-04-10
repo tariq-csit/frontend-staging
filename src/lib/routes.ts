@@ -41,5 +41,7 @@ export const apiRoutes = {
   }, 
   // Upload Routes
   uploadLogo: `/upload/company-logo`,
-  uploadVulnerabilityAttachment: "/upload/attachment"
+  uploadVulnerabilityAttachment: "/upload/attachment",
+
+  changePassword: `/auth/password`,
 }
