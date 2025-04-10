@@ -170,12 +170,12 @@ function InitialForm(props:{
                   />
                   
                   <div className="flex justify-end self-stretch">
-                    <a
-                      href="/login"
+                    <Link
+                      to="/forgot-password"
                       className="text-primary-900 font-poppins text-sm font-semibold"
                     >
                       Forgot Password?
-                    </a>
+                    </Link>
                   </div>
                 </div>
                 <div className="cf-turnstile" data-sitekey="0x4AAAAAABAY4zDtElrDH2g0"></div>

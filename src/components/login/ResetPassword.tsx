@@ -11,23 +11,19 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import axiosInstance from "@/lib/AxiosInstance";
 import { apiRoutes } from "@/lib/routes";
 import { isAxiosError } from "axios";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 const formSchema = z.object({
   password: z
     .string()
     .min(8, {
       message: "Password must be at least 8 characters long",
-    })
-    .max(50)
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/, {
-      message: "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character",
     }),
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -36,10 +32,10 @@ const formSchema = z.object({
 });
 
 function ResetPassword() {
-  const [searchParams] = useSearchParams();
+  const {pathname} = useLocation()
   const navigate = useNavigate();
-  const resetToken = searchParams.get('token');
-  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const resetToken = pathname.split('/').pop();
+  console.log(resetToken);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -58,26 +54,11 @@ function ResetPassword() {
       });
       navigate('/forgot-password');
     }
-
-    const script = document.createElement("script");
-    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
-    script.async = true;
-    document.body.appendChild(script);
-
-    const interval = setInterval(() => {
-      const token = (window as any).turnstile?.getResponse();
-      if (token) {
-        setTurnstileToken(token);
-        clearInterval(interval);
-      }
-    }, 500);
-
-    return () => clearInterval(interval);
   }, [resetToken, navigate]);
 
   const { mutate: resetPassword, isPending } = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
-      return await axiosInstance.post(apiRoutes.resetPassword, {
+      return await axiosInstance.post(apiRoutes.resetPassword + '/' + resetToken, {
         password: values.password,
       });
     },
@@ -140,7 +121,6 @@ function ResetPassword() {
               </FormItem>
             )}
           />
-          <div className="cf-turnstile" data-sitekey="0x4AAAAAABAY4zDtElrDH2g0"></div>
           <Button 
             type="submit" 
             className="w-full bg-indigo-700 hover:bg-indigo-800"
