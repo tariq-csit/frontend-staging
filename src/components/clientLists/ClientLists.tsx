@@ -19,7 +19,25 @@ export default function ClientDashboard() {
     queryFn: () => axiosInstance.get(apiRoutes.clients.all).then((res) => res.data),
   })
 
+  const { data: signupCodesSent } = useQuery({
+    queryKey: ["signupCodesSent"],
+    queryFn: () => axiosInstance.get(apiRoutes.clients.all).then((res) => res.data),
+  })
+
   const [search, setSearch] = useState("")
+  const [activeTab, setActiveTab] = useState("All Clients")
+
+  const filteredClients = clients?.filter((client: Client) => {
+    const matchesSearch = client.name.toLowerCase().includes(search.toLowerCase())
+    if (activeTab === "All Clients") {
+      return matchesSearch
+    } else if (activeTab === "Signup Codes Sent") {
+      // Add logic here to filter clients with signup codes sent
+      // For now, showing all clients in this tab
+      return matchesSearch
+    }
+    return false
+  })
 
   return (
     <div className="">
@@ -38,8 +56,18 @@ export default function ClientDashboard() {
         {/* Tabs */}
         <div className="border-b mb-4">
           <div className="flex">
-            <TabButton active={true} label="All Clients" count="12" />
-            <TabButton label="Signup Codes Sent" count="24" />
+            <TabButton 
+              active={activeTab === "All Clients"} 
+              label="All Clients" 
+              count={clients?.length.toString() || "0"}
+              onClick={() => setActiveTab("All Clients")}
+            />
+            <TabButton 
+              active={activeTab === "Signup Codes Sent"} 
+              label="Signup Codes Sent" 
+              count={signupCodesSent?.length.toString() || "0"}
+              onClick={() => setActiveTab("Signup Codes Sent")}
+            />
           </div>
         </div>
 
@@ -60,7 +88,7 @@ export default function ClientDashboard() {
         </div>
 
         {/* Table */}
-        {clients && clients?.length > 0 ? (
+        {filteredClients && filteredClients?.length > 0 ? (
           <div className="overflow-x-auto">
             {/* Grid Header */}
             <div className="grid grid-cols-6 gap-4 text-sm text-gray-500 border-b py-3 px-4 font-normal">
@@ -74,11 +102,9 @@ export default function ClientDashboard() {
 
             {/* Grid Body */}
             <div className="divide-y">
-              {clients
-                ?.filter((client: Client) => client.name.toLowerCase().includes(search.toLowerCase()))
-                .map((client: Client) => (
-                  <ClientRow key={client._id} client={client} refetch={refetch} />
-                ))}
+              {filteredClients.map((client: Client) => (
+                <ClientRow key={client._id} client={client} refetch={refetch} />
+              ))}
             </div>
           </div>
         ) : (
@@ -106,9 +132,22 @@ function StatCard({ icon, value, label }: { icon: React.ReactNode; value: string
   )
 }
 
-function TabButton({ label, count, active = false }: { label: string; count: string; active?: boolean }) {
+function TabButton({ 
+  label, 
+  count, 
+  active = false, 
+  onClick 
+}: { 
+  label: string; 
+  count: string; 
+  active?: boolean;
+  onClick?: () => void;
+}) {
   return (
-    <button className={`px-4 py-2 relative ${active ? "text-indigo-600 font-medium" : "text-gray-500"}`}>
+    <button 
+      onClick={onClick}
+      className={`px-4 py-2 relative ${active ? "text-indigo-600 font-medium" : "text-gray-500"}`}
+    >
       {label}
       <span className="ml-2 bg-gray-100 text-gray-700 text-xs px-1.5 py-0.5 rounded-md">{count}</span>
       {active && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600"></div>}
