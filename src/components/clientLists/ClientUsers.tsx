@@ -2,8 +2,21 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { ChevronRight, MoreVertical } from "lucide-react"
 import AddClientUserDialog from "./AddClientUserDialog";
+import { apiRoutes } from "@/lib/routes";
+import { useQuery } from "@tanstack/react-query";
+import axiosInstance from "@/lib/AxiosInstance";
+import { ClientUser } from "@/types/types";
+import { useState } from "react";
+import ClientUserActionMenu from "./ClientUserActionMenu";
 
 export default function ClientUsers() {
+  const {data: clientUsers, refetch} = useQuery({
+    queryKey: ["clientUsers"],
+    queryFn: () => axiosInstance.get(apiRoutes.clientUsers.all).then((res) => res.data),
+  })
+
+  const [search, setSearch] = useState("");
+
   return (
     <div className="">
 
@@ -14,7 +27,7 @@ export default function ClientUsers() {
         {/* Search and Actions */}
         <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
           <div className="w-full md:w-1/2">
-            <Input placeholder="Search for Client User" className="w-full" />
+            <Input onChange={(e) => setSearch(e.target.value)} value={search} placeholder="Search for Client User" className="w-full" />
           </div>
           <div className="flex gap-2">
             <Button variant="outline" className="flex items-center gap-2">
@@ -38,8 +51,8 @@ export default function ClientUsers() {
               </tr>
             </thead>
             <tbody>
-              {[1, 2, 3, 4, 5].map((item) => (
-                <ClientUserRow key={item} />
+              {clientUsers && clientUsers?.filter((user: ClientUser) => user.name.toLowerCase().includes(search.toLowerCase())).map((user: ClientUser) => (
+                <ClientUserRow key={user._id} user={user} refetch={refetch} />
               ))}
             </tbody>
           </table>
@@ -106,7 +119,7 @@ function FilterIcon() {
   )
 }
 
-function ClientUserRow() {
+function ClientUserRow({user, refetch}: {user: ClientUser, refetch: () => void}) {
   return (
     <tr className="border-t hover:bg-gray-50">
       <td className="py-4 px-4">
@@ -114,41 +127,30 @@ function ClientUserRow() {
           <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
             <img src="https://ui-avatars.com/api/?name=Hammad+Mahmood" alt="User avatar" className="w-full h-full object-cover" />
           </div>
-          <span className="font-medium">Hammad Mahmood</span>
+          <span className="font-medium">{user.name}</span>
         </div>
       </td>
-      <td className="py-4 px-4 text-gray-600">hammad65@gmail.com</td>
+      <td className="py-4 px-4 text-gray-600">{user.email}</td>
       <td className="py-4 px-4">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
-            <VWLogo />
+            <img src={user.clients[0].logoUrl || "/placeholder.svg"} alt="Client logo" className="w-full h-full object-cover" />
           </div>
-          <span>Wols Wagon</span>
+          <span>{user.clients[0].name}</span>
         </div>
       </td>
       <td className="py-4 px-4">
         <span className={`px-3 py-1 rounded-full text-sm ${
-          Math.random() > 0.5 
+          user.twoFactorEnabled 
             ? "bg-[#DCFCE7] text-[#166534]" 
             : "bg-[#F3F4F6] text-[#6B7280]"
         }`}>
-          {Math.random() > 0.5 ? "Active" : "In-Active"}
+          {user.twoFactorEnabled ? "Active" : "In-Active"}
         </span>
       </td>
       <td className="py-4 px-4 text-right">
-        <button className="p-1 rounded-full hover:bg-gray-100">
-          <MoreVertical className="h-5 w-5 text-gray-400" />
-        </button>
+        <ClientUserActionMenu user={user} refetch={refetch} />
       </td>
     </tr>
-  )
-}
-
-function VWLogo() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="12" cy="12" r="12" fill="#0D28A6" />
-      <path d="M12 4L6 16H8L12 8L16 16H18L12 4Z" fill="white" />
-    </svg>
   )
 }

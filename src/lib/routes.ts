@@ -33,14 +33,22 @@ export const apiRoutes = {
     detail: (id: string) => `/admin/clients/${id}`,
   },
 
+  clientUsers: {
+    all: "/admin/users/client",
+    onboardUser: (clientId: string) => `/admin/clients/${clientId}/users/onboard`,
+    detail: (clientUserId: string) => `/admin/users/clients/${clientUserId}`,
+  },
+
   pentesters: {
     all: `/admin/users/pentester`,
     onboardUser: `/admin/users/onboard-pentester`,
     pentester: (id: string) => `/admin/users/pentester/${id}`,
     reset2FA: (id: string) => `/admin/users/pentester/${id}/reset-2fa`,
+    deactivate: (id: string) => `/admin/users/pentester/${id}/deactivate`,
   }, 
   // Upload Routes
   uploadLogo: `/upload/company-logo`,
+  uploadProfilePicture: `/upload/profile-picture`,
   uploadVulnerabilityAttachment: "/upload/attachment",
 
   changePassword: `/auth/password`,

@@ -81,6 +81,8 @@ export interface Pentester {
   role: string;
   profilePicture: string;
   twoFactorEnabled: boolean;
+  isActive: boolean;
+  vulnerabilityCount: number;
   clients: {
     _id: string;
     name: string;
@@ -137,3 +139,25 @@ export interface Pentest {
 //   hasRetestReport: boolean;
 //   hasJiraIntegration: boolean;
 // }
+
+
+export interface ClientUser {
+    _id: string;
+    email: string;
+    name: string;
+    role: string;
+    twoFactorEnabled: boolean;
+    profilePicture?: string;
+    clients: {
+        _id: string;
+        name: string;
+        logoUrl?: string;
+    }[];
+    pentests: {
+        _id: string;
+        name: string;
+        type: string;
+        startDate: string;
+        endDate: string;
+    }[];
+}
