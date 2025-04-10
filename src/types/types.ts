@@ -18,6 +18,9 @@ interface Comment {
   user: User
   comment: string
   internal: boolean
+  attachments: Attachment[]
+  createdAt: string
+  updatedAt: string
 }
 
 export interface Vulnerability {

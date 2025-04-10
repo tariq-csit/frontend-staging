@@ -25,7 +25,6 @@ function SidebarNav(props: propsType) {
   useEffect(() => {
     const isMainActive = pathname === props.link || pathname === `/${props.link}`;
     const isSubActive = props.subItems?.some(item => pathname === item.link || pathname === `/${item.link}`);
-    console.log(isMainActive, isSubActive);
     setActive(isMainActive || !!isSubActive);
     setShowSubMenu(isMainActive || !!isSubActive);
   }, [pathname, props.link, props.subItems]);

@@ -9,6 +9,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { Edit, Trash2, Lock } from "lucide-react";
 import { Select, SelectTrigger, SelectItem, SelectContent, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
+import CommentCard from "./CommentCard";
 
 
 interface StatusOption {
@@ -51,7 +52,6 @@ function formPreview() {
     }
   })
 
-
   const statusOptions: StatusOption[] = [
     { value: "New", label: "New", color: "bg-gray-100" },
     { value: "Triaged", label: "Triaged", color: "bg-blue-100" },
@@ -59,6 +59,7 @@ function formPreview() {
     { value: "Resolved", label: "Resolved", color: "bg-green-100" },
     { value: "Not Applicable", label: "Not Applicable", color: "bg-red-100" },
   ]
+
 
   return (
     <div className="flex flex-col sm:flex-row gap-8 font-poppins">
@@ -225,7 +226,18 @@ function formPreview() {
           <h1 className="text-2xl font-medium mb-6">6. Attachments</h1>
           <FileAttachmentPreview attachments={vulnerability?.attachments ?? []} />
         </div>
-        <CommentSection pentestId={pentestId ?? ""} vulnerabilityId={vulnerabilityId ?? ""} />
+
+        <div className="flex flex-col gap-4">
+          {
+            vulnerability?.comments.map((comment) => {
+              return (
+                <CommentCard key={comment._id} author={comment.user} content={comment.comment} internal={comment.internal} attachments={comment.attachments} />
+              )
+            })
+          }
+        </div>
+        
+        <CommentSection pentestId={pentestId ?? ""} vulnerabilityId={vulnerabilityId ?? ""} refetch={refetchVulnerability} />
       </div>
 
       <div className="max-w-md mx-auto bg-white h-fit rounded-lg shadow-sm p-6">
