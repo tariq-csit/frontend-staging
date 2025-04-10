@@ -44,4 +44,6 @@ export const apiRoutes = {
   uploadVulnerabilityAttachment: "/upload/attachment",
 
   changePassword: `/auth/password`,
+  forgotPassword: `/auth/request-reset`,
+  resetPassword: `/auth/reset-password`,
 }

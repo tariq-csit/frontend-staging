@@ -18,6 +18,8 @@ import ReportsForm from './components/vulenerabilityReports/subcomponents/Vulner
 import { ThemeProvider } from './components/theme-provider';
 import { Toaster } from './components/ui/toaster';
 import FormPreview from './components/vulenerabilityReports/subcomponents/FormPreview';
+import ForgotPassword from './components/login/ForgotPassword';
+import ResetPassword from './components/login/ResetPassword';
 
 
 function App() {
@@ -26,6 +28,8 @@ function App() {
       <Routes>
         <Route path='/login' element={<Login />} />
         <Route path='/signup' element={<SignUp />} />
+        <Route path='/forgot-password' element={<ForgotPassword />} />
+        <Route path='/reset-password' element={<ResetPassword />} />
         <Route path='/' element={<Layout />}>
           <Route path='dashboard' element={<DashboardHome />} />
 
