@@ -29,7 +29,7 @@ function Layout() {
 
   // Redirect to login if no token
   useEffect(() => {
-    if (!sessionStorage.getItem("token")) {
+    if (!localStorage.getItem("token")) {
       navigate("/login");
     }
   }, [navigate]);

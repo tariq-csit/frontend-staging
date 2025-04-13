@@ -57,7 +57,7 @@ function TwoFaVarification(props:{
         }
       );
       
-      sessionStorage.setItem('token', response.data.token)
+      localStorage.setItem('token', response.data.token)
       navigate('/dashboard')
       setLoading(false)
       pinForm.reset();

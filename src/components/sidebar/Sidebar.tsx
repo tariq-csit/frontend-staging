@@ -108,7 +108,7 @@ function Sidebar(props: {
             collapsed={props.collapsed}
             setCollapsed={props.setCollapsed}
             onClick={() => {
-              sessionStorage.clear();
+              localStorage.clear();
               localStorage.clear();
               axiosInstance.post(apiRoutes.logout);
             }}

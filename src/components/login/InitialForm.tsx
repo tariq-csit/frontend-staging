@@ -78,8 +78,8 @@ function InitialForm(props:{
       });
       props.setvarificationToken(response.data.token);
       props.setEmail(values.email);
-      sessionStorage.setItem("user", JSON.stringify(response.data.user));
-      sessionStorage.setItem("refreshToken", response.data.refreshToken);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      localStorage.setItem("refreshToken", response.data.refreshToken);
       setError(false);
     } catch (error: unknown) {
       if (isAxiosError(error) && error.response) {

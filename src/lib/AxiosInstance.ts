@@ -9,9 +9,9 @@ const axiosInstance = axios.create({
 async function refreshToken() {
   try {
     const response = await axios.post(apiRoutes.refreshToken, {
-      refreshToken: sessionStorage.refreshToken,
+      refreshToken: localStorage.refreshToken,
     });
-    sessionStorage.setItem('token', response.data.token);
+    localStorage.setItem('token', response.data.token);
     return response.data.token;
   } catch (error) {
     console.error(error);
@@ -21,7 +21,7 @@ async function refreshToken() {
 
 // Request Interceptor
 axiosInstance.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem('token');
+  const token = localStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -44,7 +44,7 @@ axiosInstance.interceptors.response.use((response) => {
       // Optional: Log the user out if token refresh fails
       console.error('User session expired');
       // Redirect to login or show an error
-      sessionStorage.clear()
+      localStorage.clear()
       window.location.href = '/login';
     }
     // Redirect to login or logout the user

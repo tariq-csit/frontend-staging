@@ -7,7 +7,7 @@ import { useEffect } from "react";
 function Login() {
   const navigate = useNavigate();
   useEffect(() => {
-    if (sessionStorage.getItem("token")) {
+    if (localStorage.getItem("token")) {
       navigate("/dashboard");
     }
   }, [navigate]);
