@@ -51,6 +51,7 @@ export const apiRoutes = {
   uploadLogo: `/upload/company-logo`,
   uploadProfilePicture: `/upload/profile-picture`,
   uploadVulnerabilityAttachment: "/upload/attachment",
+  uploadPentestAttachment: "/upload/pentest-attachments",
 
   changePassword: `/auth/password`,
   forgotPassword: `/auth/request-reset`,
