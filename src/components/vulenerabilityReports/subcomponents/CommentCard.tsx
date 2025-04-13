@@ -19,7 +19,7 @@ export default function CommentCard({ author, content, internal = false, attachm
   return (
     <div
       className={cn(
-        "p-4 rounded-lg",
+        "p-4 rounded-lg flex flex-col gap-2",
         internal
           ? "bg-[#f5f3ff] border-2 border-[#7e22ce]" // Light purple for internal comments
           : "bg-white", // White with purple border for regular comments
@@ -37,11 +37,12 @@ export default function CommentCard({ author, content, internal = false, attachm
 
       <div className="text-gray-800">{content}</div>
 
+      <div className="flex gap-4 w-full overflow-x-auto">
       {attachments && attachments.map((attachment) => (
-        <div key={attachment._id} className="mt-4">
+        <div key={attachment._id}>
           {attachment.contentType.startsWith("image/") ? (
             <div className="relative group w-fit">
-                <img src={attachment.url} alt={attachment.name} className="max-w-40 h-auto" onClick={() => {
+                <img src={attachment.url} alt={attachment.name} className="max-w-40 h-auto border border-gray-400 rounded-md" onClick={() => {
                     setSelectedAttachment(attachment);
                     setOpen(true);
                 }} />
@@ -58,6 +59,7 @@ export default function CommentCard({ author, content, internal = false, attachm
           )}
         </div>
       ))}
+      </div>
       <ImagePreview url={selectedAttachment?.url ?? ""} open={open} setOpen={setOpen} />
     </div>
   )
