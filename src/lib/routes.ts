@@ -25,6 +25,22 @@ export const apiRoutes = {
       status: (pentestId: string, vulnerabilityId: string) => `/admin/pentests/${pentestId}/vulnerability/${vulnerabilityId}/status/`,
       comment: (pentestId: string, vulnerabilityId: string) => `/admin/pentests/${pentestId}/vulnerability/${vulnerabilityId}/comment`,
     },
+    reports: {
+      // Pentest Report
+      uploadPentestReport: (pentestId: string) => `/admin/pentests/${pentestId}/upload-pentest-report`,
+      uploadRetestReport: (pentestId: string) => `/admin/pentests/${pentestId}/upload-retest-report`,
+      publishPentestReport: (pentestId: string) => `/admin/pentests/${pentestId}/publish-pentest-report`,
+      publishRetestReport: (pentestId: string) => `/admin/pentests/${pentestId}/publish-retest-report`,
+      getPentestReport: (pentestId: string) => `/admin/pentests/${pentestId}/pentest-report`,
+      getRetestReport: (pentestId: string) => `/admin/pentests/${pentestId}/retest-report`,
+      deletePentestReport: (pentestId: string) => `/admin/pentests/${pentestId}/pentest-report`,
+      deleteRetestReport: (pentestId: string) => `/admin/pentests/${pentestId}/retest-report`,
+      requestReportPassword: (pentestId: string) => `/admin/pentests/${pentestId}/request-report-password`,
+      requestRetestPassword: (pentestId: string) => `/admin/pentests/${pentestId}/request-retest-password`,
+      // Report Comments
+      addPentestReportComment: (pentestId: string) => `/admin/pentests/${pentestId}/pentest-report/comments`,
+      getPentestReportComments: (pentestId: string) => `/admin/pentests/${pentestId}/pentest-report/comments`,
+    },
   },
 
   clients: {

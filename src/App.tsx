@@ -20,6 +20,7 @@ import { Toaster } from './components/ui/toaster';
 import FormPreview from './components/vulenerabilityReports/subcomponents/FormPreview';
 import ForgotPassword from './components/login/ForgotPassword';
 import ResetPassword from './components/login/ResetPassword';
+import ManagePentestReport from './components/pentests/managePentest/ManagePentestReport';
 
 
 function App() {
@@ -37,6 +38,8 @@ function App() {
           <Route path='/pentests/:pentestId/' element={<PentestDetails />} />
           <Route path='/pentests/:pentestId/vulnerabilities' element={<VulnerabilitiesInPentest />} />
           <Route path='/pentests/create' element={<NewPentestsForm />} />
+
+          <Route path='/pentests/:pentestId/manage-report' element={<ManagePentestReport />} />
 
           <Route path='/vulnerability-reports/:pentestId/vulnerabilities/:vulnerabilityId' element={<FormPreview />} />
           <Route path='/vulnerability-reports/:pentestId' element={<VulnerabilityReports />} />
