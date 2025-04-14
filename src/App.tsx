@@ -21,6 +21,7 @@ import FormPreview from './components/vulenerabilityReports/subcomponents/FormPr
 import ForgotPassword from './components/login/ForgotPassword';
 import ResetPassword from './components/login/ResetPassword';
 import ManagePentestReport from './components/pentests/managePentest/ManagePentestReport';
+import PentestReport from './components/pentests/managePentest/PentestReport';
 
 
 function App() {
@@ -40,6 +41,7 @@ function App() {
           <Route path='/pentests/create' element={<NewPentestsForm />} />
 
           <Route path='/pentests/:pentestId/manage-report' element={<ManagePentestReport />} />
+          <Route path='/pentests/:pentestId/pentest-report' element={<PentestReport />} />
 
           <Route path='/vulnerability-reports/:pentestId/vulnerabilities/:vulnerabilityId' element={<FormPreview />} />
           <Route path='/vulnerability-reports/:pentestId' element={<VulnerabilityReports />} />

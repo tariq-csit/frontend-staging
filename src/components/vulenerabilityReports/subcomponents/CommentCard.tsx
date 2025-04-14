@@ -39,7 +39,7 @@ export default function CommentCard({ author, content, internal = false, attachm
 
       <div className="flex gap-4 w-full overflow-x-auto">
       {attachments && attachments.map((attachment) => (
-        <div key={attachment._id}>
+        <div key={attachment.id} className="border rounded p-2 flex items-center gap-2">
           {attachment.contentType.startsWith("image/") ? (
             <div className="relative group w-fit">
                 <img src={attachment.url} alt={attachment.name} className="max-w-40 h-auto border border-gray-400 rounded-md" onClick={() => {

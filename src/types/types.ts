@@ -6,11 +6,11 @@ export interface User {
 }
 
 export interface Attachment {
-  _id: string
-  url: string
-  name: string
-  key: string
-  contentType: string
+  id: string;
+  url: string;
+  name: string;
+  key: string;
+  contentType: string;
 }
 
 interface Comment {
@@ -125,6 +125,7 @@ export interface Pentest {
   vulnerabilitiesCount: number;
   report: Report;
   retestReport: Report;
+  attachments: Attachment[];
 }
 
 // export interface Pentest {
