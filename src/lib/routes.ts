@@ -40,6 +40,8 @@ export const apiRoutes = {
       // Report Comments
       addPentestReportComment: (pentestId: string) => `/admin/pentests/${pentestId}/pentest-report/comments`,
       getPentestReportComments: (pentestId: string) => `/admin/pentests/${pentestId}/pentest-report/comments`,
+      addRetestReportComment: (pentestId: string) => `/admin/pentests/${pentestId}/retest-report/comments`,
+      getRetestReportComments: (pentestId: string) => `/admin/pentests/${pentestId}/retest-report/comments`,
     },
   },
 

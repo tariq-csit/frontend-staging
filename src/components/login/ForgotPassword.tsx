@@ -106,8 +106,8 @@ function ForgotPassword() {
             )}
           />
           <div className="cf-turnstile" data-sitekey="0x4AAAAAABAY4zDtElrDH2g0"></div>
-          <Button type="submit" className="w-full bg-indigo-700 hover:bg-indigo-800">
-            Send Reset Link
+          <Button type="submit" className="w-full bg-indigo-700 hover:bg-indigo-800" disabled={isPending}>
+            {isPending ? "Sending..." : "Send Reset Link"}
           </Button>
         </form>
       </Form>

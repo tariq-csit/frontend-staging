@@ -22,6 +22,7 @@ import ForgotPassword from './components/login/ForgotPassword';
 import ResetPassword from './components/login/ResetPassword';
 import ManagePentestReport from './components/pentests/managePentest/ManagePentestReport';
 import PentestReport from './components/pentests/managePentest/PentestReport';
+import RetestReport from './components/pentests/managePentest/RetestReport';
 
 
 function App() {
@@ -42,6 +43,7 @@ function App() {
 
           <Route path='/pentests/:pentestId/manage-report' element={<ManagePentestReport />} />
           <Route path='/pentests/:pentestId/pentest-report' element={<PentestReport />} />
+          <Route path='/pentests/:pentestId/retest-report' element={<RetestReport />} />
 
           <Route path='/vulnerability-reports/:pentestId/vulnerabilities/:vulnerabilityId' element={<FormPreview />} />
           <Route path='/vulnerability-reports/:pentestId' element={<VulnerabilityReports />} />
