@@ -57,7 +57,7 @@ const Code = (props: {
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                <Input {...field} className="bg-white" placeholder="eg: 5fc5277cb2c5983918c25c92c31b018413ce4b4" />
+                <Input {...field} className="bg-white w-full" placeholder="eg: 5fc5277cb2c5983918c25c92c31b018413ce4b4" />
                 </FormControl>
                 <FormMessage />
               </FormItem>

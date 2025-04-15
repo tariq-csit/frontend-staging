@@ -1,5 +1,5 @@
 import { apiRoutes } from "@/lib/routes";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,6 +18,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axiosInstance from "@/lib/AxiosInstance";
 import { isAxiosError } from "axios";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
   email: z
@@ -30,7 +32,6 @@ const formSchema = z.object({
   password: z.string().min(8, {
     message: "Password should be atleast 8 characters long",
   }),
-  mobile: z.boolean().default(false).optional(),
 });
 
 
@@ -52,6 +53,45 @@ function InitialForm(props:{
 
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
+  const loginMutation = useMutation({
+    mutationFn: async (values: z.infer<typeof formSchema>) => {
+      const response = await axiosInstance.post(apiRoutes.login, {
+        email: values.email,
+        password: values.password,
+        "cf-turnstile-response": turnstileToken,
+      });
+      return response.data;
+    },
+    onSuccess: (data: any, variables) => {
+      props.setvarificationToken(data.token);
+      props.setEmail(variables.email);
+      localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("refreshToken", data.refreshToken);
+      setError(false);
+      toast({
+        title: "Success",
+        description: "Successfully logged in!",
+      });
+    },
+    onError: (error) => {
+      if (isAxiosError(error) && error.response) {
+        const errorMessage = error.response.data.message;
+        if (errorMessage === "2FA setup required") {
+          props.settempToken(error.response.data.tempToken);
+          setError(false);
+        } else {
+          console.log(errorMessage);
+          setError(true);
+          toast({
+            title: "Error",
+            description: errorMessage || "Failed to login. Please try again.",
+            variant: "destructive",
+          });
+        }
+      }
+    },
+  });
+
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
@@ -70,31 +110,7 @@ function InitialForm(props:{
   }, []);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    try {
-      const response = await axiosInstance.post(apiRoutes.login, {
-        email: values.email,
-        password: values.password,
-        "cf-turnstile-response": turnstileToken,
-      });
-      props.setvarificationToken(response.data.token);
-      props.setEmail(values.email);
-      localStorage.setItem("user", JSON.stringify(response.data.user));
-      localStorage.setItem("refreshToken", response.data.refreshToken);
-      setError(false);
-    } catch (error: unknown) {
-      if (isAxiosError(error) && error.response) {
-        const errorMessage = error.response.data.message;
-        if (errorMessage === "2FA setup required") {
-          props.settempToken(error.response.data.tempToken);
-          setError(false);
-        } else {
-          console.log(errorMessage);
-          setError(true);
-        }
-      } else {
-        console.log(error);
-      }
-    }
+    loginMutation.mutate(values);
   }
 
   return (
@@ -179,49 +195,29 @@ function InitialForm(props:{
                   </div>
                 </div>
                 <div className="cf-turnstile" data-sitekey="0x4AAAAAABAY4zDtElrDH2g0"></div>
-                <Button className="w-full text-lg py-4" type="submit">
-                  Sign in
-                </Button>
-                <FormField
-                  control={form.control}
-                  name="mobile"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center gap-2">
-                      <FormControl>
-                        <Checkbox
-                          className="h-[1.125rem] w-[1.125rem] my-auto"
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="pb-2 text-inputBorder font-poppins text-sm font-normal">
-                        <FormLabel>Keep me logged in</FormLabel>
-                      </div>
-                    </FormItem>
+                <Button 
+                  className="w-full text-lg py-4" 
+                  type="submit"
+                  disabled={loginMutation.isPending}
+                >
+                  {loginMutation.isPending ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Signing in...
+                    </>
+                  ) : (
+                    "Sign in"
                   )}
-                />
+                </Button>
               </form>
             </Form>
             <p className="font-poppins text-inputBorder ">
-              Don’t have an account?
+              Don't have an account?
               <Link to={'/signup'} className="text-primary-900 font-medium cursor-pointer">
                 {" "}
                 Signup Now!
               </Link>
             </p>
-            <div className="flex flex-col items-start gap-[0.5625rem] self-stretch">
-              <div className="flex justify-center items-center gap-3 self-stretch text-inputBorder">
-                <div className="w-[4.375rem] border h-[0.0625rem] bg-inputBorder" />
-                <span className="w-[1.0625rem] h-[1.1875rem] -mt-2">or</span>
-                <div className="w-[4.375rem] border h-[0.0625rem] bg-inputBorder" />
-              </div>
-              <div className="flex justify-center items-center gap-2 self-stretch">
-                <img src="/google.svg" />
-                <span className="w-[9.9375rem] text-inputBorder font-poppins">
-                  Sign in with Google
-                </span>
-              </div>
-            </div>
           </div>
         </div>
         <p className="text-center w-full text-primary-900 font-inter">
