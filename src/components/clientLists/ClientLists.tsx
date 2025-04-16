@@ -10,7 +10,7 @@ import { apiRoutes } from "@/lib/routes"
 import SendCode from "./SendCode"
 import AddClientDialog from "./AddClientDialog"
 import type { Client } from "@/types/types"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import ClientActionMenu from "./ClientActionMenu"
 
 export default function ClientDashboard() {
@@ -26,18 +26,24 @@ export default function ClientDashboard() {
 
   const [search, setSearch] = useState("")
   const [activeTab, setActiveTab] = useState("All Clients")
+  const [filteredClients, setFilteredClients] = useState<Client[]>([])
 
-  const filteredClients = clients?.filter((client: Client) => {
-    const matchesSearch = client.name.toLowerCase().includes(search.toLowerCase())
-    if (activeTab === "All Clients") {
-      return matchesSearch
-    } else if (activeTab === "Signup Codes Sent") {
-      // Add logic here to filter clients with signup codes sent
-      // For now, showing all clients in this tab
-      return matchesSearch
-    }
-    return false
-  })
+  useEffect(() => {
+    if (clients && clients.length > 0) {
+      setActiveTab("All Clients")
+      setFilteredClients(clients?.filter((client: Client) => {
+        const matchesSearch = client.name.toLowerCase().includes(search.toLowerCase())
+        if (activeTab === "All Clients") {
+          return matchesSearch
+        } else if (activeTab === "Signup Codes Sent") {
+          // Add logic here to filter clients with signup codes sent
+          // For now, showing all clients in this tab
+          return matchesSearch
+        }
+        return false
+      }))
+    } 
+  }, [clients])
 
   return (
     <div className="">
@@ -59,7 +65,7 @@ export default function ClientDashboard() {
             <TabButton 
               active={activeTab === "All Clients"} 
               label="All Clients" 
-              count={clients?.length.toString() || "0"}
+              count={clients && clients.length && clients?.length.toString() || "0"}
               onClick={() => setActiveTab("All Clients")}
             />
             <TabButton 

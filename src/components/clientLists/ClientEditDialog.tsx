@@ -14,6 +14,7 @@ import type { Client } from "@/types/types"
 import type { Dispatch, SetStateAction } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { toast } from "@/hooks/use-toast"
+import { Loader2 } from "lucide-react"
 
 const formSchema = z.object({
   companyName: z.string().min(1),
@@ -38,7 +39,7 @@ export default function ClientEditDialog({ client, refetch, open, onOpenChange }
     },
   })
 
-  const { mutate: updateClient } = useMutation({
+  const { mutate: updateClient, isPending: isUpdatingClient } = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
       const res = await axiosInstance.put(apiRoutes.clients.detail(client._id), {
         name: values.companyName,
@@ -164,8 +165,8 @@ export default function ClientEditDialog({ client, refetch, open, onOpenChange }
           >
             Cancel
           </Button>
-          <Button type="button" onClick={form.handleSubmit(onSubmit)}>
-            Save Changes
+          <Button type="button" onClick={form.handleSubmit(onSubmit)} disabled={isUpdatingClient}>
+            {isUpdatingClient ? (<><Loader2 className="w-4 h-4 animate-spin" /><span>Saving...</span></>) : "Save Changes"}
           </Button>
         </DialogFooter>
       </DialogContent>

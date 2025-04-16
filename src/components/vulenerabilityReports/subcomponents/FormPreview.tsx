@@ -4,7 +4,7 @@ import CommentSection from "./CommentSection";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "@/lib/AxiosInstance";
 import { apiRoutes } from "@/lib/routes";
-import { Vulnerability } from "@/types/types";
+import { Pentest, Vulnerability } from "@/types/types";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Edit, Trash2, Lock } from "lucide-react";
 import { Select, SelectTrigger, SelectItem, SelectContent, SelectValue } from "@/components/ui/select";
@@ -28,7 +28,12 @@ function formPreview() {
     queryFn: () => axiosInstance.get<Vulnerability>(apiRoutes.pentests.vulnerabilities.details(pentestId!, vulnerabilityId!)).then((res) => res.data)
   })
 
-  const {mutate: updateVulnerabilityStatus} = useMutation({
+  const {data: pentest} = useQuery({
+    queryKey: ["pentest", pentestId],
+    queryFn: () => axiosInstance.get<Pentest>(apiRoutes.pentests.details(pentestId!)).then((res) => res.data)
+  })
+
+  const {mutate: updateVulnerabilityStatus, isPending: isUpdatingVulnerabilityStatus} = useMutation({
     mutationFn: (status: string) => axiosInstance.patch(apiRoutes.pentests.vulnerabilities.status(pentestId!, vulnerabilityId!),
       {
         status: status
@@ -67,7 +72,7 @@ function formPreview() {
         <div className="w-full flex flex-col gap-6 p-6 bg-white rounded-lg">
           <div className="flex flex-col gap-2">
             <h2 className="text-2xl font-medium">
-              Submit vulnerability report
+              {vulnerability?.title}
             </h2>
             <p>
               Provide detailed information to ensure easy validation and review.
@@ -255,23 +260,15 @@ function formPreview() {
             </div>
           </div>
         </div>
-        <h1 className="text-3xl font-bold text-[#1a1a2e]">Pentest Title</h1>
+        <h1 className="text-3xl font-bold text-[#1a1a2e]">{pentest?.name}</h1>
       </div>
-
-      {/* Description */}
-      <p className="text-gray-700 mb-8 text-lg">
-        A Penetration Test, Or Pentest, Is A Simulated Cyber Attack Against Your Computer System To Check For
-        Vulnerabilities That An Attacker Could Exploit. It Involves Assessing The Security O...
-      </p>
 
       {/* Client info */}
       <div className="mb-6">
         <h2 className="text-xl font-bold mb-3">Client:</h2>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center border border-gray-300">
-            <div className="w-6 h-6 rounded-full bg-[#3a4a6b]"></div>
-          </div>
-          <span className="text-lg">Digital Circle (Cloud Hosting Services)</span>
+          <img src={pentest?.clients[0].logoUrl} alt={pentest?.clients[0].name} className="w-10 h-10 rounded-full" />
+          <span className="text-lg">{pentest?.clients[0].name}</span>
         </div>
       </div>
 
@@ -280,7 +277,7 @@ function formPreview() {
         <h2 className="text-xl font-bold mb-3">Status:</h2>
         <Select value={vulnerability?.status} onValueChange={(value) => {
           updateVulnerabilityStatus(value)
-        }}>
+        }} disabled={isUpdatingVulnerabilityStatus}>
           <SelectTrigger className={`w-[180px] ${statusOptions.find(option => option.value === vulnerability?.status)?.color} border-none`}>
             <SelectValue placeholder="Status" />
           </SelectTrigger>
@@ -302,6 +299,7 @@ function formPreview() {
         <Button
           variant="outline"
           className="border-[#4a3a9c] text-[#4a3a9c] hover:bg-[#f0eeff] flex items-center justify-center gap-2"
+          onClick={() => navigate(`/vulnerability-reports/${pentestId}/vulnerabilities/${vulnerabilityId}/edit`)}
         >
           <Edit className="h-5 w-5" />
           Edit

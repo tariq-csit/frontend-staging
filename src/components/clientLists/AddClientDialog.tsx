@@ -8,14 +8,14 @@ import { useForm } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, Form } from "@/components/ui/form";
 import { apiRoutes } from "@/lib/routes";
 import axiosInstance from "@/lib/AxiosInstance";
-import { PlusIcon } from "lucide-react";
+import { Loader2, PlusIcon } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 
 const formSchema = z.object({
   companyName: z.string().min(1),
   email: z.string().email(),
-  uploadLogo: z.string().min(1),
+  uploadLogo: z.string().optional(),
 })
 
 export default function AddClientDialog({refetch}: {refetch: () => void}) {
@@ -30,7 +30,7 @@ export default function AddClientDialog({refetch}: {refetch: () => void}) {
     },
   })
 
-  const {mutate: addClient} = useMutation({
+  const {mutate: addClient, isPending: isAddingClient} = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
       const res = await axiosInstance.post(apiRoutes.clients.all, {
         "name": values.companyName,
@@ -165,8 +165,8 @@ export default function AddClientDialog({refetch}: {refetch: () => void}) {
               Cancel
             </Button>
           </DialogClose>
-          <Button type="submit" onClick={form.handleSubmit(onSubmit)}>
-            Add Client
+          <Button type="submit" onClick={form.handleSubmit(onSubmit)} disabled={isAddingClient}>
+            {isAddingClient ? (<><Loader2 className="w-4 h-4 animate-spin" /><span>Adding Client...</span></>) : "Add Client"}
           </Button>
         </DialogFooter>
       </DialogContent>

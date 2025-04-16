@@ -10,6 +10,7 @@ import axiosInstance from "@/lib/AxiosInstance";
 import { apiRoutes } from "@/lib/routes";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
     email: z.string().email(),
@@ -25,7 +26,7 @@ export default function SendCode() {
         },
     })
 
-    const { mutate: sendSignupCode } = useMutation({
+    const { mutate: sendSignupCode, isPending: isSendingSignupCode } = useMutation({
         mutationFn: async (values: z.infer<typeof formSchema>) => {
             const response = await axiosInstance.post(apiRoutes.clients.sendSignupCode, {
                 email: values.email
@@ -91,8 +92,8 @@ export default function SendCode() {
                             Cancel
                         </Button>
                     </DialogClose>
-                    <Button type="submit" onClick={form.handleSubmit(onSubmit)}>
-                        Send Signup Code
+                    <Button type="submit" onClick={form.handleSubmit(onSubmit)} disabled={isSendingSignupCode}>
+                        {isSendingSignupCode ? (<><Loader2 className="w-4 h-4 animate-spin" /><span>Sending...</span></>) : "Send Signup Code"}
                     </Button>
                 </DialogFooter>
             </DialogContent>

@@ -2,7 +2,7 @@ import { useEditor, EditorContent, Extension } from "@tiptap/react"
 import StarterKit from "@tiptap/starter-kit"
 import Placeholder from "@tiptap/extension-placeholder"
 import Image from "@tiptap/extension-image"
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useRef, useState, useEffect } from "react"
 import { FontBoldIcon, FontItalicIcon, ListBulletIcon, QuoteIcon, CodeIcon, FileIcon, EyeOpenIcon } from "@radix-ui/react-icons"
 import { Toggle } from "@/components/ui/toggle"
 import type React from "react"
@@ -236,6 +236,13 @@ const Tiptap = (props: {
       props.onChange(sanitizedContent)
     },
   })
+
+  // Update editor content when description prop changes
+  useEffect(() => {
+    if (editor && props.description !== editor.getHTML()) {
+      editor.commands.setContent(sanitizeHtml(props.description))
+    }
+  }, [editor, props.description])
 
   // Function to toggle preview mode
   const togglePreview = useCallback(() => {

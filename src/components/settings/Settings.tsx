@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import { useQuery, useQueryClient } from "@tanstack/react-query"
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query"
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
+import { useToast } from "@/hooks/use-toast"
 import axiosInstance from "@/lib/AxiosInstance"
 import { apiRoutes } from "@/lib/routes"
 
@@ -36,6 +37,9 @@ const passwordFormSchema = z
   })
 
 export default function SettingsPage() {
+  const { toast } = useToast()
+  const queryClient = useQueryClient()
+
   // Individual states for each notification preference
   const [commentNotification, setCommentNotification] = useState(true)
   const [statusChangeNotification, setStatusChangeNotification] = useState(true)
@@ -47,10 +51,103 @@ export default function SettingsPage() {
     queryKey: ['user'],
     queryFn: () => axiosInstance.get(apiRoutes.user).then((res) => res.data),
   })
-  console.log(userData)
 
-  const queryClient = useQueryClient()
+  // Mutations
+  const { mutate: updateName, isPending: isUpdatingName } = useMutation({
+    mutationFn: (newName: string) => 
+      axiosInstance.put(apiRoutes.user, { ...userData, name: newName }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user'] })
+      nameForm.reset()
+      toast({
+        title: "Success",
+        description: "Name updated successfully",
+      })
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update name",
+        variant: "destructive",
+      })
+      console.error('Error updating name:', error)
+    }
+  })
 
+  const { mutate: updateEmail, isPending: isUpdatingEmail } = useMutation({
+    mutationFn: (newEmail: string) => 
+      axiosInstance.put(apiRoutes.user, { ...userData, email: newEmail }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user'] })
+      emailForm.reset()
+      toast({
+        title: "Success",
+        description: "Email updated successfully",
+      })
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update email",
+        variant: "destructive",
+      })
+      console.error('Error updating email:', error)
+    }
+  })
+
+  const { mutate: updatePassword, isPending: isUpdatingPassword } = useMutation({
+    mutationFn: (data: { currentPassword: string; newPassword: string }) => 
+      axiosInstance.put(apiRoutes.changePassword, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user'] })
+      passwordForm.reset()
+      toast({
+        title: "Success",
+        description: "Password updated successfully",
+      })
+    },
+    onError: (error: any) => {
+      if (error.response?.status === 401) {
+        passwordForm.setError('currentPassword', {
+          type: 'manual',
+          message: 'Current password is incorrect'
+        })
+      } else {
+        toast({
+          title: "Error",
+          description: error.response?.data?.message || "Failed to update password",
+          variant: "destructive",
+        })
+      }
+      console.error('Error updating password:', error)
+    }
+  })
+
+  const { mutate: updateNotificationPreference, isPending: isUpdatingPreference } = useMutation({
+    mutationFn: ({ key, value }: { key: string; value: boolean }) => 
+      axiosInstance.put(apiRoutes.user, {
+        ...userData,
+        notificationPreferences: {
+          ...userData?.notificationPreferences,
+          [key]: value
+        }
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user'] })
+      toast({
+        title: "Success",
+        description: "Notification preference updated successfully",
+      })
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update notification preference",
+        variant: "destructive",
+      })
+      console.error('Error updating notification preferences:', error)
+    }
+  })
 
   // Name form
   const nameForm = useForm<z.infer<typeof nameFormSchema>>({
@@ -79,94 +176,29 @@ export default function SettingsPage() {
   })
 
   // Form submission handlers
-  const onNameSubmit = async (data: z.infer<typeof nameFormSchema>) => {
-    try {
-      await axiosInstance.put(apiRoutes.user, {
-        ...userData,
-        name: data.newName
-      });
-
-      // Invalidate user query to refetch updated data
-      queryClient.invalidateQueries({ queryKey: ['user'] });
-      nameForm.reset();
-    } catch (error) {
-      console.error('Error updating name:', error);
-      nameForm.setError('root', {
-        type: 'manual',
-        message: 'Failed to update name'
-      });
-    }
+  const onNameSubmit = (data: z.infer<typeof nameFormSchema>) => {
+    updateName(data.newName)
   }
 
-  const onEmailSubmit = async (data: z.infer<typeof emailFormSchema>) => {
-    try {
-      await axiosInstance.put(apiRoutes.user, {
-        ...userData,
-        email: data.newEmail
-      });
-
-      // Invalidate user query to refetch updated data
-      queryClient.invalidateQueries({ queryKey: ['user'] });
-      emailForm.reset();
-    } catch (error) {
-      console.error('Error updating email:', error);
-      emailForm.setError('root', {
-        type: 'manual',
-        message: 'Failed to update email'
-      });
-    }
+  const onEmailSubmit = (data: z.infer<typeof emailFormSchema>) => {
+    updateEmail(data.newEmail)
   }
 
-  const onPasswordSubmit = async (data: z.infer<typeof passwordFormSchema>) => {
-    try {
-      await axiosInstance.put(apiRoutes.changePassword, {
-        currentPassword: data.currentPassword,
-        newPassword: data.newPassword
-      });
-
-      // Invalidate user query to refetch updated data
-      queryClient.invalidateQueries({ queryKey: ['user'] });
-      passwordForm.reset();
-    } catch (error: any) {
-      console.error('Error updating password:', error);
-      // Check if error is due to incorrect current password
-      if (error.response?.status === 401) {
-        passwordForm.setError('currentPassword', {
-          type: 'manual',
-          message: 'Current password is incorrect'
-        });
-      } else {
-        passwordForm.setError('root', {
-          type: 'manual',
-          message: 'Failed to update password'
-        });
-      }
-    }
+  const onPasswordSubmit = (data: z.infer<typeof passwordFormSchema>) => {
+    updatePassword({
+      currentPassword: data.currentPassword,
+      newPassword: data.newPassword
+    })
   }
 
   // Generic handler for all notification preferences
-  const onNotificationPreferenceChange = async (
+  const onNotificationPreferenceChange = (
     preferenceKey: string,
     checked: boolean,
     setterFunction: (value: boolean) => void
   ) => {
-    try {
-      await axiosInstance.put(apiRoutes.user, {
-        ...userData,
-        notificationPreferences: {
-          ...userData?.notificationPreferences,
-          [preferenceKey]: checked
-        }
-      });
-
-      setterFunction(checked);
-      // Invalidate user query to refetch updated data
-      queryClient.invalidateQueries({ queryKey: ['user'] });
-    } catch (error) {
-      console.error('Error updating notification preferences:', error);
-      // Revert the switch if update fails
-      setterFunction(!checked);
-    }
+    setterFunction(checked)
+    updateNotificationPreference({ key: preferenceKey, value: checked })
   }
 
   // Initialize all notification preferences from user data
@@ -210,14 +242,18 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>Enter New Name</FormLabel>
                             <FormControl>
-                              <Input {...field} className="w-full" />
+                              <Input {...field} className="w-full" disabled={isUpdatingName} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      <Button type="submit" className="w-full bg-indigo-700 hover:bg-indigo-800">
-                        Update
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-indigo-700 hover:bg-indigo-800"
+                        disabled={isUpdatingName}
+                      >
+                        {isUpdatingName ? "Updating..." : "Update"}
                       </Button>
                     </form>
                   </Form>
@@ -243,14 +279,18 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>Enter New Email</FormLabel>
                             <FormControl>
-                              <Input {...field} type="email" className="w-full" />
+                              <Input {...field} type="email" className="w-full" disabled={isUpdatingEmail} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      <Button type="submit" className="w-full bg-indigo-700 hover:bg-indigo-800">
-                        Update
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-indigo-700 hover:bg-indigo-800"
+                        disabled={isUpdatingEmail}
+                      >
+                        {isUpdatingEmail ? "Updating..." : "Update"}
                       </Button>
                     </form>
                   </Form>
@@ -272,7 +312,7 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>Enter Current Password</FormLabel>
                             <FormControl>
-                              <Input {...field} type="password" className="w-full" />
+                              <Input {...field} type="password" className="w-full" disabled={isUpdatingPassword} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -285,7 +325,7 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>Enter New Password</FormLabel>
                             <FormControl>
-                              <Input {...field} type="password" className="w-full" />
+                              <Input {...field} type="password" className="w-full" disabled={isUpdatingPassword} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
@@ -298,14 +338,18 @@ export default function SettingsPage() {
                           <FormItem>
                             <FormLabel>Re-enter New Password</FormLabel>
                             <FormControl>
-                              <Input {...field} type="password" className="w-full" />
+                              <Input {...field} type="password" className="w-full" disabled={isUpdatingPassword} />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      <Button type="submit" className="w-full bg-indigo-700 hover:bg-indigo-800">
-                        Update
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-indigo-700 hover:bg-indigo-800"
+                        disabled={isUpdatingPassword}
+                      >
+                        {isUpdatingPassword ? "Updating..." : "Update"}
                       </Button>
                     </form>
                   </Form>
@@ -330,6 +374,7 @@ export default function SettingsPage() {
                     onNotificationPreferenceChange('commentNotification', checked, setCommentNotification)
                   }
                   className="data-[state=checked]:bg-primary"
+                  disabled={isUpdatingPreference}
                 />
               </div>
               <div className="flex items-center justify-between py-4 border-t">
@@ -340,6 +385,7 @@ export default function SettingsPage() {
                     onNotificationPreferenceChange('statusChangeNotification', checked, setStatusChangeNotification)
                   }
                   className="data-[state=checked]:bg-primary"
+                  disabled={isUpdatingPreference}
                 />
               </div>
               <div className="flex items-center justify-between py-4 border-t">
@@ -350,6 +396,7 @@ export default function SettingsPage() {
                     onNotificationPreferenceChange('vulnerabilitySubmissionNotification', checked, setVulnerabilityAlerts)
                   }
                   className="data-[state=checked]:bg-primary"
+                  disabled={isUpdatingPreference}
                 />
               </div>
               <div className="flex items-center justify-between py-4 border-t">
@@ -360,6 +407,7 @@ export default function SettingsPage() {
                     onNotificationPreferenceChange('loginNotification', checked, setLoginNotification)
                   }
                   className="data-[state=checked]:bg-primary"
+                  disabled={isUpdatingPreference}
                 />
               </div>
               <div className="flex items-center justify-between py-4 border-t">
@@ -370,6 +418,7 @@ export default function SettingsPage() {
                     onNotificationPreferenceChange('reportCommentNotification', checked, setReportCommentNotification)
                   }
                   className="data-[state=checked]:bg-primary"
+                  disabled={isUpdatingPreference}
                 />
               </div>
             </div>

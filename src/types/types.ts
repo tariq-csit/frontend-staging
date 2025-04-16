@@ -11,6 +11,7 @@ export interface Attachment {
   name: string;
   key: string;
   contentType: string;
+  size?: number;
 }
 
 interface Comment {

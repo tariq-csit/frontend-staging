@@ -30,10 +30,6 @@ export default function ClientUsers() {
             <Input onChange={(e) => setSearch(e.target.value)} value={search} placeholder="Search for Client User" className="w-full" />
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" className="flex items-center gap-2">
-              <FilterIcon />
-              Filter
-            </Button>
             <AddClientUserDialog />
           </div>
         </div>
