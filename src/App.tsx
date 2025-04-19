@@ -6,8 +6,6 @@ import PentestersList from './components/pentests/pentestersList/PentestersList'
 import Settings from './components/settings/Settings';
 import Login from './components/login/Login';
 import SignUp from './components/signUp/SignUp';
-import VulnerabilityDetails from './components/vulenerabilityReports/VulnerabilityDetails';
-import PentestsList from './components/pentests/Pentests';
 import DashboardHome from './components/activePentests/Dashboard';
 import PentestDetails from './components/pentests/PentestDetails';
 import VulnerabilitiesInPentest from './components/vulenerabilityReports/VulnerabilityDetails';
@@ -24,11 +22,15 @@ import ManagePentestReport from './components/pentests/managePentest/ManagePente
 import PentestReport from './components/pentests/managePentest/PentestReport';
 import RetestReport from './components/pentests/managePentest/RetestReport';
 import VulnerabilityReportForm from './components/vulenerabilityReports/subcomponents/VulnerabilityReportForm';
+import PentestsList from './components/pentests/Pentests';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 
 function App() {
+  const queryClient = new QueryClient();
   return (
     <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+      <QueryClientProvider client={queryClient}>
       <Routes>
         <Route path='/login' element={<Login />} />
         <Route path='/signup' element={<SignUp />} />
@@ -62,6 +64,7 @@ function App() {
         </Route>
       </Routes>
       <Toaster />
+      </QueryClientProvider>
     </ThemeProvider>
   )
 }
