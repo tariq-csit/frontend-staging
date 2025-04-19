@@ -11,7 +11,7 @@ function SignUp() {
     name: "",
     email: "",
     password: "",
-    signUpCode: "",
+    code: "",
     companyName: "",
     poc_email: "",
     logoUrl: "",
@@ -24,16 +24,15 @@ function SignUp() {
     }
   }, [navigate]);
 
-  console.log(signUpData);
 
   return (
     <div className="flex flex-col sm:flex-row h-screen">
       <div className="bg-[url('/login-image.png')] bg-cover bg-center h-[20vh] sm:h-auto sm:w-1/2"></div>
       <div className="flex flex-col overflow-y-scroll sm:w-1/2 py-12 px-6 sm:px-16 self-stretch bg-[#F5F5F5]">
       <div className="">
-        {signUpData.signUpCode === "" && signUpData.name === "" ? (
+        {signUpData.code === "" && signUpData.name === "" ? (
           <Code setSignUpData={setSignUpData as (data: Partial<SignUpData>) => void} signUpData={signUpData} />
-        ) : signUpData.signUpCode != "" && signUpData.companyName === "" ? (
+        ) : signUpData.code != "" && signUpData.companyName === "" ? (
           <Credentials setSignUpData={setSignUpData as (data: Partial<SignUpData>) => void} signUpData={signUpData} />
         ) : (
           <SignUpForm setSignUpData={setSignUpData as (data: Partial<SignUpData>) => void} signUpData={signUpData} />

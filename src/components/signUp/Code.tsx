@@ -35,7 +35,7 @@ const Code = (props: {
   const pinSubmit = (data: z.infer<typeof formSchema>) => {
     props.setSignUpData({
       ...props.signUpData,
-      signUpCode: data.signUpCode,
+      code: data.signUpCode,
     });
   }
 

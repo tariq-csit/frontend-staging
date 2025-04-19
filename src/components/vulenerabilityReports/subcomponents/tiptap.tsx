@@ -64,7 +64,7 @@ async function uploadImage(file: File): Promise<{ url: string }> {
   const formData = new FormData()
   formData.append('attachment', file)
 
-  const response = await axiosInstance.post(`${apiRoutes.uploadVulnerabilityAttachment}/context=richtext`, formData, {
+  const response = await axiosInstance.post(`${apiRoutes.uploadVulnerabilityAttachment}?context=richtext`, formData, {
     headers: {
       'Content-Type': 'multipart/form-data'
     }

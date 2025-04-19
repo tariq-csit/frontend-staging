@@ -10,6 +10,8 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRoutes } from "@/lib/routes";
 import axiosInstance from "@/lib/AxiosInstance";
 import { useState } from "react";
+import { toast } from "@/hooks/use-toast";
+import { Client } from "@/types/types";
 
 const formSchema = z.object({
   username: z.string().min(1),
@@ -31,7 +33,7 @@ export default function AddClientUserDialog() {
 
   const {data: clients} = useQuery({
     queryKey: ["clients"],
-    queryFn: () => axiosInstance.get(apiRoutes.clients.all),
+    queryFn: () => axiosInstance.get(apiRoutes.clients.all).then((res) => res.data),
   })
 
   const { mutate: onboardClientUser } = useMutation({
@@ -47,10 +49,18 @@ export default function AddClientUserDialog() {
     },
     onSuccess: () => {
       form.reset();
+      toast({
+        title: "Client user added successfully",
+      });
       setOpen(false);
     },
     onError: (error) => {
       console.error('Error onboarding client user:', error);
+      toast({
+        title: "Error onboarding client user",
+        description: error.message,
+        variant: "destructive",
+      });
     }
   });
 
@@ -121,8 +131,8 @@ export default function AddClientUserDialog() {
                           </SelectTrigger>
                         <FormControl>
                           <SelectContent>
-                            {clients?.data.map((client: any) => (
-                              <SelectItem key={client.id} value={client.id}>
+                            {clients && clients.map((client: Client) => (
+                              <SelectItem key={client._id} value={client._id}>
                                 {client.name}
                               </SelectItem>
                             ))}

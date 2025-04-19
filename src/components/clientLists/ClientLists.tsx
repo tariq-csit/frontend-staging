@@ -48,12 +48,12 @@ export default function ClientDashboard() {
   return (
     <div className="">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <StatCard icon={<Users className="h-6 w-6 text-indigo-600" />} value="200+" label="Clients" />
         <StatCard icon={<Shield className="h-6 w-6 text-indigo-600" />} value="30" label="Requested Pentests" />
         <StatCard icon={<Shield className="h-6 w-6 text-indigo-600" />} value="90+" label="Ongoing Pentests" />
         <StatCard icon={<Shield className="h-6 w-6 text-indigo-600" />} value="12+" label="Scheduled Pentests" />
-      </div>
+      </div> */}
 
       {/* Client List Section */}
       <div className="bg-white rounded-lg shadow-sm p-6">

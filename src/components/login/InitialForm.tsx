@@ -1,6 +1,5 @@
 import { apiRoutes } from "@/lib/routes";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import {
   Form,
@@ -27,8 +26,7 @@ const formSchema = z.object({
     .email({
       message: "Please enter a valid email",
     })
-    .min(2)
-    .max(50),
+    .min(2),
   password: z.string().min(8, {
     message: "Password should be atleast 8 characters long",
   }),
@@ -42,7 +40,6 @@ function InitialForm(props:{
   setEmail : (email: string)=>void
 }) {
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState(false)
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -52,6 +49,13 @@ function InitialForm(props:{
   });
 
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+
+  const resetTurnstile = () => {
+    if ((window as any).turnstile) {
+      (window as any).turnstile.reset();
+      setTurnstileToken(null);
+    }
+  };
 
   const loginMutation = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
@@ -67,7 +71,6 @@ function InitialForm(props:{
       props.setEmail(variables.email);
       localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("refreshToken", data.refreshToken);
-      setError(false);
       toast({
         title: "Success",
         description: "Successfully logged in!",
@@ -78,10 +81,8 @@ function InitialForm(props:{
         const errorMessage = error.response.data.message;
         if (errorMessage === "2FA setup required") {
           props.settempToken(error.response.data.tempToken);
-          setError(false);
         } else {
-          console.log(errorMessage);
-          setError(true);
+          resetTurnstile();
           toast({
             title: "Error",
             description: errorMessage || "Failed to login. Please try again.",
@@ -89,6 +90,7 @@ function InitialForm(props:{
           });
         }
       }
+      form.reset();
     },
   });
 
@@ -180,7 +182,6 @@ function InitialForm(props:{
                           </div>
                         </FormControl>
                         <FormMessage />
-                        {error && <span className="text-red-600 pt-12">Invalid username and password</span>}
                       </FormItem>
                     )}
                   />

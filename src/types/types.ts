@@ -49,7 +49,7 @@ export interface SignUpData {
   name: string;
   email: string;
   password: string;
-  signUpCode: string;
+  code: string;
   companyName: string;
   poc_email: string;
   logoUrl: string;
@@ -97,7 +97,7 @@ export interface Pentester {
     type: string;
     startDate: string;
     endDate: string;
-    vulnerabilitiesCount: number;
+    vulnerabilityCount: number;
   }[];
 }
 
@@ -123,7 +123,7 @@ export interface Pentest {
     logoUrl: string;
   }[];
   pentesters: Pentester[];
-  vulnerabilitiesCount: number;
+  vulnerabilityCount: number;
   report: Report;
   retestReport: Report;
   attachments: Attachment[];

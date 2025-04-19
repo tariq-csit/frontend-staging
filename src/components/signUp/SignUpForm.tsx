@@ -1,4 +1,4 @@
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Form,
@@ -18,6 +18,7 @@ import { SignUpData } from "@/types/types";
 import { useMutation } from '@tanstack/react-query';
 import axiosInstance from "@/lib/AxiosInstance";
 import { apiRoutes } from "@/lib/routes";
+import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -32,15 +33,22 @@ const formSchema = z.object({
     .max(50),
   password: z.string().min(8, {
     message: "Password should be at least 8 characters long",
-  }),
+  }).regex(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+    {
+      message: "Password must contain at least one uppercase letter, one lowercase letter, one number and one special character",
+    }
+  ),
 });
 
 function SignUpForm(props: {
-  setSignUpData: (data: Partial<SignUpData>) => void,
-  signUpData: SignUpData,
+  setSignUpData: (data: Partial<SignUpData>) => void;
+  signUpData: SignUpData;
 }) {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -60,10 +68,19 @@ function SignUpForm(props: {
       return response.data;
     },
     onSuccess: () => {
+      toast({
+        title: "Account created successfully",
+        description: "You can now log in with your credentials",
+      });
       navigate('/login');
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error('Error creating user:', error);
+      toast({
+        title: "Failed to create account",
+        description: error.response?.data?.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
     }
   });
 
@@ -100,7 +117,12 @@ function SignUpForm(props: {
                   <FormItem>
                     <FormLabel>Enter your name</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input 
+                        className="w-full" 
+                        {...field} 
+                        disabled={mutation.isPending}
+                        placeholder="John Doe"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -114,7 +136,13 @@ function SignUpForm(props: {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input className="w-full" {...field} />
+                      <Input 
+                        className="w-full" 
+                        {...field} 
+                        type="email"
+                        disabled={mutation.isPending}
+                        placeholder="john@example.com"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -131,8 +159,10 @@ function SignUpForm(props: {
                       <div className="relative">
                         <Input
                           type={showPassword ? "text" : "password"}
-                          className="pr-10"
+                          className="w-full pr-10"
                           {...field}
+                          disabled={mutation.isPending}
+                          placeholder="••••••••"
                         />
                         <Button
                           type="button"
@@ -140,6 +170,7 @@ function SignUpForm(props: {
                           size="icon"
                           className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                           onClick={() => setShowPassword(!showPassword)}
+                          disabled={mutation.isPending}
                           aria-label={
                             showPassword ? "Hide password" : "Show password"
                           }
@@ -157,11 +188,28 @@ function SignUpForm(props: {
                 )}
               />
             </div>
-            <Button className="w-full text-lg py-4" type="submit">
-              Sign up
+            <Button 
+              className="w-full text-lg py-4" 
+              type="submit"
+              disabled={mutation.isPending}
+            >
+              {mutation.isPending ? (
+                <div className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Creating account...</span>
+                </div>
+              ) : (
+                "Sign up"
+              )}
             </Button>
             <div className="text-inputBorder">
-              Have an account?<Link to={'/login'} className="text-primary-900 font-medium"> Signin Now!</Link>
+              Have an account?{" "}
+              <Link 
+                to="/login" 
+                className="text-primary-900 font-medium hover:underline"
+              >
+                Sign in Now!
+              </Link>
             </div>
           </form>
         </Form>
