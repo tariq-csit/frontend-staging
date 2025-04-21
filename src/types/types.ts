@@ -117,6 +117,8 @@ export interface Pentest {
   assets: string[];
   testingCredentials: string;
   additionalNotes?: string;
+  requestedBy?: string;
+  requestedOn?: string;
   clients: {
     _id: string;
     name: string;
@@ -173,4 +175,13 @@ export interface SignupCode {
     used: boolean;
     createdAt: string;
     expiresAt: string;
+}
+
+export interface PentestRequest {
+  id: string;
+  title: string;
+  service: string;
+  status: string;
+  requestedBy: string;
+  createdAt: string;
 }
