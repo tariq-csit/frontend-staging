@@ -9,9 +9,103 @@ import { useQuery } from "@tanstack/react-query"
 import { apiRoutes } from "@/lib/routes"
 import SendCode from "./SendCode"
 import AddClientDialog from "./AddClientDialog"
-import type { Client } from "@/types/types"
+import type { Client, SignupCode } from "@/types/types"
 import { useEffect, useState } from "react"
 import ClientActionMenu from "./ClientActionMenu"
+
+function SignupCodesList() {
+  const [search, setSearch] = useState("")
+  
+  const { data: signupCodes, isLoading, error } = useQuery({
+    queryKey: ["signupCodes"],
+    queryFn: async () => {
+      const response = await axiosInstance.get(apiRoutes.signupCodes)
+      return response.data as SignupCode[]
+    }
+  })
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8 text-red-600">
+        Error loading signup codes
+      </div>
+    )
+  }
+
+  const filteredCodes = signupCodes?.filter((code: any) => 
+    code.email?.toLowerCase().includes(search.toLowerCase())
+  )
+
+  return (
+    <>
+      {/* Search */}
+      <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
+        <div className="w-full md:w-1/2">
+          <Input
+            placeholder="Search by email..."
+            className="w-full"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div className="flex gap-2">
+          <SendCode />
+        </div>
+      </div>
+
+      {/* Table */}
+      {filteredCodes && filteredCodes.length > 0 ? (
+        <div className="overflow-x-auto">
+          {/* Grid Header */}
+          <div className="grid grid-cols-4 gap-4 text-sm text-gray-500 border-b py-3 px-4 font-normal">
+            <div>Email</div>
+            <div>Created At</div>
+            <div>Status</div>
+            <div></div>
+          </div>
+
+          {/* Grid Body */}
+          <div className="divide-y">
+            {filteredCodes.map((code: any) => (
+              <div key={code._id} className="grid grid-cols-4 gap-4 py-4 px-4 hover:bg-gray-50">
+                <div className="font-medium">{code.email}</div>
+                <div className="text-gray-600">
+                  {new Date(code.createdAt).toLocaleDateString('en-US', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                  })}
+                </div>
+                <div>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    code.used ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {code.used ? 'Used' : 'Pending'}
+                  </span>
+                </div>
+                <div className="text-right">
+                  {/* Add actions menu if needed */}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="flex justify-center items-center h-full">
+          <p className="text-gray-500">No signup codes found</p>
+        </div>
+      )}
+    </>
+  )
+}
 
 export default function ClientDashboard() {
   const { data: clients, refetch } = useQuery({
@@ -20,8 +114,8 @@ export default function ClientDashboard() {
   })
 
   const { data: signupCodesSent } = useQuery({
-    queryKey: ["signupCodesSent"],
-    queryFn: () => axiosInstance.get(apiRoutes.clients.all).then((res) => res.data),
+    queryKey: ["signupCodes"],
+    queryFn: () => axiosInstance.get(apiRoutes.signupCodes).then((res) => res.data),
   })
 
   const [search, setSearch] = useState("")
@@ -29,21 +123,12 @@ export default function ClientDashboard() {
   const [filteredClients, setFilteredClients] = useState<Client[]>([])
 
   useEffect(() => {
-    if (clients && clients.length > 0) {
-      setActiveTab("All Clients")
+    if (clients && clients.length > 0 && activeTab === "All Clients") {
       setFilteredClients(clients?.filter((client: Client) => {
-        const matchesSearch = client.name.toLowerCase().includes(search.toLowerCase())
-        if (activeTab === "All Clients") {
-          return matchesSearch
-        } else if (activeTab === "Signup Codes Sent") {
-          // Add logic here to filter clients with signup codes sent
-          // For now, showing all clients in this tab
-          return matchesSearch
-        }
-        return false
+        return client.name.toLowerCase().includes(search.toLowerCase())
       }))
-    } 
-  }, [clients])
+    }
+  }, [clients, search, activeTab])
 
   return (
     <div className="">
@@ -65,58 +150,64 @@ export default function ClientDashboard() {
             <TabButton 
               active={activeTab === "All Clients"} 
               label="All Clients" 
-              count={clients && clients.length && clients?.length.toString() || "0"}
+              count={clients?.length?.toString() || "0"}
               onClick={() => setActiveTab("All Clients")}
             />
             <TabButton 
               active={activeTab === "Signup Codes Sent"} 
               label="Signup Codes Sent" 
-              count={signupCodesSent?.length.toString() || "0"}
+              count={signupCodesSent?.length?.toString() || "0"}
               onClick={() => setActiveTab("Signup Codes Sent")}
             />
           </div>
         </div>
 
-        {/* Search and Actions */}
-        <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
-          <div className="w-full md:w-1/2">
-            <Input
-              placeholder="Search for Client"
-              className="w-full"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <div className="flex gap-2">
-            <SendCode />
-            <AddClientDialog refetch={refetch} />
-          </div>
-        </div>
-
-        {/* Table */}
-        {filteredClients && filteredClients?.length > 0 ? (
-          <div className="overflow-x-auto">
-            {/* Grid Header */}
-            <div className="grid grid-cols-6 gap-4 text-sm text-gray-500 border-b py-3 px-4 font-normal">
-              <div>Client</div>
-              <div>Point of Contact</div>
-              <div>Client Users</div>
-              <div>Active Pentests</div>
-              <div>Requested Pentests</div>
-              <div></div>
+        {activeTab === "All Clients" ? (
+          <>
+            {/* Search and Actions */}
+            <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
+              <div className="w-full md:w-1/2">
+                <Input
+                  placeholder="Search for Client"
+                  className="w-full"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+              <div className="flex gap-2">
+                <SendCode />
+                <AddClientDialog refetch={refetch} />
+              </div>
             </div>
 
-            {/* Grid Body */}
-            <div className="divide-y">
-              {filteredClients.map((client: Client) => (
-                <ClientRow key={client._id} client={client} refetch={refetch} />
-              ))}
-            </div>
-          </div>
+            {/* Table */}
+            {filteredClients && filteredClients?.length > 0 ? (
+              <div className="overflow-x-auto">
+                {/* Grid Header */}
+                <div className="grid grid-cols-6 gap-4 text-sm text-gray-500 border-b py-3 px-4 font-normal">
+                  <div>Client</div>
+                  <div>Point of Contact</div>
+                  <div>Client Users</div>
+                  <div>Active Pentests</div>
+                  <div>Requested Pentests</div>
+                  <div></div>
+                </div>
+
+                {/* Grid Body */}
+                <div className="divide-y">
+                  {filteredClients.map((client: Client) => (
+                    <ClientRow key={client._id} client={client} refetch={refetch} />
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="flex justify-center items-center h-full">
+                <p className="text-gray-500">No clients found</p>
+              </div>
+            )}
+          </>
         ) : (
-          <div className="flex justify-center items-center h-full">
-            <p className="text-gray-500">No clients found</p>
-          </div>
+          <SignupCodesList />
         )}
       </div>
     </div>

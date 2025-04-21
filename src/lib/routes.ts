@@ -25,6 +25,7 @@ export const apiRoutes = {
       status: (pentestId: string, vulnerabilityId: string) => `/admin/pentests/${pentestId}/vulnerability/${vulnerabilityId}/status/`,
       comment: (pentestId: string, vulnerabilityId: string) => `/admin/pentests/${pentestId}/vulnerability/${vulnerabilityId}/comment`,
     },
+    requests: `/admin/pentests/requests`,
     reports: {
       // Pentest Report
       uploadPentestReport: (pentestId: string) => `/admin/pentests/${pentestId}/upload-pentest-report`,
@@ -54,8 +55,8 @@ export const apiRoutes = {
 
   clientUsers: {
     all: "/admin/users/client",
-    onboardUser: (clientId: string) => `/admin/clients/${clientId}/users/onboard`,
-    detail: (clientUserId: string) => `/admin/users/clients/${clientUserId}`,
+    onboardUser: (clientId: string) => `/admin/client/${clientId}/users/onboard`,
+    detail: (clientUserId: string) => `/admin/users/client/${clientUserId}`,
   },
 
   pentesters: {
@@ -65,6 +66,9 @@ export const apiRoutes = {
     reset2FA: (id: string) => `/admin/users/pentester/${id}/reset-2fa`,
     deactivate: (id: string) => `/admin/users/pentester/${id}/deactivate`,
   }, 
+
+  signupCodes: `/admin/signup-codes`,
+
   // Upload Routes
   uploadLogo: `/upload/company-logo`,
   uploadProfilePicture: `/upload/profile-picture`,

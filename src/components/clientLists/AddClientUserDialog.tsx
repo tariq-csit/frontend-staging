@@ -12,6 +12,7 @@ import axiosInstance from "@/lib/AxiosInstance";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { Client } from "@/types/types";
+import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   username: z.string().min(1),
@@ -19,7 +20,7 @@ const formSchema = z.object({
   client: z.string().min(1),
 })
 
-export default function AddClientUserDialog() {
+export default function AddClientUserDialog({refetch}: {refetch: () => void}) {
   const [open, setOpen] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -36,7 +37,7 @@ export default function AddClientUserDialog() {
     queryFn: () => axiosInstance.get(apiRoutes.clients.all).then((res) => res.data),
   })
 
-  const { mutate: onboardClientUser } = useMutation({
+  const { mutate: onboardClientUser, isPending } = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
       const response = await axiosInstance.post(apiRoutes.clients.onboardUser, {
         name: values.username,
@@ -52,6 +53,7 @@ export default function AddClientUserDialog() {
       toast({
         title: "Client user added successfully",
       });
+      refetch();
       setOpen(false);
     },
     onError: (error) => {
@@ -89,6 +91,7 @@ export default function AddClientUserDialog() {
                     <FormLabel>Username</FormLabel>
                     <FormControl>
                       <Input
+                        className="w-max-full"
                         placeholder="(i.e hxmir)"
                         {...field}
                       />
@@ -105,6 +108,7 @@ export default function AddClientUserDialog() {
                     <FormLabel>Email</FormLabel>
                     <FormControl>
                       <Input
+                        className="w-max-full"
                         placeholder="(i.e hxmir.@gmail.com)"
                         {...field}
                       />
@@ -154,8 +158,15 @@ export default function AddClientUserDialog() {
               Cancel
             </Button>
           </DialogClose>
-          <Button type="submit" onClick={form.handleSubmit(onSubmit)}>
-            Add Client User
+          <Button type="submit" onClick={form.handleSubmit(onSubmit)} disabled={isPending}>
+            {isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Adding...
+              </>
+            ) : (
+              "Add Client User"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -16,6 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Loader2 } from "lucide-react"
 
 interface ClientUserDeleteDialogProps {
   user: ClientUser
@@ -25,7 +26,7 @@ interface ClientUserDeleteDialogProps {
 }
 
 export default function ClientUserDeleteDialog({ user, refetch, open, onOpenChange }: ClientUserDeleteDialogProps) {
-  const { mutate: deleteUser } = useMutation({
+  const { mutate: deleteUser, isPending } = useMutation({
     mutationFn: async () => {
       await axiosInstance.delete(apiRoutes.clientUsers.detail(user._id))
     },
@@ -58,7 +59,14 @@ export default function ClientUserDeleteDialog({ user, refetch, open, onOpenChan
             onClick={() => deleteUser()}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            Delete
+            {isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              "Delete"
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

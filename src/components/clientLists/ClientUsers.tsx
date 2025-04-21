@@ -30,7 +30,7 @@ export default function ClientUsers() {
             <Input onChange={(e) => setSearch(e.target.value)} value={search} placeholder="Search for Client User" className="w-full" />
           </div>
           <div className="flex gap-2">
-            <AddClientUserDialog />
+            <AddClientUserDialog refetch={refetch} />
           </div>
         </div>
 

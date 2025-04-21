@@ -16,6 +16,7 @@ import type { Dispatch, SetStateAction } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { toast } from "@/hooks/use-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Loader2 } from "lucide-react"
 
 const formSchema = z.object({
   name: z.string().min(1),
@@ -66,7 +67,7 @@ export default function ClientUserEditDialog({ user, refetch, open, onOpenChange
     },
   })
 
-  const { mutate: updateUser } = useMutation({
+  const { mutate: updateUser, isPending } = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
       const res = await axiosInstance.put(apiRoutes.clientUsers.detail(user._id), {
         name: values.name,
@@ -81,8 +82,9 @@ export default function ClientUserEditDialog({ user, refetch, open, onOpenChange
         title: "Client user updated successfully",
         description: "The client user has been updated successfully",
       })
-      onOpenChange(false)
       refetch()
+      onOpenChange(false)
+      form.reset()
     },
   })
 
@@ -202,8 +204,15 @@ export default function ClientUserEditDialog({ user, refetch, open, onOpenChange
           >
             Cancel
           </Button>
-          <Button type="button" onClick={form.handleSubmit(onSubmit)}>
-            Save Changes
+          <Button type="button" onClick={form.handleSubmit(onSubmit)} disabled={isPending}>
+            {isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save Changes"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

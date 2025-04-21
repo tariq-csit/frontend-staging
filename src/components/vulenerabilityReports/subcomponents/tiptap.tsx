@@ -60,7 +60,7 @@ const sanitizeHtml = (html: string): string => {
 }
 
 // Function to upload image and return URL
-async function uploadImage(file: File): Promise<{ url: string }> {
+async function uploadImage(file: File): Promise<{ url?: string, s3Key: string }> {
   const formData = new FormData()
   formData.append('attachment', file)
 
@@ -293,10 +293,10 @@ const Tiptap = (props: {
 
   const insertImage = useCallback(async (file: File, imageName: string) => {
     try {
-      const { url } = await uploadImage(file)
+      const { s3Key } = await uploadImage(file)
       if (editor) {
         // Validate URL before insertion
-        if (!url.startsWith('https://slash-attachments.s3.amazonaws.com')) {
+        if (!s3Key.startsWith('attachments')) {
           throw new Error('Invalid image URL')
         }
 
@@ -305,12 +305,12 @@ const Tiptap = (props: {
           editor.chain().focus().insertContent({
             type: 'image',
             attrs: {
-              src: url,
+              src: s3Key,
               alt: sanitizedName,
             },
           }).run()
         } else {
-          const markdownText = `![${sanitizedName}](${url})`
+          const markdownText = `![${sanitizedName}](${s3Key})`
           editor.chain().focus().insertContent(markdownText).run()
         }
       }

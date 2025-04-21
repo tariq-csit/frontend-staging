@@ -83,6 +83,7 @@ function InitialForm(props:{
           props.settempToken(error.response.data.tempToken);
         } else {
           resetTurnstile();
+          form.reset();
           toast({
             title: "Error",
             description: errorMessage || "Failed to login. Please try again.",
@@ -90,7 +91,6 @@ function InitialForm(props:{
           });
         }
       }
-      form.reset();
     },
   });
 
@@ -100,15 +100,15 @@ function InitialForm(props:{
     script.async = true;
     document.body.appendChild(script);
 
-    const interval = setInterval(() => {
-      const token = (window as any).turnstile?.getResponse();
-      if (token) {
-        setTurnstileToken(token);
-        clearInterval(interval);
-      }
-    }, 500);
+    // Define the callback in the window object
+    (window as any).turnstileCallback = (token: string) => {
+      setTurnstileToken(token);
+    };
 
-    return () => clearInterval(interval);
+    return () => {
+      document.body.removeChild(script);
+      delete (window as any).turnstileCallback;
+    };
   }, []);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -195,7 +195,11 @@ function InitialForm(props:{
                     </Link>
                   </div>
                 </div>
-                <div className="cf-turnstile" data-sitekey="0x4AAAAAABAY4zDtElrDH2g0"></div>
+                <div 
+                  className="cf-turnstile" 
+                  data-sitekey="0x4AAAAAABAY4zDtElrDH2g0"
+                  data-callback="turnstileCallback"
+                ></div>
                 <Button 
                   className="w-full text-lg py-4" 
                   type="submit"

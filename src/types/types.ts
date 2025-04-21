@@ -166,3 +166,11 @@ export interface ClientUser {
         endDate: string;
     }[];
 }
+
+export interface SignupCode {
+    _id: string;
+    email: string;
+    used: boolean;
+    createdAt: string;
+    expiresAt: string;
+}
