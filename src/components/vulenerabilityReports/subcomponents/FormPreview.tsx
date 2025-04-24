@@ -1,60 +1,66 @@
-import { Button } from "@/components/ui/button";
-import FileAttachmentPreview from "./FileAttachmentsPreview";
-import CommentSection from "./CommentSection";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import axiosInstance from "@/lib/AxiosInstance";
-import { apiRoutes } from "@/lib/routes";
-import { Pentest, Vulnerability } from "@/types/types";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { Edit, Trash2, Lock } from "lucide-react";
-import { Select, SelectTrigger, SelectItem, SelectContent, SelectValue } from "@/components/ui/select";
-import { toast } from "@/hooks/use-toast";
-import CommentCard from "./CommentCard";
+"use client"
 
+import { Button } from "@/components/ui/button"
+import FileAttachmentPreview from "./FileAttachmentsPreview"
+import CommentSection from "./CommentSection"
+import { Link, useNavigate, useParams } from "react-router-dom"
+import axiosInstance from "@/lib/AxiosInstance"
+import { apiRoutes } from "@/lib/routes"
+import type { Attachment, Pentest, User, Vulnerability } from "@/types/types"
+import { useMutation, useQuery } from "@tanstack/react-query"
+import { Edit, Loader2, Lock, Trash2 } from "lucide-react"
+import { Select, SelectTrigger, SelectItem, SelectContent, SelectValue } from "@/components/ui/select"
+import { toast } from "@/hooks/use-toast"
+import CommentCard from "./CommentCard"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
 
 interface StatusOption {
-  value: string;
-  label: string;
-  color: string;
+  value: string
+  label: string
+  color: string
 }
 
-function formPreview() {
-  const {pentestId, vulnerabilityId} = useParams<{pentestId: string, vulnerabilityId: string}>();
-
+function VulnerabilityView() {
+  const { pentestId, vulnerabilityId } = useParams<{ pentestId: string; vulnerabilityId: string }>()
   const navigate = useNavigate()
 
-  const {data: vulnerability, refetch: refetchVulnerability} = useQuery({
+  const { data: vulnerability, refetch: refetchVulnerability, isLoading: isLoadingVulnerability } = useQuery({
     queryKey: ["pentest", pentestId, "vulnerability", vulnerabilityId],
-    queryFn: () => axiosInstance.get<Vulnerability>(apiRoutes.pentests.vulnerabilities.details(pentestId!, vulnerabilityId!)).then((res) => res.data)
+    queryFn: () =>
+      axiosInstance
+        .get<Vulnerability>(apiRoutes.pentests.vulnerabilities.details(pentestId!, vulnerabilityId!))
+        .then((res) => res.data),
   })
 
-  const {data: pentest} = useQuery({
+  const { data: pentest, isLoading: isLoadingPentest } = useQuery({
     queryKey: ["pentest", pentestId],
-    queryFn: () => axiosInstance.get<Pentest>(apiRoutes.pentests.details(pentestId!)).then((res) => res.data)
+    queryFn: () => axiosInstance.get<Pentest>(apiRoutes.pentests.details(pentestId!)).then((res) => res.data),
   })
 
-  const {mutate: updateVulnerabilityStatus, isPending: isUpdatingVulnerabilityStatus} = useMutation({
-    mutationFn: (status: string) => axiosInstance.patch(apiRoutes.pentests.vulnerabilities.status(pentestId!, vulnerabilityId!),
-      {
-        status: status
-      }
-    ),
+  const { mutate: updateVulnerabilityStatus, isPending: isUpdatingVulnerabilityStatus } = useMutation({
+    mutationFn: (status: string) =>
+      axiosInstance.patch(apiRoutes.pentests.vulnerabilities.status(pentestId!, vulnerabilityId!), {
+        status: status,
+      }),
     onSuccess: () => {
       refetchVulnerability()
-    }
+      toast({
+        title: "Status updated",
+        description: "Vulnerability status has been updated successfully",
+      })
+    },
   })
 
-  // delete mutation
-  const {mutate: deleteVulnerability} = useMutation({
+  const { mutate: deleteVulnerability } = useMutation({
     mutationFn: () => axiosInstance.delete(apiRoutes.pentests.vulnerabilities.details(pentestId!, vulnerabilityId!)),
     onSuccess: () => {
-      refetchVulnerability()
       navigate(`/vulnerability-reports/${pentestId}`)
       toast({
-        title: "Vulnerability deleted successfully",
+        title: "Vulnerability deleted",
         description: "The vulnerability has been deleted successfully",
       })
-    }
+    },
   })
 
   const statusOptions: StatusOption[] = [
@@ -65,263 +71,393 @@ function formPreview() {
     { value: "Not Applicable", label: "Not Applicable", color: "bg-red-100" },
   ]
 
+  const displayVulnerability = vulnerability
+  const displayPentest = pentest
+
+  if (isLoadingVulnerability || isLoadingPentest) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="w-10 h-10 animate-spin" />
+      </div>
+    )
+  }
+
+  if (!displayVulnerability || !displayPentest) {
+    return <div>No data found</div>
+  }
 
   return (
-    <div className="flex flex-col sm:flex-row gap-8 font-poppins">
-      <div className="sm:w-9/12 flex flex-col gap-6">
-        <div className="w-full flex flex-col gap-6 p-6 bg-white rounded-lg">
-          <div className="flex flex-col gap-2">
-            <h2 className="text-2xl font-medium">
-              {vulnerability?.title}
-            </h2>
-            <p>
-              Provide detailed information to ensure easy validation and review.
-              Include affected hosts, severity, CVSS metrics, steps to
-              reproduce, and relevant attachments for a thorough report. All
-              fields are mandatory unless marked as optional.{" "}
-            </p>
-          </div>
-          <h1 className="text-2xl font-medium mb-6">1. Affected Host (s)</h1>
-          <div className="flex flex-col gap-4">
-            <p className="font-medium">Affected Host (s)</p>
-            <ul className="px-6">
-              {vulnerability?.affected_host.includes(",") ? vulnerability?.affected_host.split(",").map((host, i) => {
-                return (
-                  <li key={i} className="text-previewText list-disc">
-                    {host}
-                  </li>
-                );
-              }) : (
-                <li className="text-previewText list-disc">
-                  {vulnerability?.affected_host}
-                </li>
-              )}
-            </ul>
-          </div>
-
-          <h1 className="text-2xl font-medium mb-6">2. Basic Details (s)</h1>
-          <div className="flex flex-col gap-2">
-            <p className="font-medium">Title</p>
-            <p className="text-previewText">{vulnerability?.title}</p>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <p className="font-medium">Severity</p>
-            <p className="text-previewText">{vulnerability?.severity}</p>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <p className="font-medium">Description</p>
-            <div
-              className="text-previewText"
-              dangerouslySetInnerHTML={{
-                __html: vulnerability?.description || "",
-              }}
-            ></div>
-          </div>
-
-          <h1 className="text-2xl font-medium mb-6">
-            3. Recommendations and Steps to Reproduce (s)
-          </h1>
-          <div className="flex flex-col gap-2">
-            <p className="font-medium">Steps to Reproduce</p>
-            <div
-              className="text-previewText"
-              dangerouslySetInnerHTML={{
-                __html: vulnerability?.steps_to_reproduce || "",
-              }}
-            ></div>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <p className="font-medium">Recommended Solution</p>
-            <div
-              className="text-previewText"
-              dangerouslySetInnerHTML={{
-                __html: vulnerability?.recommended_solution || "",
-              }}
-            ></div>
-          </div>
-
-          <h1 className="text-2xl font-medium mb-6">
-            4. Impact and Likelihood (s)
-          </h1>
-          <div className="grid sm:grid-cols-2">
-            <div className="flex flex-col gap-2">
-              <p className="font-medium">Impact</p>
-              <p className="text-previewText">{vulnerability?.impact}</p>
-            </div>
-            <div className="flex flex-col gap-2">
-              <p className="font-medium">LikeliHood</p>
-              <p className="text-previewText">{vulnerability?.likelihood}</p>
-            </div>
-          </div>
-
-          <h1 className="text-2xl font-medium mb-6">5. CVSS Metrics</h1>
-          <div className="grid grid-cols-2">
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-col gap-2">
-                <p className="font-medium">Attack Vector</p>
-                <p className="text-previewText">
-                  {vulnerability?.cvssVector?.split('/')[1]?.split(':')[1] === 'A' ? 'Adjacent Network' :
-                   vulnerability?.cvssVector?.split('/')[1]?.split(':')[1] === 'N' ? 'Network' :
-                   vulnerability?.cvssVector?.split('/')[1]?.split(':')[1] === 'L' ? 'Local' :
-                   vulnerability?.cvssVector?.split('/')[1]?.split(':')[1] === 'P' ? 'Physical' : '-'}
-                </p>
+    <div className="w-full mx-auto py-6 px-4 font-sans">
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Main content */}
+        <div className="lg:w-9/12 space-y-6">
+          {/* Title Card */}
+          <Card className="py-4">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-2xl font-bold">{displayVulnerability.title}</CardTitle>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="px-2 py-1 text-sm rounded-md bg-blue-100 text-blue-800">
+                  Severity: {displayVulnerability.severity}
+                </span>
+                <span
+                  className={`px-2 py-1 text-sm rounded-md ${
+                    statusOptions.find((option) => option.value === displayVulnerability.status)?.color || "bg-gray-100"
+                  }`}
+                >
+                  Status: {displayVulnerability.status}
+                </span>
               </div>
-              <div className="flex flex-col gap-2">
-                <p className="font-medium">Attack Complexity</p>
-                <p className="text-previewText">
-                  {vulnerability?.cvssVector?.split('/')[2]?.split(':')[1] === 'L' ? 'Low' :
-                   vulnerability?.cvssVector?.split('/')[2]?.split(':')[1] === 'H' ? 'High' : '-'}
-                </p>
-              </div>
-              <div className="flex flex-col gap-2">
-                <p className="font-medium">Privileges Required</p>
-                <p className="text-previewText">
-                  {vulnerability?.cvssVector?.split('/')[3]?.split(':')[1] === 'N' ? 'None' :
-                   vulnerability?.cvssVector?.split('/')[3]?.split(':')[1] === 'L' ? 'Low' :
-                   vulnerability?.cvssVector?.split('/')[3]?.split(':')[1] === 'H' ? 'High' : '-'}
-                </p>
-              </div>
-              <div className="flex flex-col gap-2">
-                <p className="font-medium">User Interaction</p>
-                <p className="text-previewText">
-                  {vulnerability?.cvssVector?.split('/')[4]?.split(':')[1] === 'N' ? 'None' :
-                   vulnerability?.cvssVector?.split('/')[4]?.split(':')[1] === 'R' ? 'Required' : '-'}
-                </p>
-              </div>
-            </div>
+            </CardHeader>
+          </Card>
 
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-col gap-2">
-                <p className="font-medium">Scope</p>
-                <p className="text-previewText">
-                  {vulnerability?.cvssVector?.split('/')[5]?.split(':')[1] === 'U' ? 'Unchanged' :
-                   vulnerability?.cvssVector?.split('/')[5]?.split(':')[1] === 'C' ? 'Changed' : '-'}
-                </p>
+          {/* Section 1: Affected Hosts */}
+          <Card>
+            <CardHeader className="pb-2 bg-gray-50">
+              <CardTitle className="text-xl font-semibold">1. Affected Host(s)</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <div className="space-y-3">
+                <h3 className="font-medium text-gray-800">Affected Host(s)</h3>
+                <ul className="pl-6 space-y-1">
+                  {displayVulnerability.affected_host.includes(",") ? (
+                    displayVulnerability.affected_host.split(",").map((host, i) => (
+                      <li key={i} className="text-gray-700 list-disc">
+                        {host.trim()}
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-gray-700 list-disc">{displayVulnerability.affected_host}</li>
+                  )}
+                </ul>
               </div>
-              <div className="flex flex-col gap-2">
-                <p className="font-medium">Confidentiality</p>
-                <p className="text-previewText">
-                  {vulnerability?.cvssVector?.split('/')[6]?.split(':')[1] === 'N' ? 'None' :
-                   vulnerability?.cvssVector?.split('/')[6]?.split(':')[1] === 'L' ? 'Low' :
-                   vulnerability?.cvssVector?.split('/')[6]?.split(':')[1] === 'H' ? 'High' : '-'}
-                </p>
+            </CardContent>
+          </Card>
+
+          {/* Section 2: Basic Details */}
+          <Card>
+            <CardHeader className="pb-2 bg-gray-50">
+              <CardTitle className="text-xl font-semibold">2. Basic Details</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4 space-y-6">
+              <div className="space-y-2">
+                <h3 className="font-medium text-gray-800">Title</h3>
+                <p className="text-gray-700">{displayVulnerability.title}</p>
               </div>
-              <div className="flex flex-col gap-2">
-                <p className="font-medium">Integrity</p>
-                <p className="text-previewText">
-                  {vulnerability?.cvssVector?.split('/')[7]?.split(':')[1] === 'N' ? 'None' :
-                   vulnerability?.cvssVector?.split('/')[7]?.split(':')[1] === 'L' ? 'Low' :
-                   vulnerability?.cvssVector?.split('/')[7]?.split(':')[1] === 'H' ? 'High' : '-'}
-                </p>
+
+              <div className="space-y-2">
+                <h3 className="font-medium text-gray-800">Severity</h3>
+                <p className="text-gray-700">{displayVulnerability.severity}</p>
               </div>
-              <div className="flex flex-col gap-2">
-                <p className="font-medium">Availability</p>
-                <p className="text-previewText">
-                  {vulnerability?.cvssVector?.split('/')[8]?.split(':')[1] === 'N' ? 'None' :
-                   vulnerability?.cvssVector?.split('/')[8]?.split(':')[1] === 'L' ? 'Low' :
-                   vulnerability?.cvssVector?.split('/')[8]?.split(':')[1] === 'H' ? 'High' : '-'}
-                </p>
+
+              <div className="space-y-2">
+                <h3 className="font-medium text-gray-800">Description</h3>
+                <div
+                  className="text-gray-700 prose max-w-none"
+                  dangerouslySetInnerHTML={{
+                    __html: displayVulnerability.description || "",
+                  }}
+                ></div>
               </div>
-            </div>
+            </CardContent>
+          </Card>
+
+          {/* Section 3: Recommendations and Steps to Reproduce */}
+          <Card>
+            <CardHeader className="pb-2 bg-gray-50">
+              <CardTitle className="text-xl font-semibold">3. Recommendations and Steps to Reproduce</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4 space-y-6">
+              <div className="space-y-2">
+                <h3 className="font-medium text-gray-800">Steps to Reproduce</h3>
+                <div
+                  className="text-gray-700 prose max-w-none"
+                  dangerouslySetInnerHTML={{
+                    __html: displayVulnerability.steps_to_reproduce || "",
+                  }}
+                ></div>
+              </div>
+
+              <div className="space-y-2">
+                <h3 className="font-medium text-gray-800">Recommended Solution</h3>
+                <div
+                  className="text-gray-700 prose max-w-none"
+                  dangerouslySetInnerHTML={{
+                    __html: displayVulnerability.recommended_solution || "",
+                  }}
+                ></div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Section 4: Impact and Likelihood */}
+          <Card>
+            <CardHeader className="pb-2 bg-gray-50">
+              <CardTitle className="text-xl font-semibold">4. Impact and Likelihood</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <h3 className="font-medium text-gray-800">Impact</h3>
+                  <p className="text-gray-700">{displayVulnerability.impact}</p>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="font-medium text-gray-800">Likelihood</h3>
+                  <p className="text-gray-700">{displayVulnerability.likelihood}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Section 5: CVSS Metrics */}
+          <Card>
+            <CardHeader className="pb-2 bg-gray-50">
+              <CardTitle className="text-xl font-semibold">5. CVSS Metrics</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-medium text-gray-800">Attack Vector</h3>
+                    <p className="text-gray-700">
+                      {displayVulnerability.cvssVector?.split("/")[1]?.split(":")[1] === "A"
+                        ? "Adjacent Network"
+                        : displayVulnerability.cvssVector?.split("/")[1]?.split(":")[1] === "N"
+                          ? "Network"
+                          : displayVulnerability.cvssVector?.split("/")[1]?.split(":")[1] === "L"
+                            ? "Local"
+                            : displayVulnerability.cvssVector?.split("/")[1]?.split(":")[1] === "P"
+                              ? "Physical"
+                              : "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-800">Attack Complexity</h3>
+                    <p className="text-gray-700">
+                      {displayVulnerability.cvssVector?.split("/")[2]?.split(":")[1] === "L"
+                        ? "Low"
+                        : displayVulnerability.cvssVector?.split("/")[2]?.split(":")[1] === "H"
+                          ? "High"
+                          : "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-800">Privileges Required</h3>
+                    <p className="text-gray-700">
+                      {displayVulnerability.cvssVector?.split("/")[3]?.split(":")[1] === "N"
+                        ? "None"
+                        : displayVulnerability.cvssVector?.split("/")[3]?.split(":")[1] === "L"
+                          ? "Low"
+                          : displayVulnerability.cvssVector?.split("/")[3]?.split(":")[1] === "H"
+                            ? "High"
+                            : "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-800">User Interaction</h3>
+                    <p className="text-gray-700">
+                      {displayVulnerability.cvssVector?.split("/")[4]?.split(":")[1] === "N"
+                        ? "None"
+                        : displayVulnerability.cvssVector?.split("/")[4]?.split(":")[1] === "R"
+                          ? "Required"
+                          : "-"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="font-medium text-gray-800">Scope</h3>
+                    <p className="text-gray-700">
+                      {displayVulnerability.cvssVector?.split("/")[5]?.split(":")[1] === "U"
+                        ? "Unchanged"
+                        : displayVulnerability.cvssVector?.split("/")[5]?.split(":")[1] === "C"
+                          ? "Changed"
+                          : "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-800">Confidentiality</h3>
+                    <p className="text-gray-700">
+                      {displayVulnerability.cvssVector?.split("/")[6]?.split(":")[1] === "N"
+                        ? "None"
+                        : displayVulnerability.cvssVector?.split("/")[6]?.split(":")[1] === "L"
+                          ? "Low"
+                          : displayVulnerability.cvssVector?.split("/")[6]?.split(":")[1] === "H"
+                            ? "High"
+                            : "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-800">Integrity</h3>
+                    <p className="text-gray-700">
+                      {displayVulnerability.cvssVector?.split("/")[7]?.split(":")[1] === "N"
+                        ? "None"
+                        : displayVulnerability.cvssVector?.split("/")[7]?.split(":")[1] === "L"
+                          ? "Low"
+                          : displayVulnerability.cvssVector?.split("/")[7]?.split(":")[1] === "H"
+                            ? "High"
+                            : "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-800">Availability</h3>
+                    <p className="text-gray-700">
+                      {displayVulnerability.cvssVector?.split("/")[8]?.split(":")[1] === "N"
+                        ? "None"
+                        : displayVulnerability.cvssVector?.split("/")[8]?.split(":")[1] === "L"
+                          ? "Low"
+                          : displayVulnerability.cvssVector?.split("/")[8]?.split(":")[1] === "H"
+                            ? "High"
+                            : "-"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <p className="text-gray-700 mt-4">
+                {displayVulnerability.cvssVector}
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* Section 6: Attachments */}
+          <Card>
+            <CardHeader className="pb-2 bg-gray-50">
+              <CardTitle className="text-xl font-semibold">6. Attachments</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <FileAttachmentPreview attachments={displayVulnerability.attachments as Attachment[]} />
+            </CardContent>
+          </Card>
+
+          {/* Comments Section */}
+          <h2 className="text-2xl font-bold">Comments</h2>
+          <div className="space-y-4">
+            {displayVulnerability.comments.map((comment) => (
+              <CommentCard
+                key={comment._id}
+                author={comment.user as User}
+                content={comment.comment}
+                createdAt={comment.createdAt}
+                internal={comment.internal}
+                attachments={comment.attachments as Attachment[]}
+              />
+            ))}
           </div>
 
-          <h1 className="text-2xl font-medium mb-6">6. Attachments</h1>
-          <FileAttachmentPreview attachments={vulnerability?.attachments ?? []} />
+          <CommentSection
+            pentestId={pentestId ?? ""}
+            vulnerabilityId={vulnerabilityId ?? ""}
+            refetch={refetchVulnerability}
+          />
         </div>
 
-        <div className="flex flex-col gap-4">
-          {
-            vulnerability?.comments.map((comment) => {
-              return (
-                <CommentCard key={comment._id} author={comment.user} content={comment.comment} internal={comment.internal} attachments={comment.attachments} />
-              )
-            })
-          }
-        </div>
-        
-        <CommentSection pentestId={pentestId ?? ""} vulnerabilityId={vulnerabilityId ?? ""} refetch={refetchVulnerability} />
-      </div>
+        {/* Sidebar - Fixed position */}
+        <div className="lg:w-3/12 sticky">
+          <div className="sticky top-6 max-w-md bg-white rounded-lg shadow-sm p-6">
+            {/* Header with logo and title */}
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-24 h-24 rounded-full bg-[#f2f9e8] flex items-center justify-center">
+                <div className="relative">
+                  <div className="w-12 h-12 rounded-full bg-[#a5d86a] flex items-center justify-center">
+                    <Lock className="text-white w-6 h-6" />
+                  </div>
+                  <div className="absolute inset-0 w-full h-full">
+                    <svg width="100%" height="100%" viewBox="0 0 100 100">
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r="45"
+                        fill="none"
+                        stroke="#6bbbf7"
+                        strokeWidth="2"
+                        strokeDasharray="10 5"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+              <h1 className="text-3xl font-bold text-[#1a1a2e]">{displayPentest.name}</h1>
+            </div>
 
-      <div className="max-w-md mx-auto bg-white h-fit rounded-lg shadow-sm p-6">
-      {/* Header with logo and title */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="w-24 h-24 rounded-full bg-[#f2f9e8] flex items-center justify-center">
-          <div className="relative">
-            <div className="w-12 h-12 rounded-full bg-[#a5d86a] flex items-center justify-center">
-              <Lock className="text-white w-6 h-6" />
+            {/* Client info */}
+            <div className="mb-6">
+              <h2 className="text-xl font-bold mb-3">Client:</h2>
+              <div className="flex items-center gap-3">
+                <img
+                  src={displayPentest.clients[0].logoUrl || "/placeholder.svg"}
+                  alt={displayPentest.clients[0].name}
+                  className="w-10 h-10 rounded-full"
+                />
+                <span className="text-lg">{displayPentest.clients[0].name}</span>
+              </div>
             </div>
-            <div className="absolute inset-0 w-full h-full">
-              <svg width="100%" height="100%" viewBox="0 0 100 100">
-                <circle cx="50" cy="50" r="45" fill="none" stroke="#6bbbf7" strokeWidth="2" strokeDasharray="10 5" />
-              </svg>
+
+            {/* Status */}
+            <div className="mb-10">
+              <h2 className="text-xl font-bold mb-3">Status:</h2>
+              <Select
+                value={displayVulnerability.status}
+                onValueChange={(value) => {
+                  updateVulnerabilityStatus(value)
+                }}
+                disabled={isUpdatingVulnerabilityStatus}
+              >
+                <SelectTrigger
+                  className={`w-[180px] ${
+                    statusOptions.find((option) => option.value === displayVulnerability.status)?.color
+                  } border-none`}
+                >
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  {statusOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value} className={`${option.color} my-1 rounded-md`}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+
+            {/* Divider */}
+            <Separator className="my-6" />
+
+            {/* Action buttons */}
+            <div className="grid grid-cols-2 gap-4 mb-4">
+              <Button
+                variant="outline"
+                className="border-[#4a3a9c] text-[#4a3a9c] hover:bg-[#f0eeff] flex items-center justify-center gap-2"
+                onClick={() => navigate(`/vulnerability-reports/${pentestId}/vulnerabilities/${vulnerabilityId}/edit`)}
+              >
+                <Edit className="h-5 w-5" />
+                Edit
+              </Button>
+              <Button
+                variant="outline"
+                className="border-[#9c3a3a] text-[#9c3a3a] hover:bg-[#ffeeee] flex items-center justify-center gap-2"
+                onClick={() => {
+                  if (
+                    window.confirm("Are you sure you want to delete this vulnerability? This action cannot be undone.")
+                  ) {
+                    deleteVulnerability()
+                  }
+                }}
+              >
+                <Trash2 className="h-5 w-5" />
+                Delete
+              </Button>
+            </div>
+
+            <Link to={`/vulnerability-reports/${pentestId}`}>
+              <Button variant="outline" className="w-full border-[#3a4a6b] text-[#3a4a6b] hover:bg-[#eef0ff]">
+                Go Back
+              </Button>
+            </Link>
           </div>
         </div>
-        <h1 className="text-3xl font-bold text-[#1a1a2e]">{pentest?.name}</h1>
       </div>
-
-      {/* Client info */}
-      <div className="mb-6">
-        <h2 className="text-xl font-bold mb-3">Client:</h2>
-        <div className="flex items-center gap-3">
-          <img src={pentest?.clients[0].logoUrl} alt={pentest?.clients[0].name} className="w-10 h-10 rounded-full" />
-          <span className="text-lg">{pentest?.clients[0].name}</span>
-        </div>
-      </div>
-
-      {/* Status */}
-      <div className="mb-10">
-        <h2 className="text-xl font-bold mb-3">Status:</h2>
-        <Select value={vulnerability?.status} onValueChange={(value) => {
-          updateVulnerabilityStatus(value)
-        }} disabled={isUpdatingVulnerabilityStatus}>
-          <SelectTrigger className={`w-[180px] ${statusOptions.find(option => option.value === vulnerability?.status)?.color} border-none`}>
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-            <SelectContent>
-              {statusOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value} className={`${option.color} my-1 rounded-md`}>
-                  {option.label}
-                </SelectItem>
-              ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Divider */}
-      <div className="border-t border-gray-200 my-6"></div>
-
-      {/* Action buttons */}
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <Button
-          variant="outline"
-          className="border-[#4a3a9c] text-[#4a3a9c] hover:bg-[#f0eeff] flex items-center justify-center gap-2"
-          onClick={() => navigate(`/vulnerability-reports/${pentestId}/vulnerabilities/${vulnerabilityId}/edit`)}
-        >
-          <Edit className="h-5 w-5" />
-          Edit
-        </Button>
-        <Button
-          variant="outline"
-          className="border-[#9c3a3a] text-[#9c3a3a] hover:bg-[#ffeeee] flex items-center justify-center gap-2"
-          onClick={() => deleteVulnerability()}
-        >
-          <Trash2 className="h-5 w-5" />
-          Delete
-        </Button>
-      </div>
-
-      <Link to={`/vulnerability-reports/${pentestId}`}>
-        <Button variant="outline" className="w-full border-[#3a4a6b] text-[#3a4a6b] hover:bg-[#eef0ff]">
-          Go Back
-        </Button>
-      </Link>
     </div>
-    </div>
-  );
+  )
 }
 
-export default formPreview;
+export default VulnerabilityView

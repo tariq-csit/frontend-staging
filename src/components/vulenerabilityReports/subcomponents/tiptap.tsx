@@ -60,7 +60,7 @@ const sanitizeHtml = (html: string): string => {
 }
 
 // Function to upload image and return URL
-async function uploadImage(file: File): Promise<{ url?: string, s3Key: string }> {
+async function uploadImage(file: File): Promise<{ url: string }> {
   const formData = new FormData()
   formData.append('attachment', file)
 
@@ -189,7 +189,8 @@ const Tiptap = (props: {
   description: string
   onChange: (description: string) => void
 }) => {
-  const [previewMode, setPreviewMode] = useState(true)
+  const [previewMode, setPreviewMode] = useState(true);
+  const [originalContent, setOriginalContent] = useState('');
 
   const editor = useEditor({
     extensions: [
@@ -231,72 +232,53 @@ const Tiptap = (props: {
       },
     },
     onUpdate({ editor }) {
-      // Sanitize content before triggering onChange
-      const sanitizedContent = sanitizeHtml(editor.getHTML())
-      props.onChange(sanitizedContent)
+      const sanitizedContent = sanitizeHtml(editor.getHTML());
+      props.onChange(sanitizedContent);
     },
-  })
+  });
 
   // Update editor content when description prop changes
   useEffect(() => {
     if (editor && props.description !== editor.getHTML()) {
-      editor.commands.setContent(sanitizeHtml(props.description))
+      editor.commands.setContent(sanitizeHtml(props.description));
     }
-  }, [editor, props.description])
+  }, [editor, props.description]);
 
   // Function to toggle preview mode
   const togglePreview = useCallback(() => {
-    setPreviewMode(!previewMode)
-    if (editor) {
-      const content = sanitizeHtml(editor.getHTML())
-      const tempDiv = document.createElement('div')
-      tempDiv.innerHTML = content
+    if (!editor) return;
 
-      // Handle all images in the content
-      const images = tempDiv.getElementsByTagName('img')
-      Array.from(images).forEach((img) => {
-        const markdownText = `![${img.alt}](${img.src})`
-        if (previewMode) {
-          // Switch to markdown mode
-          const textNode = document.createTextNode(markdownText)
-          img.parentNode?.replaceChild(textNode, img)
-        }
-      })
-
-      if (previewMode) {
-        editor.commands.setContent(tempDiv.innerHTML)
-      } else {
-        // Switch back to preview mode - restore images from markdown
-        const text = editor.getText()
-        const markdownRegex = /!\[(.*?)\]\((.*?)\)/g
-        let lastIndex = 0
-        let newContent = ''
-
-        text.replace(markdownRegex, (match, alt, src, offset) => {
-          newContent += text.slice(lastIndex, offset)
-          // Ensure the src is sanitized
-          if (src && (
-            src.startsWith('https://slash-attachments.s3.amazonaws.com') ||
-            src.startsWith('data:image/')
-          )) {
-            newContent += `<img src="${src}" alt="${DOMPurify.sanitize(alt)}" />`
-          }
-          lastIndex = offset + match.length
-          return match
-        })
-
-        newContent += text.slice(lastIndex)
-        editor.commands.setContent(sanitizeHtml(newContent))
-      }
+    if (previewMode) {
+      // Store current HTML content before switching to markdown
+      setOriginalContent(editor.getHTML());
+      
+      // Convert to markdown
+      const content = editor.getHTML();
+      const div = document.createElement('div');
+      div.innerHTML = content;
+      
+      const images = div.getElementsByTagName('img');
+      Array.from(images).forEach(img => {
+        const markdown = `![${img.alt || ''}](${img.src})`;
+        const text = document.createTextNode(markdown);
+        img.parentNode?.replaceChild(text, img);
+      });
+      
+      editor.commands.setContent(div.innerHTML);
+    } else {
+      // Restore original HTML content
+      editor.commands.setContent(originalContent);
     }
-  }, [previewMode, editor])
+
+    setPreviewMode(!previewMode);
+  }, [previewMode, editor, originalContent]);
 
   const insertImage = useCallback(async (file: File, imageName: string) => {
     try {
-      const { s3Key } = await uploadImage(file)
+      const { url } = await uploadImage(file)
       if (editor) {
         // Validate URL before insertion
-        if (!s3Key.startsWith('attachments')) {
+        if (!url.startsWith('https://slash-attachments.securitywall.co/attachments')) {
           throw new Error('Invalid image URL')
         }
 
@@ -305,12 +287,12 @@ const Tiptap = (props: {
           editor.chain().focus().insertContent({
             type: 'image',
             attrs: {
-              src: s3Key,
+              src: url,
               alt: sanitizedName,
             },
           }).run()
         } else {
-          const markdownText = `![${sanitizedName}](${s3Key})`
+          const markdownText = `![${sanitizedName}](${url})`
           editor.chain().focus().insertContent(markdownText).run()
         }
       }

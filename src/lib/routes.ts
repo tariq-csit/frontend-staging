@@ -25,6 +25,7 @@ export const apiRoutes = {
       status: (pentestId: string, vulnerabilityId: string) => `/admin/pentests/${pentestId}/vulnerability/${vulnerabilityId}/status/`,
       comment: (pentestId: string, vulnerabilityId: string) => `/admin/pentests/${pentestId}/vulnerability/${vulnerabilityId}/comment`,
     },
+    status: (pentestId: string) => `/admin/pentests/${pentestId}/status`,
     requests: `/admin/pentests/requests`,
     approveRequest: (requestId: string) => `/admin/pentests/requests/${requestId}/approve`,
     rejectRequest: (requestId: string) => `/admin/pentests/requests/${requestId}/reject`,

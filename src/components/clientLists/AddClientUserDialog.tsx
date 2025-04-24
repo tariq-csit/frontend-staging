@@ -15,7 +15,7 @@ import { Client } from "@/types/types";
 import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
-  username: z.string().min(1),
+  name: z.string().min(1),
   email: z.string().email(),
   client: z.string().min(1),
 })
@@ -26,7 +26,7 @@ export default function AddClientUserDialog({refetch}: {refetch: () => void}) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: "",
+      name: "",
       email: "",
       client: "",
     },
@@ -40,7 +40,7 @@ export default function AddClientUserDialog({refetch}: {refetch: () => void}) {
   const { mutate: onboardClientUser, isPending } = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
       const response = await axiosInstance.post(apiRoutes.clients.onboardUser, {
-        name: values.username,
+        name: values.name,
         email: values.email,
         password: "password", // Default password that user can change later
         profilePicture: "", // Can be updated by user later
@@ -85,10 +85,10 @@ export default function AddClientUserDialog({refetch}: {refetch: () => void}) {
             <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="username"
+                name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Username</FormLabel>
+                    <FormLabel>Name</FormLabel>
                     <FormControl>
                       <Input
                         className="w-max-full"

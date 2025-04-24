@@ -68,7 +68,7 @@ function SignupCodesList() {
           <div className="grid grid-cols-4 gap-4 text-sm text-gray-500 border-b py-3 px-4 font-normal">
             <div>Email</div>
             <div>Created At</div>
-            <div>Status</div>
+            <div className="pl-4">Status</div>
             <div></div>
           </div>
 
@@ -81,14 +81,16 @@ function SignupCodesList() {
                   {new Date(code.createdAt).toLocaleDateString('en-US', {
                     day: 'numeric',
                     month: 'long',
-                    year: 'numeric'
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
                   })}
                 </div>
                 <div>
                   <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                     code.used ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
                   }`}>
-                    {code.used ? 'Used' : 'Pending'}
+                    {code.used ? 'Used' : 'Not Used'}
                   </span>
                 </div>
                 <div className="text-right">

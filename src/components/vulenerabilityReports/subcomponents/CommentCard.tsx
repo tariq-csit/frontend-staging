@@ -1,20 +1,23 @@
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { User, Attachment } from "@/types/types"
-import { DownloadIcon, Trash2, ZoomIn, ZoomOut, MoveHorizontal } from "lucide-react"
+import { DownloadIcon, Trash2, ZoomIn, ZoomOut, MoveHorizontal, FileText } from "lucide-react"
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import { useState } from "react";
 
 interface CommentCardProps {
   author: User
   content: string
+  createdAt: string
   internal?: boolean
   attachments?: Attachment[]
 }
 
-export default function CommentCard({ author, content, internal = false, attachments }: CommentCardProps) {
+export default function CommentCard({ author, content, createdAt, internal = false, attachments }: CommentCardProps) {
   const [open, setOpen] = useState(false);
   const [selectedAttachment, setSelectedAttachment] = useState<Attachment | null>(null);
+
+  console.log(attachments)
 
   return (
     <div
@@ -25,13 +28,26 @@ export default function CommentCard({ author, content, internal = false, attachm
           : "bg-white", // White with purple border for regular comments
       )}
     >
-      <div className="flex items-center gap-3 mb-3">
-        <div className="relative h-10 w-10 rounded-full overflow-hidden">
-          <img src={author.profilePicture || "/placeholder.svg"} alt={author.name} className="object-cover" />
+      <div className="flex justify-between items-center gap-3 mb-3">
+        <div className="flex items-center gap-3">
+          <div className="relative h-10 w-10 rounded-full overflow-hidden">
+            <img src={author.profilePicture || "/placeholder.svg"} alt={author.name} className="object-cover" />
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="font-medium text-gray-900">{author.name}</span>
+            {internal && <span className="px-3 py-1 text-xs bg-[#a78bfa] text-white rounded-full">Internal</span>}
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="font-medium text-gray-900">{author.name}</span>
-          {internal && <span className="px-3 py-1 text-xs bg-[#a78bfa] text-white rounded-full">Internal</span>}
+        <div>
+          <span className="text-sm text-gray-500">
+            {new Date(createdAt).toLocaleDateString('en-US', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
+          </span>
         </div>
       </div>
 
@@ -40,7 +56,7 @@ export default function CommentCard({ author, content, internal = false, attachm
       <div className="flex gap-4 w-full overflow-x-auto">
       {attachments && attachments.map((attachment) => (
         <div key={attachment.id} className="border rounded p-2 flex items-center gap-2">
-          {attachment.contentType.startsWith("image/") ? (
+          {attachment.url.includes(".png") || attachment.url.includes(".jpg") || attachment.url.includes(".jpeg") ? (
             <div className="relative group w-fit">
                 <img src={attachment.url} alt={attachment.name} className="max-w-40 h-auto border border-gray-400 rounded-md" onClick={() => {
                     setSelectedAttachment(attachment);
@@ -53,9 +69,20 @@ export default function CommentCard({ author, content, internal = false, attachm
                 </div>
             </div>
           ) : (
-            <a href={attachment.url} target="_blank" rel="noopener noreferrer">
-              {attachment.name}
-            </a>
+            <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-md hover:bg-gray-100 transition-colors group cursor-pointer" onClick={() => window.open(attachment.url, '_blank')}>
+              <div className="bg-red-100 p-1.5 rounded-md">
+                <FileText className="h-4 w-4 text-red-500" />
+              </div>
+              <a 
+                href={attachment.url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-sm text-gray-700 group-hover:text-primary truncate"
+                onClick={(e) => e.preventDefault()}
+              >
+                {attachment.name}
+              </a>
+            </div>
           )}
         </div>
       ))}

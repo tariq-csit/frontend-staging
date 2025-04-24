@@ -70,6 +70,7 @@ function InitialForm(props:{
       props.setvarificationToken(data.token);
       props.setEmail(variables.email);
       localStorage.setItem("user", JSON.stringify(data.user));
+      localStorage.setItem("token", data.token);
       localStorage.setItem("refreshToken", data.refreshToken);
       toast({
         title: "Success",

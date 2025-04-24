@@ -19,6 +19,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { FileUpload } from "@/components/FileUpload";
 
 const formSchema = z.object({
   companyName: z.string().min(2, {
@@ -34,11 +35,16 @@ const formSchema = z.object({
   logoUrl: z.string().optional(),
 });
 
+interface UploadResponse {
+  url: string;
+}
+
 function Credentials(props: {
   setSignUpData: (data: Partial<SignUpData>) => void;
   signUpData: SignUpData;
 }) {
   const { toast } = useToast();
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -155,38 +161,24 @@ function Credentials(props: {
                   <FormItem>
                     <FormLabel>Upload your Logo (optional)</FormLabel>
                     <FormControl>
-                      <div className="flex flex-col items-center justify-center gap-2 rounded-formInput border border-dashed bg-[#F5F5F5] border-inputBorder p-2.5 self-stretch">
-                        <div className="flex flex-col items-center gap-2 self-stretch p-4 sm:p-12">
-                          <div className="flex w-4/5 sm:w-auto px-4 justify-center items-center sm:gap-8 border rounded-formInput border-[#353086]">
-                            <img src={fileIcon} alt="File icon" />
-                            <Input
-                              type="file"
-                              accept="image/*"
-                              placeholder="Upload your logo"
-                              className="border-none"
-                              onChange={(e) => {
-                                if (e.target.files?.[0]) {
-                                  uploadLogoMutation.mutate(e.target.files[0]);
-                                }
-                              }}
-                              disabled={uploadLogoMutation.isPending}
-                            />
-                          </div>
-                          {uploadLogoMutation.isPending ? (
-                            <div className="flex items-center gap-2">
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                              <span>Uploading...</span>
-                            </div>
-                          ) : (
-                            <label className="font-poppins text-inputBorder text-base lowercase font-medium">
-                              or drop logo here
-                            </label>
-                          )}
-                          {field.value && (
-                            <p className="text-sm text-green-600">Logo uploaded successfully</p>
-                          )}
-                        </div>
-                      </div>
+                      <FileUpload
+                        value={uploadedFile ? [uploadedFile] : []}
+                        onChange={async (files) => {
+                          if (files.length > 0) {
+                            setUploadedFile(files[0]);
+                            uploadLogoMutation.mutate(files[0]);
+                          } else {
+                            setUploadedFile(null);
+                            field.onChange("");
+                          }
+                        }}
+                        maxFiles={1}
+                        maxSize={5 * 1024 * 1024} // 5MB
+                        acceptedTypes={{
+                          'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.svg']
+                        }}
+                        className="w-full"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

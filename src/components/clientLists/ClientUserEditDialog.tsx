@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { toast } from "@/hooks/use-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Loader2 } from "lucide-react"
+import { FileUpload } from "@/components/FileUpload"
 
 const formSchema = z.object({
   name: z.string().min(1),
@@ -32,7 +33,12 @@ interface ClientUserEditDialogProps {
   onOpenChange: Dispatch<SetStateAction<boolean>>
 }
 
+interface UploadResponse {
+  url: string;
+}
+
 export default function ClientUserEditDialog({ user, refetch, open, onOpenChange }: ClientUserEditDialogProps) {
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -107,32 +113,28 @@ export default function ClientUserEditDialog({ user, refetch, open, onOpenChange
             <FormField
               control={form.control}
               name="profilePicture"
-              render={() => (
+              render={({ field }) => (
                 <FormItem className="flex w-full sm:col-span-3 flex-col items-start gap-2">
                   <FormLabel>Profile Picture</FormLabel>
                   <FormControl>
-                    <div className="flex flex-col items-center justify-center gap-2 rounded-formInput border border-dashed bg-[#F5F5F5] border-inputBorder p-2.5 self-stretch">
-                      <div className="flex flex-col items-center gap-2 self-stretch">
-                        <img className="" src="/papers.svg" />
-                        <div className="flex w-3/5 sm:w-auto px-4 justify-center items-center sm:gap-8 border rounded-formInput border-[#353086]">
-                          <img src={fileIcon || "/placeholder.svg"} />
-                          <Input
-                            type="file"
-                            accept="image/*"
-                            placeholder="Choose files"
-                            className="border-none"
-                            onChange={(e) => {
-                              if (e.target.files?.[0]) {
-                                uploadProfilePicture(e.target.files[0])
-                              }
-                            }}
-                          />
-                        </div>
-                        <label className="font-poppins text-inputBorder text-base lowercase font-medium">
-                          or drop files here
-                        </label>
-                      </div>
-                    </div>
+                    <FileUpload
+                      value={uploadedFile ? [uploadedFile] : []}
+                      onChange={async (files) => {
+                        if (files.length > 0) {
+                          setUploadedFile(files[0]);
+                          await uploadProfilePicture(files[0]);
+                        } else {
+                          setUploadedFile(null);
+                          field.onChange("");
+                        }
+                      }}
+                      maxFiles={1}
+                      maxSize={5 * 1024 * 1024} // 5MB
+                      acceptedTypes={{
+                        'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.svg']
+                      }}
+                      className="w-full"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

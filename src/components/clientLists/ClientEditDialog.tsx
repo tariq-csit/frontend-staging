@@ -15,6 +15,12 @@ import type { Dispatch, SetStateAction } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { toast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
+import { FileUpload } from "@/components/FileUpload"
+import { useState } from "react"
+
+interface UploadResponse {
+  url: string;
+}
 
 const formSchema = z.object({
   companyName: z.string().min(1),
@@ -30,6 +36,8 @@ interface ClientEditDialogProps {
 }
 
 export default function ClientEditDialog({ client, refetch, open, onOpenChange }: ClientEditDialogProps) {
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -67,13 +75,18 @@ export default function ClientEditDialog({ client, refetch, open, onOpenChange }
           "Content-Type": "multipart/form-data",
         },
       })
-      return response.data
+      return response.data as UploadResponse
     },
     onSuccess: (data) => {
       form.setValue("uploadLogo", data.url)
     },
     onError: (error) => {
       console.error("Error uploading logo:", error)
+      toast({
+        title: "Error uploading logo",
+        description: "There was an error uploading the logo. Please try again.",
+        variant: "destructive",
+      })
     },
   })
 
@@ -122,31 +135,28 @@ export default function ClientEditDialog({ client, refetch, open, onOpenChange }
             <FormField
               control={form.control}
               name="uploadLogo"
-              render={() => (
+              render={({ field }) => (
                 <FormItem className="flex w-full sm:col-span-3 flex-col items-start gap-2">
-                  <FormLabel>Logo</FormLabel>
+                  <FormLabel>Company Logo</FormLabel>
                   <FormControl>
-                    <div className="flex flex-col items-center justify-center gap-2 rounded-formInput border border-dashed bg-[#F5F5F5] border-inputBorder p-2.5 self-stretch">
-                      <div className="flex flex-col items-center gap-2 self-stretch">
-                        <img className="" src="/papers.svg" />
-                        <div className="flex w-3/5 sm:w-auto px-4 justify-center items-center sm:gap-8 border rounded-formInput border-[#353086]">
-                          <img src={fileIcon || "/placeholder.svg"} />
-                          <Input
-                            type="file"
-                            placeholder="Choose files"
-                            className="border-none"
-                            onChange={(e) => {
-                              if (e.target.files?.[0]) {
-                                uploadLogo(e.target.files[0])
-                              }
-                            }}
-                          />
-                        </div>
-                        <label className="font-poppins text-inputBorder text-base lowercase font-medium">
-                          or drop files here
-                        </label>
-                      </div>
-                    </div>
+                    <FileUpload
+                      value={uploadedFile ? [uploadedFile] : []}
+                      onChange={async (files) => {
+                        if (files.length > 0) {
+                          setUploadedFile(files[0]);
+                          await uploadLogo(files[0]);
+                        } else {
+                          setUploadedFile(null);
+                          field.onChange("");
+                        }
+                      }}
+                      maxFiles={1}
+                      maxSize={5 * 1024 * 1024} // 5MB
+                      acceptedTypes={{
+                        'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.svg']
+                      }}
+                      className="w-full"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
