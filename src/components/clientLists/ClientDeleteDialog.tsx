@@ -16,6 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Loader2 } from "lucide-react"
 
 interface ClientDeleteDialogProps {
   client: Client
@@ -25,20 +26,17 @@ interface ClientDeleteDialogProps {
 }
 
 export default function ClientDeleteDialog({ client, refetch, open, onOpenChange }: ClientDeleteDialogProps) {
-  const { mutate: deleteClient } = useMutation({
+  const { mutate: deleteClient, isPending } = useMutation({
     mutationFn: async () => {
       await axiosInstance.delete(apiRoutes.clients.detail(client._id))
     },
     onSuccess: () => {
+      toast({
+        title: "Client deleted successfully",
+        description: "The client has been deleted successfully",
+      })
+      refetch() 
       onOpenChange(false)
-      refetch()
-
-      setTimeout(() => {
-        toast({
-          title: "Client deleted successfully",
-          description: "The client has been deleted successfully",
-        })
-      }, 100)
     },
   })
 
@@ -56,9 +54,11 @@ export default function ClientDeleteDialog({ client, refetch, open, onOpenChange
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={() => deleteClient()}
+            disabled={isPending}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
-            Delete
+            {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+            {isPending ? "Deleting..." : "Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

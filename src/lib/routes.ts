@@ -21,6 +21,7 @@ export const apiRoutes = {
     vulnerabilities: {
       all: (pentestId: string) => `/admin/pentests/${pentestId}/vulnerabilities`,
       details: (pentestId: string, vulnerabilityId: string) => `/admin/pentests/${pentestId}/vulnerabilities/${vulnerabilityId}`,
+      edit: (pentestId: string, vulnerabilityId: string) => `/admin/pentests/${pentestId}/vulnerability/${vulnerabilityId}`,
       createReport: (pentestId: string) => `/admin/pentests/${pentestId}/vulnerability`,
       status: (pentestId: string, vulnerabilityId: string) => `/admin/pentests/${pentestId}/vulnerability/${vulnerabilityId}/status/`,
       comment: (pentestId: string, vulnerabilityId: string) => `/admin/pentests/${pentestId}/vulnerability/${vulnerabilityId}/comment`,
