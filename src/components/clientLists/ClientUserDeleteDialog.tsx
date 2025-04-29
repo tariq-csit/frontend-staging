@@ -7,16 +7,15 @@ import type { ClientUser } from "@/types/types"
 import { toast } from "@/hooks/use-toast"
 import type { Dispatch, SetStateAction } from "react"
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Loader2 } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 interface ClientUserDeleteDialogProps {
   user: ClientUser
@@ -28,34 +27,34 @@ interface ClientUserDeleteDialogProps {
 export default function ClientUserDeleteDialog({ user, refetch, open, onOpenChange }: ClientUserDeleteDialogProps) {
   const { mutate: deleteUser, isPending } = useMutation({
     mutationFn: async () => {
+      await new Promise((resolve) => setTimeout(resolve, 500))
       await axiosInstance.delete(apiRoutes.clientUsers.detail(user._id))
     },
     onSuccess: () => {
-      onOpenChange(false)
       refetch()
-
-      setTimeout(() => {
-        toast({
-          title: "Client user deleted successfully",
-          description: "The client user has been deleted successfully",
-        })
-      }, 100)
+      toast({
+        title: "Client user deleted successfully",
+        description: "The client user has been deleted successfully",
+      })
+      onOpenChange(false)
     },
   })
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Delete Client User</AlertDialogTitle>
-          <AlertDialogDescription>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete Client User</DialogTitle>
+          <DialogDescription>
             Are you sure you want to delete {user.name}? This action cannot be undone.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
+          </DialogDescription>
+        </DialogHeader>
 
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
             onClick={() => deleteUser()}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
           >
@@ -67,9 +66,9 @@ export default function ClientUserDeleteDialog({ user, refetch, open, onOpenChan
             ) : (
               "Delete"
             )}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 } 

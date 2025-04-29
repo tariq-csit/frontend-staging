@@ -1,6 +1,3 @@
-"use client"
-
-import fileIcon from "/file.svg"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { z } from "zod"
@@ -153,7 +150,7 @@ export default function ClientEditDialog({ client, refetch, open, onOpenChange }
                       maxFiles={1}
                       maxSize={5 * 1024 * 1024} // 5MB
                       acceptedTypes={{
-                        'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.svg']
+                        'image/*': ['.jpg', '.jpeg', '.png']
                       }}
                       className="w-full"
                     />

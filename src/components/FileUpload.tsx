@@ -174,12 +174,12 @@ export function FileUpload({
             <p className="text-sm font-medium">
               Drag & drop files here, or <span className="text-primary">browse</span>
             </p>
-            <p className="text-xs text-muted-foreground">
+            {/* <p className="text-xs text-muted-foreground">
               {acceptedTypesString ? `Supported formats: ${acceptedTypesString}` : "All file types supported"}
-            </p>
-            <p className="text-xs text-muted-foreground">
+            </p> */}
+            {/* <p className="text-xs text-muted-foreground">
               Max {maxFiles} file{maxFiles === 1 ? "" : "s"}, up to {formatBytes(maxSize)} each
-            </p>
+            </p> */}
           </div>
         </div>
 

@@ -13,12 +13,13 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import axiosInstance from "@/lib/AxiosInstance";
 import { isAxiosError } from "axios";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
+import Turnstile, { useTurnstile } from "react-turnstile";
 
 const formSchema = z.object({
   email: z
@@ -31,8 +32,6 @@ const formSchema = z.object({
     message: "Password should be atleast 8 characters long",
   }),
 });
-
-
 
 function InitialForm(props:{
   settempToken: Function,
@@ -49,13 +48,7 @@ function InitialForm(props:{
   });
 
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
-
-  const resetTurnstile = () => {
-    if ((window as any).turnstile) {
-      (window as any).turnstile.reset();
-      setTurnstileToken(null);
-    }
-  };
+  const turnstile = useTurnstile();
 
   const loginMutation = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
@@ -83,7 +76,7 @@ function InitialForm(props:{
         if (errorMessage === "2FA setup required") {
           props.settempToken(error.response.data.tempToken);
         } else {
-          resetTurnstile();
+          turnstile.reset();
           form.reset();
           toast({
             title: "Error",
@@ -95,142 +88,125 @@ function InitialForm(props:{
     },
   });
 
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js";
-    script.async = true;
-    document.body.appendChild(script);
-
-    // Define the callback in the window object
-    (window as any).turnstileCallback = (token: string) => {
-      setTurnstileToken(token);
-    };
-
-    return () => {
-      document.body.removeChild(script);
-      delete (window as any).turnstileCallback;
-    };
-  }, []);
-
   async function onSubmit(values: z.infer<typeof formSchema>) {
     loginMutation.mutate(values);
   }
 
   return (
     <div className="flex flex-col gap-16">
-        <div className="flex px-10 flex-col items-start justify-center gap-8 flex-component self-start font-poppins">
-          <div className="flex flex-col items-start gap-8 self-stretch">
-            <div className="flex flex-col justify-center items-start gap-3 self-stretch">
-              <h1 className="font-poppins text-[2.5rem] font-semibold">
-                Welcome Back!
-              </h1>
-              <p className="self-stretch text-inputBorder font-poppins text-lg">
-                Please sign in to streamline the management and monitoring of
-                penetration tests.
-              </p>
-            </div>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="flex flex-col items-start gap-6 justify-center self-stretch"
-              >
-                <div className="flex flex-col items-center gap-6 self-stretch">
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Enter your Email</FormLabel>
-                        <FormControl>
-                          <Input
-                            className="w-full"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Enter your Password</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Input
-                              type={showPassword ? "text" : "password"}
-                              className="pr-10 w-full"
-                              {...field}
-                            />
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                              onClick={() => setShowPassword(!showPassword)}
-                              aria-label={
-                                showPassword ? "Hide password" : "Show password"
-                              }
-                            >
-                              {showPassword ? (
-                                <EyeOff className="h-4 w-4 text-muted-foreground" />
-                              ) : (
-                                <Eye className="h-4 w-4 text-muted-foreground" />
-                              )}
-                            </Button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <div className="flex justify-end self-stretch">
-                    <Link
-                      to="/forgot-password"
-                      className="text-primary-900 font-poppins text-sm font-semibold"
-                    >
-                      Forgot Password?
-                    </Link>
-                  </div>
-                </div>
-                <div 
-                  className="cf-turnstile" 
-                  data-sitekey="0x4AAAAAABAY4zDtElrDH2g0"
-                  data-callback="turnstileCallback"
-                ></div>
-                <Button 
-                  className="w-full text-lg py-4" 
-                  type="submit"
-                  disabled={loginMutation.isPending}
-                >
-                  {loginMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Signing in...
-                    </>
-                  ) : (
-                    "Sign in"
-                  )}
-                </Button>
-              </form>
-            </Form>
-            <p className="font-poppins text-inputBorder ">
-              Don't have an account?
-              <Link to={'/signup'} className="text-primary-900 font-medium cursor-pointer">
-                {" "}
-                Signup Now!
-              </Link>
+      <div className="flex px-10 flex-col items-start justify-center gap-8 flex-component self-start font-poppins">
+        <div className="flex flex-col items-start gap-8 self-stretch">
+          <div className="flex flex-col justify-center items-start gap-3 self-stretch">
+            <h1 className="font-poppins text-[2.5rem] font-semibold">
+              Welcome Back!
+            </h1>
+            <p className="self-stretch text-inputBorder font-poppins text-lg">
+              Please sign in to streamline the management and monitoring of
+              penetration tests.
             </p>
           </div>
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="flex flex-col items-start gap-6 justify-center self-stretch"
+            >
+              <div className="flex flex-col items-center gap-6 self-stretch">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Enter your Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="w-full"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Enter your Password</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            className="pr-10 w-full"
+                            {...field}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                            onClick={() => setShowPassword(!showPassword)}
+                            aria-label={
+                              showPassword ? "Hide password" : "Show password"
+                            }
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4 text-muted-foreground" />
+                            ) : (
+                              <Eye className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="flex justify-end self-stretch">
+                  <Link
+                    to="/forgot-password"
+                    className="text-primary-900 font-poppins text-sm font-semibold"
+                  >
+                    Forgot Password?
+                  </Link>
+                </div>
+              </div>
+              <Turnstile
+                sitekey="0x4AAAAAABAY4zDtElrDH2g0"
+                onVerify={(token) => setTurnstileToken(token)}
+                className="w-full"
+              />
+              <Button 
+                className="w-full text-lg py-4" 
+                type="submit"
+                disabled={loginMutation.isPending || !turnstileToken}
+              >
+                {loginMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  "Sign in"
+                )}
+              </Button>
+            </form>
+          </Form>
+          <p className="font-poppins text-inputBorder ">
+            Don't have an account?
+            <Link to={'/signup'} className="text-primary-900 font-medium cursor-pointer">
+              {" "}
+              Signup Now!
+            </Link>
+          </p>
         </div>
-        <p className="text-center w-full text-primary-900 font-inter">
-            Copyright © 2024 Slash
-      </p>
       </div>
-  )
+      <p className="text-center w-full text-primary-900 font-inter">
+        Copyright © 2024 Slash
+      </p>
+    </div>
+  );
 }
 
-export default InitialForm
+export default InitialForm;
