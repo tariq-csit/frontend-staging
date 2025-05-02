@@ -182,3 +182,33 @@ export interface PentestRequest {
   requestedBy: string;
   createdAt: string;
 }
+
+export interface RequestedPentest {
+  id?: string;  // For list view
+  _id?: string;  // For detail view
+  title: string;
+  type?: string;
+  startDate?: string;
+  endDate?: string;
+  service: string;
+  assets?: string[];
+  additionalNotes?: string;
+  testingCredentials?: string;
+  attachments?: {
+    url: string;
+    name: string;
+    _id: string;
+  }[];
+  status?: string;
+  createdAt: string;
+  requestedBy: string | {
+    name: string;
+    email: string;
+  };
+  client: {
+    id?: string;  // For list view
+    _id?: string;  // For detail view
+    name: string;
+    logoUrl?: string;
+  };
+}

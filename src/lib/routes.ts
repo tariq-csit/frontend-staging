@@ -28,6 +28,7 @@ export const apiRoutes = {
     },
     status: (pentestId: string) => `/admin/pentests/${pentestId}/status`,
     requests: `/admin/pentests/requests`,
+    requestedPentest: (pentestId: string) => `/admin/pentests/requests/${pentestId}`,
     approveRequest: (requestId: string) => `/admin/pentests/requests/${requestId}/approve`,
     rejectRequest: (requestId: string) => `/admin/pentests/requests/${requestId}/reject`,
     reports: {

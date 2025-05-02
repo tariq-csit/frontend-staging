@@ -21,6 +21,7 @@ import { Loader2 } from 'lucide-react';
 import axiosInstance from '@/lib/AxiosInstance';
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
+import { useEffect } from 'react';
 
 const pinSchema = z.object({
   pin: z.string().length(6, {
@@ -33,6 +34,19 @@ function TwoFaVarification(props:{
   email: string
 }) {
   const navigate = useNavigate();
+  
+  useEffect(() => {
+    // Check if we have the necessary authentication state
+    if (!props.varificationToken || !props.email) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in again to complete authentication.",
+        variant: "destructive",
+      });
+      navigate('/login');
+    }
+  }, [props.varificationToken, props.email, navigate]);
+
   const pinForm = useForm<z.infer<typeof pinSchema>>({
     resolver: zodResolver(pinSchema),
     defaultValues: {

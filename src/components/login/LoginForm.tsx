@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import InitialForm from "./InitialForm";
 import TwoFaAuth from "./2FaAuth";
 import QrCodeAuth from "./QrCodeAuth";
@@ -12,7 +12,18 @@ function LoginForm() {
   const [token, settoken] = useState("");
   const [email, setEmail] = useState('');
   
-  
+  useEffect(() => {
+    // Clear any stale authentication state on component mount
+    const token = localStorage.getItem('token');
+    const refreshToken = localStorage.getItem('refreshToken');
+    
+    // If we have tokens but we're on the login form, they might be stale
+    if (token || refreshToken) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+    }
+  }, []);
 
   if (tempToken === "" && varificationToken === "") {
     return (

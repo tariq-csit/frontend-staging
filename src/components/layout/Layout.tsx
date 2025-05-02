@@ -29,7 +29,12 @@ function Layout() {
 
   // Redirect to login if no token
   useEffect(() => {
-    if (!localStorage.getItem("token")) {
+    const token = localStorage.getItem("token");
+    const refreshToken = localStorage.getItem("refreshToken");
+    
+    // Check if we have both tokens for complete authentication
+    if (!token || !refreshToken) {
+      localStorage.clear(); // Clear any partial authentication state
       navigate("/login");
     }
   }, [navigate]);
