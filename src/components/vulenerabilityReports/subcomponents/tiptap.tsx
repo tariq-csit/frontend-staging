@@ -26,7 +26,7 @@ const SecureNodesExtension = Extension.create({
               const src = element.getAttribute('src')
               // Only allow specific domains or patterns
               if (src && (
-                src.startsWith('https://slash-attachments.s3.amazonaws.com') ||
+                src.startsWith('https://slash-attachments.s3.us-east-1.amazonaws.com') ||
                 src.startsWith('data:image/')
               )) {
                 return src

@@ -3,7 +3,7 @@ export const apiRoutes = {
   login : `/auth/login`,
   logout: `/auth/logout`,
   signup: `/auth/signup`,
-  refreshToken: `/auth/refresh`,
+  refresh: `/auth/refresh`,
   twoFa : `/auth/setup-2fa`,
   setup2FaVerify: `/auth/setup-2fa-verify`,
   verify2Fa : `/auth/verify-2fa`,

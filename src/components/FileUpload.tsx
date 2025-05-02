@@ -1,16 +1,13 @@
-
 import type React from "react"
 
 import { useCallback, useEffect, useState } from "react"
 import { FileIcon, UploadCloudIcon, XIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Progress } from "@/components/ui/progress"
 import { cn } from "@/lib/utils"
 
 interface FileUploadProps {
   value: File[]
   onChange: (files: File[]) => void
-  maxFiles?: number
   maxSize?: number // in bytes
   acceptedTypes?: Record<string, string[]>
   disabled?: boolean
@@ -20,7 +17,6 @@ interface FileUploadProps {
 export function FileUpload({
   value = [],
   onChange,
-  maxFiles = 10,
   maxSize = 10 * 1024 * 1024, // 10MB default
   acceptedTypes,
   disabled = false,
@@ -70,13 +66,6 @@ export function FileUpload({
       const newErrors: string[] = []
       const newFiles: File[] = [...value]
 
-      // Check if adding these files would exceed the max files limit
-      if (newFiles.length + files.length > maxFiles) {
-        newErrors.push(`You can only upload a maximum of ${maxFiles} files.`)
-        setFileErrors(newErrors)
-        return
-      }
-
       // Validate each file
       Array.from(files).forEach((file) => {
         const error = validateFile(file)
@@ -94,7 +83,7 @@ export function FileUpload({
       setFileErrors(newErrors)
       onChange(newFiles)
     },
-    [maxFiles, maxSize, acceptedTypes, onChange, value],
+    [maxSize, acceptedTypes, onChange, value],
   )
 
   const handleDrag = useCallback((e: React.DragEvent<HTMLDivElement>) => {
@@ -163,7 +152,7 @@ export function FileUpload({
           className="absolute inset-0 cursor-pointer opacity-0"
           onChange={handleChange}
           accept={acceptedTypesString}
-          disabled={disabled || value.length >= maxFiles}
+          disabled={disabled}
         />
 
         <div className="flex flex-col items-center justify-center space-y-2 text-center">
@@ -174,24 +163,8 @@ export function FileUpload({
             <p className="text-sm font-medium">
               Drag & drop files here, or <span className="text-primary">browse</span>
             </p>
-            {/* <p className="text-xs text-muted-foreground">
-              {acceptedTypesString ? `Supported formats: ${acceptedTypesString}` : "All file types supported"}
-            </p> */}
-            {/* <p className="text-xs text-muted-foreground">
-              Max {maxFiles} file{maxFiles === 1 ? "" : "s"}, up to {formatBytes(maxSize)} each
-            </p> */}
           </div>
         </div>
-
-        {/* Show progress bar when files are being uploaded */}
-        {value.length > 0 && value.length < maxFiles && (
-          <div className="mt-4 w-full max-w-xs">
-            <Progress value={(value.length / maxFiles) * 100} className="h-2" />
-            <p className="mt-1 text-xs text-muted-foreground text-center">
-              {value.length} of {maxFiles} files
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Error messages */}

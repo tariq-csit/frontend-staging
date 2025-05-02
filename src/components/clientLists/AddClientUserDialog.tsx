@@ -42,8 +42,8 @@ export default function AddClientUserDialog({refetch}: {refetch: () => void}) {
       const response = await axiosInstance.post(apiRoutes.clients.onboardUser, {
         name: values.name,
         email: values.email,
-        password: "password", // Default password that user can change later
-        profilePicture: "", // Can be updated by user later
+        password: "", 
+        profilePicture: "",
         clientId: values.client,
       });
       return response.data;

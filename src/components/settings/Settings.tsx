@@ -15,6 +15,7 @@ import { Switch } from "@/components/ui/switch"
 import { useToast } from "@/hooks/use-toast"
 import axiosInstance from "@/lib/AxiosInstance"
 import { apiRoutes } from "@/lib/routes"
+import { FileUpload } from "@/components/FileUpload"
 
 // Form schemas
 const nameFormSchema = z.object({
@@ -28,7 +29,14 @@ const emailFormSchema = z.object({
 const passwordFormSchema = z
   .object({
     currentPassword: z.string().min(1, { message: "Current password is required" }),
-    newPassword: z.string().min(8, { message: "Password must be at least 8 characters" }),
+    newPassword: z.string().min(8, {
+      message: "Password should be at least 8 characters long",
+    }).regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+      {
+        message: "Password must contain at least one uppercase letter, one lowercase letter, one number and one special character",
+      }
+    ),
     confirmPassword: z.string().min(8, { message: "Password must be at least 8 characters" }),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
@@ -146,6 +154,33 @@ export default function SettingsPage() {
         variant: "destructive",
       })
       console.error('Error updating notification preferences:', error)
+    }
+  })
+
+  const { mutate: updateProfilePicture, isPending: isUpdatingProfilePicture } = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData()
+      formData.append('attachments', file)
+      return axiosInstance.post(apiRoutes.uploadProfilePicture, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user'] })
+      toast({
+        title: "Success",
+        description: "Profile picture updated successfully",
+      })
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to update profile picture",
+        variant: "destructive",
+      })
+      console.error('Error updating profile picture:', error)
     }
   })
 
@@ -298,7 +333,7 @@ export default function SettingsPage() {
               </AccordionItem>
 
               {/* Change Password */}
-              <AccordionItem value="password" className="border-b-0">
+              <AccordionItem value="password" className="border-b">
                 <AccordionTrigger className="px-4 py-4 hover:no-underline">
                   <span className="text-base font-medium">Change Password</span>
                 </AccordionTrigger>
@@ -346,7 +381,6 @@ export default function SettingsPage() {
                       />
                       <Button 
                         type="submit" 
-                        className="w-full bg-indigo-700 hover:bg-indigo-800"
                         disabled={isUpdatingPassword}
                       >
                         {isUpdatingPassword ? "Updating..." : "Update"}
@@ -355,6 +389,42 @@ export default function SettingsPage() {
                   </Form>
                 </AccordionContent>
               </AccordionItem>
+
+              {/* Change Profile Picture */}
+              <AccordionItem value="profile-picture" className="border-b-0">
+                <AccordionTrigger className="px-4 py-4 hover:no-underline">
+                  <span className="text-base font-medium">Change Profile Picture</span>
+                </AccordionTrigger>
+                <AccordionContent className="px-4 pb-4">
+                  <div className="space-y-4 max-w-md">
+                    {userData?.profilePicture && (
+                      <div className="flex items-center space-x-4">
+                        <p className="text-sm font-medium text-gray-700">Current Picture</p>
+                        <img 
+                          src={userData.profilePicture} 
+                          alt="Profile" 
+                          className="h-16 w-16 rounded-full object-cover"
+                        />
+                      </div>
+                    )}
+                    <FileUpload
+                      value={[]}
+                      onChange={(files) => {
+                        if (files.length > 0) {
+                          updateProfilePicture(files[0])
+                        }
+                      }}
+                      maxSize={5 * 1024 * 1024} // 5MB
+                      acceptedTypes={{
+                        'image/jpeg': ['.jpg', '.jpeg'],
+                        'image/png': ['.png'],
+                      }}
+                      disabled={isUpdatingProfilePicture}
+                    />
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+
             </Accordion>
           </CardContent>
         </Card>

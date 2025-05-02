@@ -24,10 +24,11 @@ import RetestReport from './components/pentests/managePentest/RetestReport';
 import VulnerabilityReportForm from './components/vulenerabilityReports/subcomponents/VulnerabilityReportForm';
 import PentestsList from './components/pentests/Pentests';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-
+import Root from './components/Root';
 
 function App() {
   const queryClient = new QueryClient();
+
   return (
     <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
       <QueryClientProvider client={queryClient}>
@@ -37,6 +38,7 @@ function App() {
         <Route path='/forgot-password' element={<ForgotPassword />} />
         <Route path='/reset-password/:token' element={<ResetPassword />} />
         <Route path='/' element={<Layout />}>
+          <Route index element={<Root />} />
           <Route path='dashboard' element={<DashboardHome />} />
 
           <Route path='/pentests' element={<PentestsList />} />

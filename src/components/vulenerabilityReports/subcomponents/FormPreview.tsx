@@ -352,7 +352,7 @@ function VulnerabilityView() {
         </div>
 
         {/* Sidebar - Fixed position */}
-        <div className="lg:w-3/12 sticky">
+        <div className="lg:w-3/12 fixed right-0 top-4 h-fit p-6">
           <div className="sticky top-6 max-w-md bg-white rounded-lg shadow-sm p-6">
             {/* Header with logo and title */}
             <div className="flex items-center gap-4 mb-6">

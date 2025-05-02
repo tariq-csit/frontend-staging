@@ -51,10 +51,12 @@ function TwoFaVarification(props:{
           },
         }
       );
+      console.log(response.data);
       return response.data;
     },
     onSuccess: (data) => {
       localStorage.setItem('token', data.token);
+      localStorage.setItem('refreshToken', data.refreshToken);
       toast({
         title: "Success",
         description: "2FA verification successful!",
