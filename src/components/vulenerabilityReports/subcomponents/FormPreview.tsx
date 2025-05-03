@@ -14,6 +14,7 @@ import { toast } from "@/hooks/use-toast"
 import CommentCard from "./CommentCard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { useSidebar } from "@/contexts/SidebarContext"
 
 interface StatusOption {
   value: string
@@ -87,10 +88,10 @@ function VulnerabilityView() {
   }
 
   return (
-    <div className="w-full mx-auto py-6 px-4 font-sans">
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Main content */}
-        <div className="lg:w-9/12 space-y-6">
+    <div className="w-full mx-auto py-6 font-sans">
+      <div className="container mx-auto flex flex-col lg:flex-row gap-8">
+        {/* Main content - with dynamic width based on sidebar state */}
+        <div className={`${useSidebar().isCollapsed ? 'lg:w-[75%]' : 'lg:w-[70%]'} space-y-6`}>
           {/* Title Card */}
           <Card className="py-4">
             <CardHeader className="pb-2">
@@ -351,15 +352,18 @@ function VulnerabilityView() {
           />
         </div>
 
-        {/* Sidebar - Fixed position */}
-        <div className="lg:w-3/12 fixed right-0 top-4 h-fit p-6">
-          <div className="sticky top-6 max-w-md bg-white rounded-lg shadow-sm p-6">
+        {/* Sidebar - Fixed position with proper spacing */}
+        <div className={`${useSidebar().isCollapsed ? 'lg:w-[40%]' : 'lg:w-[20%]'} relative`}>
+          <div className="hidden lg:block"> {/* Spacer div */}
+            <div className="h-[600px]"></div>
+          </div>
+          <div className="lg:fixed lg:w-[inherit] max-w-[400px] bg-white rounded-lg shadow-sm p-6 top-10">
             {/* Header with logo and title */}
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-24 h-24 rounded-full bg-[#f2f9e8] flex items-center justify-center">
+              {/* <div className="w-16 h-16 lg:w-24 lg:h-24 rounded-full bg-[#f2f9e8] flex items-center justify-center">
                 <div className="relative">
-                  <div className="w-12 h-12 rounded-full bg-[#a5d86a] flex items-center justify-center">
-                    <Lock className="text-white w-6 h-6" />
+                  <div className="w-8 h-8 lg:w-12 lg:h-12 rounded-full bg-[#a5d86a] flex items-center justify-center">
+                    <Lock className="text-white w-4 h-4 lg:w-6 lg:h-6" />
                   </div>
                   <div className="absolute inset-0 w-full h-full">
                     <svg width="100%" height="100%" viewBox="0 0 100 100">
@@ -375,26 +379,26 @@ function VulnerabilityView() {
                     </svg>
                   </div>
                 </div>
-              </div>
-              <h1 className="text-3xl font-bold text-[#1a1a2e]">{displayPentest.name}</h1>
+              </div> */}
+              <h1 className="text-xl lg:text-3xl font-bold text-[#1a1a2e] break-words">{displayPentest.name}</h1>
             </div>
 
             {/* Client info */}
             <div className="mb-6">
-              <h2 className="text-xl font-bold mb-3">Client:</h2>
+              <h2 className="text-lg lg:text-xl font-bold mb-3">Client:</h2>
               <div className="flex items-center gap-3">
                 <img
                   src={displayPentest.clients[0].logoUrl || "/placeholder.svg"}
                   alt={displayPentest.clients[0].name}
-                  className="w-10 h-10 rounded-full"
+                  className="w-8 h-8 lg:w-10 lg:h-10 rounded-full"
                 />
-                <span className="text-lg">{displayPentest.clients[0].name}</span>
+                <span className="text-base lg:text-lg break-words">{displayPentest.clients[0].name}</span>
               </div>
             </div>
 
             {/* Status */}
             <div className="mb-10">
-              <h2 className="text-xl font-bold mb-3">Status:</h2>
+              <h2 className="text-lg lg:text-xl font-bold mb-3">Status:</h2>
               <Select
                 value={displayVulnerability.status}
                 onValueChange={(value) => {
@@ -403,7 +407,7 @@ function VulnerabilityView() {
                 disabled={isUpdatingVulnerabilityStatus}
               >
                 <SelectTrigger
-                  className={`w-[180px] ${
+                  className={`w-full lg:w-[180px] ${
                     statusOptions.find((option) => option.value === displayVulnerability.status)?.color
                   } border-none`}
                 >
@@ -426,15 +430,15 @@ function VulnerabilityView() {
             <div className="grid grid-cols-2 gap-4 mb-4">
               <Button
                 variant="outline"
-                className="border-[#4a3a9c] text-[#4a3a9c] hover:bg-[#f0eeff] flex items-center justify-center gap-2"
+                className="border-[#4a3a9c] text-[#4a3a9c] hover:bg-[#f0eeff] flex items-center justify-center gap-2 text-sm lg:text-base"
                 onClick={() => navigate(`/vulnerability-reports/${pentestId}/vulnerabilities/${vulnerabilityId}/edit`)}
               >
-                <Edit className="h-5 w-5" />
+                <Edit className="h-4 w-4 lg:h-5 lg:w-5" />
                 Edit
               </Button>
               <Button
                 variant="outline"
-                className="border-[#9c3a3a] text-[#9c3a3a] hover:bg-[#ffeeee] flex items-center justify-center gap-2"
+                className="border-[#9c3a3a] text-[#9c3a3a] hover:bg-[#ffeeee] flex items-center justify-center gap-2 text-sm lg:text-base"
                 onClick={() => {
                   if (
                     window.confirm("Are you sure you want to delete this vulnerability? This action cannot be undone.")
@@ -443,13 +447,13 @@ function VulnerabilityView() {
                   }
                 }}
               >
-                <Trash2 className="h-5 w-5" />
+                <Trash2 className="h-4 w-4 lg:h-5 lg:w-5" />
                 Delete
               </Button>
             </div>
 
             <Link to={`/vulnerability-reports/${pentestId}`}>
-              <Button variant="outline" className="w-full border-[#3a4a6b] text-[#3a4a6b] hover:bg-[#eef0ff]">
+              <Button variant="outline" className="w-full border-[#3a4a6b] text-[#3a4a6b] hover:bg-[#eef0ff] text-sm lg:text-base">
                 Go Back
               </Button>
             </Link>

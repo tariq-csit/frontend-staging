@@ -25,6 +25,7 @@ import VulnerabilityReportForm from './components/vulenerabilityReports/subcompo
 import PentestsList from './components/pentests/Pentests';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Root from './components/Root';
+import { SidebarProvider } from './contexts/SidebarContext';
 
 function App() {
   const queryClient = new QueryClient();
@@ -32,40 +33,42 @@ function App() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
       <QueryClientProvider client={queryClient}>
-      <Routes>
-        <Route path='/login' element={<Login />} />
-        <Route path='/signup' element={<SignUp />} />
-        <Route path='/forgot-password' element={<ForgotPassword />} />
-        <Route path='/reset-password/:token' element={<ResetPassword />} />
-        <Route path='/' element={<Layout />}>
-          <Route index element={<Root />} />
-          <Route path='dashboard' element={<DashboardHome />} />
+        <SidebarProvider>
+          <Routes>
+            <Route path='/login' element={<Login />} />
+            <Route path='/signup' element={<SignUp />} />
+            <Route path='/forgot-password' element={<ForgotPassword />} />
+            <Route path='/reset-password/:token' element={<ResetPassword />} />
+            <Route path='/' element={<Layout />}>
+              <Route index element={<Root />} />
+              <Route path='dashboard' element={<DashboardHome />} />
 
-          <Route path='/pentests' element={<PentestsList />} />
-          <Route path='/pentests/:pentestId/' element={<PentestDetails />} />
-          <Route path='/pentests/:pentestId/edit' element={<NewPentestsForm />} />
-          <Route path='/pentests/:pentestId/vulnerabilities' element={<VulnerabilitiesInPentest />} />
-          <Route path='/pentests/create' element={<NewPentestsForm />} />
+              <Route path='/pentests' element={<PentestsList />} />
+              <Route path='/pentests/:pentestId/' element={<PentestDetails />} />
+              <Route path='/pentests/:pentestId/edit' element={<NewPentestsForm />} />
+              <Route path='/pentests/:pentestId/vulnerabilities' element={<VulnerabilitiesInPentest />} />
+              <Route path='/pentests/create' element={<NewPentestsForm />} />
 
-          <Route path='/pentests/:pentestId/manage-report' element={<ManagePentestReport />} />
-          <Route path='/pentests/:pentestId/pentest-report' element={<PentestReport />} />
-          <Route path='/pentests/:pentestId/retest-report' element={<RetestReport />} />
+              <Route path='/pentests/:pentestId/manage-report' element={<ManagePentestReport />} />
+              <Route path='/pentests/:pentestId/pentest-report' element={<PentestReport />} />
+              <Route path='/pentests/:pentestId/retest-report' element={<RetestReport />} />
 
-          <Route path='/vulnerability-reports/:pentestId/vulnerabilities/:vulnerabilityId' element={<FormPreview />} />
-          <Route path='/vulnerability-reports/:pentestId/vulnerabilities/:vulnerabilityId/edit' element={<VulnerabilityReportForm />} />
-          <Route path='/vulnerability-reports/:pentestId' element={<VulnerabilityReports />} />
-          <Route path='/vulnerability-reports/' element={<VulnerabilityReports />} />
-          <Route path='/vulnerability-reports/:pentestId/create' element={<ReportsForm />} />
+              <Route path='/vulnerability-reports/:pentestId/vulnerabilities/:vulnerabilityId' element={<FormPreview />} />
+              <Route path='/vulnerability-reports/:pentestId/vulnerabilities/:vulnerabilityId/edit' element={<VulnerabilityReportForm />} />
+              <Route path='/vulnerability-reports/:pentestId' element={<VulnerabilityReports />} />
+              <Route path='/vulnerability-reports/' element={<VulnerabilityReports />} />
+              <Route path='/vulnerability-reports/:pentestId/create' element={<ReportsForm />} />
 
-          <Route path='/clients' element={<ClientLists />} />
-          <Route path='/clients/users' element={<ClientUsers />} />
+              <Route path='/clients' element={<ClientLists />} />
+              <Route path='/clients/users' element={<ClientUsers />} />
 
-          <Route path='/pentesters' element={<PentestersList />} />
+              <Route path='/pentesters' element={<PentestersList />} />
 
-          <Route path='/settings' element={<Settings />} />
-        </Route>
-      </Routes>
-      <Toaster />
+              <Route path='/settings' element={<Settings />} />
+            </Route>
+          </Routes>
+          <Toaster />
+        </SidebarProvider>
       </QueryClientProvider>
     </ThemeProvider>
   )

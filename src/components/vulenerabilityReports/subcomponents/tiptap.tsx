@@ -278,7 +278,7 @@ const Tiptap = (props: {
       const { url } = await uploadImage(file)
       if (editor) {
         // Validate URL before insertion
-        if (!url.startsWith('https://slash-attachments.securitywall.co/attachments')) {
+        if (!url.startsWith('https://slash-attachments.s3.us-east-1.amazonaws.com')) {
           throw new Error('Invalid image URL')
         }
 

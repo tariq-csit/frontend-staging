@@ -30,14 +30,14 @@ const passwordFormSchema = z
   .object({
     currentPassword: z.string().min(1, { message: "Current password is required" }),
     newPassword: z.string().min(8, {
-      message: "Password should be at least 8 characters long",
+      message: "Password should be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number and one special character",
     }).regex(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
       {
-        message: "Password must contain at least one uppercase letter, one lowercase letter, one number and one special character",
+        message: "Password should be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, one number and one special character",
       }
     ),
-    confirmPassword: z.string().min(8, { message: "Password must be at least 8 characters" }),
+    confirmPassword: z.string().min(1),
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: "Passwords don't match",
@@ -159,13 +159,22 @@ export default function SettingsPage() {
 
   const { mutate: updateProfilePicture, isPending: isUpdatingProfilePicture } = useMutation({
     mutationFn: async (file: File) => {
+      // First upload the profile picture
       const formData = new FormData()
-      formData.append('attachments', file)
-      return axiosInstance.post(apiRoutes.uploadProfilePicture, formData, {
+      formData.append('profilePicture', file)
+      const response = await axiosInstance.post(apiRoutes.uploadProfilePicture, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       })
+      
+      // Then update the user data with the new profile picture URL
+      await axiosInstance.put(apiRoutes.user, {
+        ...userData,
+        profilePicture: response.data.url
+      })
+      
+      return response.data
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user'] })
@@ -202,6 +211,7 @@ export default function SettingsPage() {
 
   // Password form
   const passwordForm = useForm<z.infer<typeof passwordFormSchema>>({
+    mode: "onChange",
     resolver: zodResolver(passwordFormSchema),
     defaultValues: {
       currentPassword: "",

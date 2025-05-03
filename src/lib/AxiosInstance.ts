@@ -13,7 +13,8 @@ async function refreshToken() {
       throw new Error('No refresh token available');
     }
 
-    const response = await axios.post(apiRoutes.refresh, {
+    const baseURL = import.meta.env.VITE_API_URL;
+    const response = await axios.post(baseURL + apiRoutes.refresh, {
       refreshToken: refreshToken,
     });
 
