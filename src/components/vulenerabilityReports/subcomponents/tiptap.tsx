@@ -98,6 +98,23 @@ const MarkdownImagePreview = Extension.create({
   },
 })
 
+// Add this near the top with other extensions
+const ImageSpacing = Extension.create({
+  name: 'imageSpacing',
+  addGlobalAttributes() {
+    return [
+      {
+        types: ['image'],
+        attributes: {
+          class: {
+            default: 'inline-block mx-1',  // Add horizontal margin around images
+          },
+        },
+      },
+    ]
+  },
+})
+
 const Toolbar = ({ editor, previewMode, onTogglePreview }: { 
   editor: any, 
   previewMode: boolean,
@@ -229,7 +246,10 @@ const Tiptap = (props: {
     editorProps: {
       attributes: {
         class: "min-h-[200px] border-b border-t border-input rounded-md p-4 focus:outline-none",
-      },
+      }
+    },
+    parseOptions: {
+      preserveWhitespace: 'full',
     },
     onUpdate({ editor }) {
       const sanitizedContent = sanitizeHtml(editor.getHTML());
@@ -240,9 +260,26 @@ const Tiptap = (props: {
   // Update editor content when description prop changes
   useEffect(() => {
     if (editor && props.description !== editor.getHTML()) {
-      editor.commands.setContent(sanitizeHtml(props.description));
+      editor.commands.setContent(sanitizeHtml(props.description), false, {
+        preserveWhitespace: 'full'
+      });
     }
   }, [editor, props.description]);
+
+  // Add CSS to handle whitespace properly
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .ProseMirror * {
+        white-space: pre-wrap !important;
+        word-wrap: break-word !important;
+      }
+    `;
+    document.head.appendChild(style);
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
 
   // Function to toggle preview mode
   const togglePreview = useCallback(() => {
@@ -283,18 +320,37 @@ const Tiptap = (props: {
         }
 
         const sanitizedName = DOMPurify.sanitize(imageName)
+        
         if (previewMode) {
-          editor.chain().focus().insertContent({
-            type: 'image',
-            attrs: {
-              src: url,
-              alt: sanitizedName,
-            },
-          }).run()
+          // Insert image in a paragraph node to ensure proper text handling
+          editor
+            .chain()
+            .focus()
+            .insertContent([
+              {
+                type: 'image',
+                attrs: {
+                  src: url,
+                  alt: sanitizedName,
+                },
+              },
+              {
+                type: 'paragraph',
+              }
+            ])
+            .run()
         } else {
-          const markdownText = `![${sanitizedName}](${url})`
-          editor.chain().focus().insertContent(markdownText).run()
+          // For markdown mode, ensure proper node structure
+          const markdownText = `![${sanitizedName}](${url})\n\n`
+          editor
+            .chain()
+            .focus()
+            .insertContent(markdownText)
+            .run()
         }
+
+        // Ensure cursor is in a proper text node
+        editor.commands.createParagraphNear()
       }
     } catch (error) {
       console.error('Failed to upload image:', error)
