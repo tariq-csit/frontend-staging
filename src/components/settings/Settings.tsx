@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast"
 import axiosInstance from "@/lib/AxiosInstance"
 import { apiRoutes } from "@/lib/routes"
 import { FileUpload } from "@/components/FileUpload"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 // Form schemas
 const nameFormSchema = z.object({
@@ -410,11 +411,10 @@ export default function SettingsPage() {
                     {userData?.profilePicture && (
                       <div className="flex items-center space-x-4">
                         <p className="text-sm font-medium text-gray-700">Current Picture</p>
-                        <img 
-                          src={userData.profilePicture} 
-                          alt="Profile" 
-                          className="h-16 w-16 rounded-full object-cover"
-                        />
+                        <Avatar className="h-16 w-16">
+                          <AvatarImage src={userData.profilePicture} alt="Profile" />
+                          <AvatarFallback>{userData?.name?.charAt(0)}</AvatarFallback>
+                        </Avatar>
                       </div>
                     )}
                     <FileUpload

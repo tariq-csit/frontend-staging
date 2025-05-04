@@ -8,7 +8,7 @@ import axiosInstance from "@/lib/AxiosInstance";
 import { ClientUser } from "@/types/types";
 import { useState } from "react";
 import ClientUserActionMenu from "./ClientUserActionMenu";
-
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 export default function ClientUsers() {
   const {data: clientUsers, refetch} = useQuery({
     queryKey: ["clientUsers"],
@@ -121,7 +121,10 @@ function ClientUserRow({user, refetch}: {user: ClientUser, refetch: () => void})
       <td className="py-4 px-4">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
-            <img src="https://ui-avatars.com/api/?name=Hammad+Mahmood" alt="User avatar" className="w-full h-full object-cover" />
+            <Avatar>
+              <AvatarImage src={user.profilePicture || "/placeholder.svg"} alt={user.name} />
+              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+            </Avatar>
           </div>
           <span className="font-medium">{user.name}</span>
         </div>
