@@ -13,8 +13,8 @@ import { apiRoutes } from "@/lib/routes";
 function Navbar(props: { name: string; image: string; role: string }) {
   const handleLogout = async () => {
     try {
-      localStorage.clear();
-      axiosInstance.post(apiRoutes.logout);
+      await axiosInstance.post(apiRoutes.logout);
+      // localStorage.clear();
     } catch (error) {
       console.log(error);
     }

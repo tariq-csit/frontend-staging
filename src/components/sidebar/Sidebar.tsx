@@ -107,9 +107,9 @@ function Sidebar(props: {
             icon={<LogOut />}
             collapsed={isCollapsed}
             setCollapsed={setCollapsed}
-            onClick={() => {
+            onClick={async () => {
+              await axiosInstance.post(apiRoutes.logout);
               localStorage.clear();
-              axiosInstance.post(apiRoutes.logout);
             }}
           />
         </div>
