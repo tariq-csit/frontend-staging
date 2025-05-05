@@ -16,7 +16,7 @@ const formSchema = z.object({
     email: z.string().email(),
 })
 
-export default function SendCode() {
+export default function SendCode({ refetch }: { refetch: () => void }) {
     const [open, setOpen] = useState(false);
 
     const form = useForm<z.infer<typeof formSchema>>({
@@ -35,6 +35,7 @@ export default function SendCode() {
         },
         onSuccess: () => {
             form.reset();
+            refetch();
             setOpen(false);
             toast({
                 title: "Signup code sent",

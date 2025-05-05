@@ -4,6 +4,7 @@ import { User, Attachment } from "@/types/types"
 import { DownloadIcon, Trash2, ZoomIn, ZoomOut, MoveHorizontal, FileText } from "lucide-react"
 import { Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import { useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface CommentCardProps {
   author: User
@@ -31,7 +32,10 @@ export default function CommentCard({ author, content, createdAt, internal = fal
       <div className="flex justify-between items-center gap-3 mb-3">
         <div className="flex items-center gap-3">
           <div className="relative h-10 w-10 rounded-full overflow-hidden">
-            <img src={author.profilePicture || "/placeholder.svg"} alt={author.name} className="object-cover" />
+            <Avatar>
+              <AvatarImage src={author.profilePicture || "/placeholder.svg"} alt={author.name} />
+              <AvatarFallback>{author.name.charAt(0)}</AvatarFallback>
+            </Avatar>
           </div>
           <div className="flex items-center gap-2">
             <span className="font-medium text-gray-900">{author.name}</span>

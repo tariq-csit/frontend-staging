@@ -16,7 +16,7 @@ import ClientActionMenu from "./ClientActionMenu"
 function SignupCodesList() {
   const [search, setSearch] = useState("")
   
-  const { data: signupCodes, isLoading, error } = useQuery({
+  const { data: signupCodes, isLoading, error, refetch } = useQuery({
     queryKey: ["signupCodes"],
     queryFn: async () => {
       const response = await axiosInstance.get(apiRoutes.signupCodes)
@@ -57,7 +57,7 @@ function SignupCodesList() {
           />
         </div>
         <div className="flex gap-2">
-          <SendCode />
+          <SendCode refetch={refetch} />
         </div>
       </div>
 
@@ -177,7 +177,7 @@ export default function ClientDashboard() {
                 />
               </div>
               <div className="flex gap-2">
-                <SendCode />
+                <SendCode refetch={refetch} />
                 <AddClientDialog refetch={refetch} />
               </div>
             </div>

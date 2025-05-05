@@ -58,8 +58,8 @@ export default function ClientEditDialog({ client, refetch, open, onOpenChange }
         title: "Client updated successfully",
         description: "The client has been updated successfully",
       })
-      onOpenChange(false)
       refetch()
+      onOpenChange(false)
     },
   })
 
@@ -147,7 +147,6 @@ export default function ClientEditDialog({ client, refetch, open, onOpenChange }
                           field.onChange("");
                         }
                       }}
-                      maxFiles={1}
                       maxSize={5 * 1024 * 1024} // 5MB
                       acceptedTypes={{
                         'image/*': ['.jpg', '.jpeg', '.png']

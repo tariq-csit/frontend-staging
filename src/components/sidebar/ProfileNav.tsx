@@ -1,3 +1,4 @@
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import rightArrow from '/Caret.svg'
 
 type propsType={
@@ -10,7 +11,10 @@ type propsType={
 function ProfileNav(props: propsType) {
   return (
     <div className='flex justify-center items-center gap-2 py-3 shrink-0 self-stretch h-[5.625rem] '>
-      <img className='w-10' src={props.image} />
+      <Avatar>
+        <AvatarImage src={props.image} alt={props.name} />
+        <AvatarFallback>{props.name.charAt(0)}</AvatarFallback>
+      </Avatar>
        <div className={`flex ${props.collapsed?'hidden':'visible'}`}>
          <div className='sm:w-24 lg:w-28'>
           <p className='text-xs font-poppins'>Welcome back &#128075;</p>

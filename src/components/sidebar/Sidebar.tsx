@@ -8,6 +8,7 @@ import ProfileNav from "./ProfileNav";
 import { apiRoutes } from "@/lib/routes";
 import axiosInstance from "@/lib/AxiosInstance";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { useNavigate } from "react-router-dom";
 
 function Sidebar(props: {
   name: string,
@@ -15,7 +16,7 @@ function Sidebar(props: {
   role: string,
 }) {
   const { isCollapsed, toggle, setCollapsed } = useSidebar();
-
+  const navigate = useNavigate();
   const navComponents = [
     {
       link: "/dashboard",
@@ -110,6 +111,7 @@ function Sidebar(props: {
             onClick={async () => {
               await axiosInstance.post(apiRoutes.logout);
               localStorage.clear();
+              navigate("/login");
             }}
           />
         </div>
