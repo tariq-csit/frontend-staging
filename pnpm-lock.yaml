@@ -2501,8 +2501,8 @@ packages:
   delegates@1.0.0:
     resolution: {integrity: sha512-bd2L678uiWATM6m5Z1VzNCErI3jiGzt6HGY8OVICs40JQq/HALfbyNJmp0UDakEY4pMMaN0Ly5om/B1VI/+xfQ==}
 
-  detect-libc@2.0.3:
-    resolution: {integrity: sha512-bwy0MGW55bG41VqxxypOsdSdGqLwXPI/focwgTYCFMbdUiBAxLg9CFzG08sz2aqzknwiX7Hkl0bQENjg8iLByw==}
+  detect-libc@2.0.4:
+    resolution: {integrity: sha512-3UDv+G9CsCKO1WKMGw9fwq/SWJYbI0c5Y7LU1AXYoDdbhE2AHQ6N6Nb34sG8Fj7T5APy8qXDCKuuIHd1BR0tVA==}
     engines: {node: '>=8'}
 
   detect-node-es@1.1.0:
@@ -3843,7 +3843,7 @@ snapshots:
 
   '@mapbox/node-pre-gyp@1.0.11':
     dependencies:
-      detect-libc: 2.0.3
+      detect-libc: 2.0.4
       https-proxy-agent: 5.0.1
       make-dir: 3.1.0
       node-fetch: 2.7.0
@@ -5868,7 +5868,7 @@ snapshots:
   delegates@1.0.0:
     optional: true
 
-  detect-libc@2.0.3:
+  detect-libc@2.0.4:
     optional: true
 
   detect-node-es@1.1.0: {}

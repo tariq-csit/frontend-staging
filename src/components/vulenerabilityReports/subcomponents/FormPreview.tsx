@@ -122,12 +122,12 @@ function VulnerabilityView() {
                 <ul className="pl-6 space-y-1">
                   {displayVulnerability.affected_host.includes(",") ? (
                     displayVulnerability.affected_host.split(",").map((host, i) => (
-                      <li key={i} className="text-gray-700 list-disc">
+                      <li key={i} className="text-gray-700 list-disc break-words whitespace-pre-wrap">
                         {host.trim()}
                       </li>
                     ))
                   ) : (
-                    <li className="text-gray-700 list-disc">{displayVulnerability.affected_host}</li>
+                    <li className="text-gray-700 list-disc break-words whitespace-pre-wrap">{displayVulnerability.affected_host}</li>
                   )}
                 </ul>
               </div>
@@ -142,18 +142,18 @@ function VulnerabilityView() {
             <CardContent className="pt-4 space-y-6">
               <div className="space-y-2">
                 <h3 className="font-medium text-gray-800">Title</h3>
-                <p className="text-gray-700">{displayVulnerability.title}</p>
+                <p className="text-gray-700 break-words whitespace-pre-wrap">{displayVulnerability.title}</p>
               </div>
 
               <div className="space-y-2">
                 <h3 className="font-medium text-gray-800">Severity</h3>
-                <p className="text-gray-700">{displayVulnerability.severity}</p>
+                <p className="text-gray-700 break-words whitespace-pre-wrap">{displayVulnerability.severity}</p>
               </div>
 
               <div className="space-y-2">
                 <h3 className="font-medium text-gray-800">Description</h3>
                 <div
-                  className="text-gray-700 prose max-w-none"
+                  className="text-gray-700 prose max-w-none break-words whitespace-pre-wrap"
                   dangerouslySetInnerHTML={{
                     __html: displayVulnerability.description || "",
                   }}
@@ -171,7 +171,7 @@ function VulnerabilityView() {
               <div className="space-y-2">
                 <h3 className="font-medium text-gray-800">Steps to Reproduce</h3>
                 <div
-                  className="text-gray-700 prose max-w-none"
+                  className="text-gray-700 prose max-w-none break-words whitespace-pre-wrap"
                   dangerouslySetInnerHTML={{
                     __html: displayVulnerability.steps_to_reproduce || "",
                   }}
@@ -181,7 +181,7 @@ function VulnerabilityView() {
               <div className="space-y-2">
                 <h3 className="font-medium text-gray-800">Recommended Solution</h3>
                 <div
-                  className="text-gray-700 prose max-w-none"
+                  className="text-gray-700 prose max-w-none break-words whitespace-pre-wrap"
                   dangerouslySetInnerHTML={{
                     __html: displayVulnerability.recommended_solution || "",
                   }}
@@ -199,11 +199,11 @@ function VulnerabilityView() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <h3 className="font-medium text-gray-800">Impact</h3>
-                  <p className="text-gray-700">{displayVulnerability.impact}</p>
+                  <p className="text-gray-700 break-words whitespace-pre-wrap">{displayVulnerability.impact}</p>
                 </div>
                 <div className="space-y-2">
                   <h3 className="font-medium text-gray-800">Likelihood</h3>
-                  <p className="text-gray-700">{displayVulnerability.likelihood}</p>
+                  <p className="text-gray-700 break-words whitespace-pre-wrap">{displayVulnerability.likelihood}</p>
                 </div>
               </div>
             </CardContent>
@@ -219,7 +219,7 @@ function VulnerabilityView() {
                 <div className="space-y-4">
                   <div>
                     <h3 className="font-medium text-gray-800">Attack Vector</h3>
-                    <p className="text-gray-700">
+                    <p className="text-gray-700 break-words whitespace-pre-wrap">
                       {displayVulnerability.cvssVector?.split("/")[1]?.split(":")[1] === "A"
                         ? "Adjacent Network"
                         : displayVulnerability.cvssVector?.split("/")[1]?.split(":")[1] === "N"
@@ -233,7 +233,7 @@ function VulnerabilityView() {
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-800">Attack Complexity</h3>
-                    <p className="text-gray-700">
+                    <p className="text-gray-700 break-words whitespace-pre-wrap">
                       {displayVulnerability.cvssVector?.split("/")[2]?.split(":")[1] === "L"
                         ? "Low"
                         : displayVulnerability.cvssVector?.split("/")[2]?.split(":")[1] === "H"
@@ -314,7 +314,7 @@ function VulnerabilityView() {
                   </div>
                 </div>
               </div>
-              <p className="text-gray-700 mt-4">
+              <p className="text-gray-700 mt-4 break-words whitespace-pre-wrap">
                 {displayVulnerability.cvssVector}
               </p>
             </CardContent>
@@ -392,7 +392,7 @@ function VulnerabilityView() {
                   alt={displayPentest.clients[0].name}
                   className="w-8 h-8 lg:w-10 lg:h-10 rounded-full"
                 />
-                <span className="text-base lg:text-lg break-words">{displayPentest.clients[0].name}</span>
+                <span className="text-base lg:text-lg break-words whitespace-pre-wrap">{displayPentest.clients[0].name}</span>
               </div>
             </div>
 

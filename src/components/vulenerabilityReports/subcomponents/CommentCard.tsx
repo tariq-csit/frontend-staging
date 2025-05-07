@@ -38,12 +38,12 @@ export default function CommentCard({ author, content, createdAt, internal = fal
             </Avatar>
           </div>
           <div className="flex items-center gap-2">
-            <span className="font-medium text-gray-900">{author.name}</span>
+            <span className="font-medium text-gray-900 break-words whitespace-pre-wrap">{author.name}</span>
             {internal && <span className="px-3 py-1 text-xs bg-[#a78bfa] text-white rounded-full">Internal</span>}
           </div>
         </div>
         <div>
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-gray-500 break-words whitespace-pre-wrap">
             {new Date(createdAt).toLocaleDateString('en-US', {
               day: 'numeric',
               month: 'long',
@@ -55,7 +55,7 @@ export default function CommentCard({ author, content, createdAt, internal = fal
         </div>
       </div>
 
-      <div className="text-gray-800">{content}</div>
+      <div className="text-gray-800 break-words whitespace-pre-wrap">{content}</div>
 
       <div className="flex gap-4 w-full overflow-x-auto">
       {attachments && attachments.map((attachment) => (
@@ -81,7 +81,7 @@ export default function CommentCard({ author, content, createdAt, internal = fal
                 href={attachment.url} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-sm text-gray-700 group-hover:text-primary truncate"
+                className="text-sm text-gray-700 group-hover:text-primary truncate break-words whitespace-pre-wrap max-w-[200px]"
                 onClick={(e) => e.preventDefault()}
               >
                 {attachment.name}

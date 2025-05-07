@@ -114,6 +114,7 @@ export default function CommentBox({ pentestId, vulnerabilityId, refetch }: { pe
             placeholder="Add Comment..."
             className="min-h-[30px] p-4 border-none bg-transparent text-foreground resize-none focus-visible:ring-0 focus-visible:ring-offset-0" 
             value={comment} 
+            maxLength={2000}
             onChange={(e) => setComment(e.target.value)}
             disabled={isSubmitting}
           /> 
