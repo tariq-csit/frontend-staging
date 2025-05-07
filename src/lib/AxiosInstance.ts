@@ -5,29 +5,47 @@ const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 });
 
+// Variable to store the ongoing refresh token promise
+let refreshTokenPromise: Promise<string> | null = null;
+
 // Function to handle token refresh
 async function refreshToken() {
   try {
-    const refreshToken = localStorage.getItem('refreshToken');
-    if (!refreshToken) {
-      throw new Error('No refresh token available');
+    // If there's already a refresh in progress, return the existing promise
+    if (refreshTokenPromise) {
+      return refreshTokenPromise;
     }
 
-    const baseURL = import.meta.env.VITE_API_URL;
-    const response = await axios.post(baseURL + apiRoutes.refresh, {
-      refreshToken: refreshToken,
-    });
+    // Create a new refresh token promise
+    refreshTokenPromise = (async () => {
+      try {
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (!refreshToken) {
+          throw new Error('No refresh token available');
+        }
 
-    if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
-      // If a new refresh token is provided, update it
-      if (response.data.refreshToken) {
-        localStorage.setItem('refreshToken', response.data.refreshToken);
+        const baseURL = import.meta.env.VITE_API_URL;
+        const response = await axios.post(baseURL + apiRoutes.refresh, {
+          refreshToken: refreshToken,
+        });
+
+        if (response.data.token) {
+          localStorage.setItem('token', response.data.token);
+          // If a new refresh token is provided, update it
+          if (response.data.refreshToken) {
+            localStorage.setItem('refreshToken', response.data.refreshToken);
+          }
+          return response.data.token;
+        }
+
+        throw new Error('No token in refresh response');
+      } finally {
+        // Clear the refresh token promise so future refresh requests can proceed
+        refreshTokenPromise = null;
       }
-      return response.data.token;
-    }
+    })();
 
-    throw new Error('No token in refresh response');
+    return refreshTokenPromise;
   } catch (error) {
     localStorage.clear(); // Clear all auth tokens on refresh failure
     window.location.href = '/login';
