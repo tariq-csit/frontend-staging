@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { toast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
 import { FileUpload } from "@/components/FileUpload"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 interface UploadResponse {
   url: string;
@@ -34,6 +34,7 @@ interface ClientEditDialogProps {
 
 export default function ClientEditDialog({ client, refetch, open, onOpenChange }: ClientEditDialogProps) {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [currentLogoUrl, setCurrentLogoUrl] = useState(client.logoUrl);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -49,7 +50,7 @@ export default function ClientEditDialog({ client, refetch, open, onOpenChange }
       const res = await axiosInstance.put(apiRoutes.clients.detail(client._id), {
         name: values.companyName,
         poc_email: values.email,
-        logoUrl: values.uploadLogo,
+        logoUrl: currentLogoUrl,
       })
       return res.data
     },
@@ -63,7 +64,7 @@ export default function ClientEditDialog({ client, refetch, open, onOpenChange }
     },
   })
 
-  const { mutate: uploadLogo } = useMutation({
+  const { mutate: uploadLogo, isPending: isUploadingLogo } = useMutation({
     mutationFn: async (file: File) => {
       const formData = new FormData()
       formData.append("logo", file)
@@ -75,6 +76,7 @@ export default function ClientEditDialog({ client, refetch, open, onOpenChange }
       return response.data as UploadResponse
     },
     onSuccess: (data) => {
+      setCurrentLogoUrl(data.url)
       form.setValue("uploadLogo", data.url)
     },
     onError: (error) => {
@@ -86,6 +88,13 @@ export default function ClientEditDialog({ client, refetch, open, onOpenChange }
       })
     },
   })
+
+  useEffect(() => {
+    if (open) {
+      setCurrentLogoUrl(client.logoUrl)
+      setUploadedFile(null)
+    }
+  }, [open, client.logoUrl])
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -168,11 +177,22 @@ export default function ClientEditDialog({ client, refetch, open, onOpenChange }
               form.reset()
               onOpenChange(false)
             }}
+            disabled={isUploadingLogo}
           >
             Cancel
           </Button>
-          <Button type="button" onClick={form.handleSubmit(onSubmit)} disabled={isUpdatingClient}>
-            {isUpdatingClient ? (<><Loader2 className="w-4 h-4 animate-spin" /><span>Saving...</span></>) : "Save Changes"}
+          <Button 
+            type="button" 
+            onClick={form.handleSubmit(onSubmit)} 
+            disabled={isUpdatingClient || isUploadingLogo}
+          >
+            {isUpdatingClient ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /><span>Saving...</span></>
+            ) : isUploadingLogo ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /><span>Uploading Logo...</span></>
+            ) : (
+              "Save Changes"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>
