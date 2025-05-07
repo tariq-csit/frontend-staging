@@ -20,6 +20,10 @@ export default function PDFViewer({ fileUrl }: PDFViewerProps) {
         <Viewer
           fileUrl={fileUrl}
           plugins={[defaultLayoutPluginInstance]}
+          transformGetDocumentParams={(params) => ({
+            ...params,
+            isEvalSupported: false  // Disable JavaScript execution in PDFs
+          })}
         />
       </Worker>
     </div>
