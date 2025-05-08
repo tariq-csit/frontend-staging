@@ -15,11 +15,14 @@ import CommentCard from "./CommentCard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { useSidebar } from "@/contexts/SidebarContext"
+import VulnerabilitySeverityBadge from "./VulnerabilitySeverityBadge"
+import VulnerabilityStatusBadge from "./VulnerabilityStatusBadge"
 
 interface StatusOption {
   value: string
   label: string
   color: string
+  textColor: string
 }
 
 function VulnerabilityView() {
@@ -65,11 +68,36 @@ function VulnerabilityView() {
   })
 
   const statusOptions: StatusOption[] = [
-    { value: "New", label: "New", color: "bg-gray-100" },
-    { value: "Triaged", label: "Triaged", color: "bg-blue-100" },
-    { value: "Ready For Retest", label: "Ready for Retest", color: "bg-amber-100" },
-    { value: "Resolved", label: "Resolved", color: "bg-green-100" },
-    { value: "Not Applicable", label: "Not Applicable", color: "bg-red-100" },
+    { 
+      value: "New", 
+      label: "New", 
+      color: "bg-[#E5E7EB]",
+      textColor: "text-[#6B7280]" 
+    },
+    { 
+      value: "Triaged", 
+      label: "Triaged", 
+      color: "bg-[#DAE6FD]",
+      textColor: "text-[#2382F6]" 
+    },
+    { 
+      value: "Ready For Retest", 
+      label: "Ready for Retest", 
+      color: "bg-[#FDE68A]",
+      textColor: "text-[#92400E]" 
+    },
+    { 
+      value: "Resolved", 
+      label: "Resolved", 
+      color: "bg-[#86EFAC]",
+      textColor: "text-[#166534]" 
+    },
+    { 
+      value: "Not Applicable", 
+      label: "Not Applicable", 
+      color: "bg-[#FCA5A5]",
+      textColor: "text-[#991B1B]" 
+    },
   ]
 
   const displayVulnerability = vulnerability
@@ -97,16 +125,8 @@ function VulnerabilityView() {
             <CardHeader className="pb-2">
               <CardTitle className="text-2xl font-bold">{displayVulnerability.title}</CardTitle>
               <div className="flex items-center gap-2 mt-2">
-                <span className="px-2 py-1 text-sm rounded-md bg-blue-100 text-blue-800">
-                  Severity: {displayVulnerability.severity}
-                </span>
-                <span
-                  className={`px-2 py-1 text-sm rounded-md ${
-                    statusOptions.find((option) => option.value === displayVulnerability.status)?.color || "bg-gray-100"
-                  }`}
-                >
-                  Status: {displayVulnerability.status}
-                </span>
+                <VulnerabilitySeverityBadge severity={displayVulnerability.severity} />
+                <VulnerabilityStatusBadge status={displayVulnerability.status} />
               </div>
             </CardHeader>
           </Card>
@@ -353,7 +373,7 @@ function VulnerabilityView() {
         </div>
 
         {/* Sidebar - Fixed position with proper spacing */}
-        <div className={`${useSidebar().isCollapsed ? 'lg:w-[40%]' : 'lg:w-[20%]'} relative`}>
+        <div className={`${useSidebar().isCollapsed ? 'lg:w-[20%]' : 'lg:w-[15%]'} relative`}>
           <div className="hidden lg:block"> {/* Spacer div */}
             <div className="h-[600px]"></div>
           </div>
@@ -415,7 +435,7 @@ function VulnerabilityView() {
                 </SelectTrigger>
                 <SelectContent>
                   {statusOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value} className={`${option.color} my-1 rounded-md`}>
+                    <SelectItem key={option.value} value={option.value} className={`${option.color} ${option.textColor} my-1 rounded-md`}>
                       {option.label}
                     </SelectItem>
                   ))}

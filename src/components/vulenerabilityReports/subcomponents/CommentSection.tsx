@@ -96,7 +96,7 @@ export default function CommentBox({ pentestId, vulnerabilityId, refetch }: { pe
                 {files.map((file, index) => (
                   <div key={index} className="flex items-center gap-2 w-fit p-2 border border-gray-200 rounded-md shadow-sm">
                     <Paperclip className="h-5 w-5 text-gray-500 mr-2" />
-                    <span className="text-sm text-gray-700">{file.name}</span>
+                    <span className="text-sm text-gray-700 break-words whitespace-pre-wrap max-w-[200px]">{file.name}</span>
                     <Button 
                       size="icon" 
                       variant="ghost" 

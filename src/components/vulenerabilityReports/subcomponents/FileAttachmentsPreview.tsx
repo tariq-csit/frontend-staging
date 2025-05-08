@@ -143,7 +143,7 @@ const FileAttachmentPreview: React.FC<{attachments: Attachment[]}> = ({ attachme
                   <img
                     src={attachment.url}
                     alt={attachment.name}
-                    className="w-full h-32 object-cover cursor-pointer"
+                    className="w-full h-32 object-cover cursor-pointer break-words max-w-[200px]"
                     onClick={() => {
                       setSelectedAttachment(attachment);
                       setOpen(true);
@@ -173,7 +173,7 @@ const FileAttachmentPreview: React.FC<{attachments: Attachment[]}> = ({ attachme
                 </div>
               )}
               <div className="p-3 border-t">
-                <p className="font-medium text-sm truncate mb-1" title={attachment.name}>
+                <p className="font-medium text-sm truncate mb-1 break-words max-w-[200px]" title={attachment.name}>
                   {attachment.name}
                 </p>
                 <div className="flex justify-between items-center">

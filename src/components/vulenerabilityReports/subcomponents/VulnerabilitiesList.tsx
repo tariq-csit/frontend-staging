@@ -3,6 +3,8 @@ import { format } from "date-fns";
 import { Link } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import VulnerabilitySeverityBadge from "./VulnerabilitySeverityBadge"
+import VulnerabilityStatusBadge from "./VulnerabilityStatusBadge"
 
 function VulnerabilityItemSkeleton() {
   return (
@@ -87,48 +89,12 @@ function VulnerabilitiesList({ vulnerabilities, pentestId, isLoading }: Vulnerab
 
               <div className="flex flex-col gap-1">
                 <span className="text-sm text-muted-foreground">Priority</span>
-                <div
-                  className={`flex px-4 justify-center items-center py-1 rounded-[8px] w-24
-                  ${vulnerability.severity.toLowerCase() === "low" && "bg-priorityBlue"}
-                  ${vulnerability.severity.toLowerCase() === "high" && "bg-priorityRed"}
-                  ${vulnerability.severity.toLowerCase() === "medium" && "bg-orange-200"}
-                  ${vulnerability.severity.toLowerCase() === "critical" && "bg-red-600"}`}
-                >
-                  <p
-                    className={`font-inter text-sm capitalize
-                    ${vulnerability.severity.toLowerCase() === "low" && "text-priorityTextBlue"}
-                    ${vulnerability.severity.toLowerCase() === "high" && "text-priorityTextRed"}
-                    ${vulnerability.severity.toLowerCase() === "medium" && "text-orange-900"}
-                    ${vulnerability.severity.toLowerCase() === "critical" && "text-white"}
-                    `}
-                  >
-                    {vulnerability.severity}
-                  </p>
-                </div>
+                <VulnerabilitySeverityBadge severity={vulnerability.severity} />
               </div>
 
               <div className="flex flex-col gap-1 col-span-2">
                 <span className="text-sm text-muted-foreground">Status</span>
-                <div
-                  className={`flex px-4 justify-center items-center py-1 rounded-[8px] w-40
-                  ${vulnerability.status === "New" && "bg-statusSilver"}
-                  ${vulnerability.status === "Triaged" && "bg-statusOrange"}
-                  ${vulnerability.status === "Ready For Retest" && "bg-statusGreen"}
-                  ${vulnerability.status === "Resolved" && "bg-statusGreen"}
-                  ${vulnerability.status === "Not Applicable" && "bg-statusRed"}`}
-                >
-                  <p
-                    className={`font-inter text-sm capitalize
-                    ${vulnerability.status === "New" && "text-statusTextSilver"}
-                    ${vulnerability.status === "Triaged" && "text-statusTextOrange"}
-                    ${vulnerability.status === "Ready For Retest" && "text-statusTextGreen"}
-                    ${vulnerability.status === "Resolved" && "text-statusTextGreen"}
-                    ${vulnerability.status === "Not Applicable" && "text-statusTextRed"}
-                    `}
-                  >
-                    {vulnerability.status}
-                  </p>
-                </div>
+                <VulnerabilityStatusBadge status={vulnerability.status} />
               </div>
 
             <div className="flex flex-col gap-1">
