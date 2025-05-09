@@ -123,7 +123,7 @@ function VulnerabilityView() {
           {/* Title Card */}
           <Card className="py-4">
             <CardHeader className="pb-2">
-              <CardTitle className="text-2xl font-bold">{displayVulnerability.title}</CardTitle>
+              <CardTitle className="text-2xl font-bold break-words">{displayVulnerability.title}</CardTitle>
               <div className="flex items-center gap-2 mt-2">
                 <VulnerabilitySeverityBadge severity={displayVulnerability.severity} />
                 <VulnerabilityStatusBadge status={displayVulnerability.status} />

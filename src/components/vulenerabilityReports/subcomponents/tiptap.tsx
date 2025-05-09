@@ -9,6 +9,9 @@ import type React from "react"
 import { apiRoutes } from "@/lib/routes"
 import axiosInstance from "@/lib/AxiosInstance"
 import DOMPurify from 'dompurify'
+import { useToast } from "@/hooks/use-toast"
+import { Loader2 } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 // Custom extension to prevent unwanted HTML attributes and tags
 const SecureNodesExtension = Extension.create({
@@ -60,21 +63,42 @@ const sanitizeHtml = (html: string): string => {
 }
 
 // Function to upload image and return URL
-async function uploadImage(file: File): Promise<{ url: string }> {
-  const formData = new FormData()
-  formData.append('attachment', file)
+async function uploadImage(file: File, toast: any): Promise<{ url: string }> {
+  const toastId = toast({
+    title: "Uploading image...",
+    description: "Please wait while we process your image",
+  }).id
 
-  const response = await axiosInstance.post(`${apiRoutes.uploadVulnerabilityAttachment}?context=richtext`, formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data'
+  try {
+    const formData = new FormData()
+    formData.append('attachment', file)
+
+    const response = await axiosInstance.post(`${apiRoutes.uploadVulnerabilityAttachment}?context=richtext`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
+
+    if (response.status !== 200) {
+      throw new Error('Failed to upload image')
     }
-  })
 
-  if (response.status !== 200) {
-    throw new Error('Failed to upload image')
+    toast({
+      id: toastId,
+      title: "Success",
+      description: "Image uploaded successfully",
+    })
+
+    return response.data
+  } catch (error) {
+    toast({
+      id: toastId,
+      title: "Error",
+      description: "Failed to upload image. Please try again.",
+      variant: "destructive",
+    })
+    throw error
   }
-
-  return response.data
 }
 
 // Custom extension to handle markdown preview
@@ -121,12 +145,15 @@ const Toolbar = ({ editor, previewMode, onTogglePreview }: {
   onTogglePreview: () => void 
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { toast } = useToast()
+  const [isUploading, setIsUploading] = useState(false)
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0] && editor) {
+      setIsUploading(true)
       try {
         const file = event.target.files[0]
-        const { url } = await uploadImage(file)
+        const { url } = await uploadImage(file, toast)
         const imageName = file.name.replace(/\.[^/.]+$/, "") // Remove file extension
         const markdownText = `![${imageName}](${url})`
         
@@ -140,11 +167,14 @@ const Toolbar = ({ editor, previewMode, onTogglePreview }: {
         }).run()
       } catch (error) {
         console.error('Failed to upload image:', error)
+      } finally {
+        setIsUploading(false)
       }
     }
   }
 
-  const handleImageClick = () => {
+  const handleImageClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
     fileInputRef.current?.click()
   }
 
@@ -180,8 +210,20 @@ const Toolbar = ({ editor, previewMode, onTogglePreview }: {
       >
         <CodeIcon className="h-4 w-4" />
       </Toggle>
-      <button onClick={handleImageClick} aria-label="Add image">
-        <FileIcon className="h-4 w-4" />
+      <button 
+        onClick={(e) => handleImageClick(e)} 
+        aria-label="Add image"
+        disabled={isUploading}
+        className="relative"
+      >
+        {isUploading ? (
+           <div className="flex gap-2 items-center">
+           <span>Uploading...</span>
+           <Loader2 className="h-4 w-4 ml-2 animate-spin" />
+           </div>
+        ) : (
+          <FileIcon className="h-4 w-4" />
+        )}
       </button>
       <Toggle
         onPressedChange={() => editor.chain().focus().toggleBulletList().run()}
@@ -197,7 +239,14 @@ const Toolbar = ({ editor, previewMode, onTogglePreview }: {
       >
         <EyeOpenIcon className="h-4 w-4" />
       </Toggle>
-      <input type="file" ref={fileInputRef} onChange={handleFileChange} accept="image/*" style={{ display: "none" }} />
+      <input 
+        type="file" 
+        ref={fileInputRef} 
+        onChange={handleFileChange} 
+        accept="image/*" 
+        style={{ display: "none" }}
+        disabled={isUploading}
+      />
     </div>
   )
 }
@@ -208,6 +257,8 @@ const Tiptap = (props: {
 }) => {
   const [previewMode, setPreviewMode] = useState(true);
   const [originalContent, setOriginalContent] = useState('');
+  const [isUploading, setIsUploading] = useState(false);
+  const { toast } = useToast();
 
   const editor = useEditor({
     extensions: [
@@ -311,8 +362,9 @@ const Tiptap = (props: {
   }, [previewMode, editor, originalContent]);
 
   const insertImage = useCallback(async (file: File, imageName: string) => {
+    setIsUploading(true)
     try {
-      const { url } = await uploadImage(file)
+      const { url } = await uploadImage(file, toast)
       if (editor) {
         // Validate URL before insertion
         if (!url.startsWith('https://slash-attachments.s3.us-east-1.amazonaws.com')) {
@@ -354,8 +406,10 @@ const Tiptap = (props: {
       }
     } catch (error) {
       console.error('Failed to upload image:', error)
+    } finally {
+      setIsUploading(false)
     }
-  }, [editor, previewMode])
+  }, [editor, previewMode, toast])
 
   const handleDrop = useCallback(
     (event: React.DragEvent) => {
@@ -395,7 +449,10 @@ const Tiptap = (props: {
 
   return (
     <div
-      className="flex flex-col gap-2 py-2 border-input border rounded-md"
+      className={cn(
+        "flex flex-col gap-2 py-2 border-input border rounded-md",
+        isUploading && "opacity-70 pointer-events-none"
+      )}
       onDrop={handleDrop}
       onDragOver={(e) => e.preventDefault()}
       onPaste={handlePaste}
@@ -403,6 +460,11 @@ const Tiptap = (props: {
       <Toolbar editor={editor} previewMode={previewMode} onTogglePreview={togglePreview} />
       <div className="relative">
         <EditorContent editor={editor} />
+        {isUploading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-background/50">
+            <Loader2 className="h-6 w-6 animate-spin" />
+          </div>
+        )}
       </div>
       <div className="px-4 py-2">
         <p className="text-sm">Embed images by dragging & dropping, selecting, or pasting them.</p>

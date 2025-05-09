@@ -22,7 +22,7 @@ interface UploadResponse {
 const formSchema = z.object({
   companyName: z.string().min(1),
   email: z.string().email(),
-  uploadLogo: z.string().min(1),
+  uploadLogo: z.string().optional(),
 })
 
 interface ClientEditDialogProps {
