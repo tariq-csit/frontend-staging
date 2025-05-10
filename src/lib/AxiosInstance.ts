@@ -39,6 +39,15 @@ async function refreshToken() {
         }
 
         throw new Error('No token in refresh response');
+      } catch (error: any) {
+        // Check if the error is a 401 (Unauthorized) or refresh token related
+        if (error.response?.status === 401 || 
+            error.response?.data?.message?.toLowerCase().includes('refresh token') ||
+            error.response?.data?.message?.toLowerCase().includes('invalid token')) {
+          localStorage.clear(); // Clear all auth tokens
+          window.location.href = '/login';
+        }
+        throw error;
       } finally {
         // Clear the refresh token promise so future refresh requests can proceed
         refreshTokenPromise = null;

@@ -181,7 +181,7 @@ export default function ClientDashboard() {
                 {/* Grid Header */}
                 <div className="grid grid-cols-6 gap-4 text-sm text-gray-500 border-b py-3 px-4 font-normal">
                   <div>Client</div>
-                  <div>Point of Contact</div>
+                  <div>Email</div>
                   <div>Client Users</div>
                   <div>Active Pentests</div>
                   <div>Requested Pentests</div>

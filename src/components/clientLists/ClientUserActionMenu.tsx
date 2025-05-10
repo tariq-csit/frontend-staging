@@ -6,7 +6,11 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import ClientUserDeleteDialog from "./ClientUserDeleteDialog"
 import ClientUserEditDialog from "./ClientUserEditDialog"
+import ClientUserReset2FADialog from "./ClientUserReset2FADialog"
 import type { ClientUser } from "@/types/types"
+import { apiRoutes } from "@/lib/routes"
+import { toast } from "@/hooks/use-toast"
+import axiosInstance from "@/lib/AxiosInstance"
 
 interface ClientUserActionMenuProps {
   user: ClientUser
@@ -16,7 +20,25 @@ interface ClientUserActionMenuProps {
 export default function ClientUserActionMenu({ user, refetch }: ClientUserActionMenuProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
+  const [showReset2FADialog, setShowReset2FADialog] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
+
+  const handleReset2FA = async () => {
+    try {
+      await axiosInstance.post(apiRoutes.clientUsers.reset2FA(user._id))
+      toast({
+        title: "2FA Reset Successful",
+        description: "The user will need to set up 2FA again on their next login.",
+      })
+      refetch()
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to reset 2FA. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
 
   return (
     <>
@@ -35,6 +57,14 @@ export default function ClientUserActionMenu({ user, refetch }: ClientUserAction
             }}
           >
             Edit
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              setShowReset2FADialog(true)
+              setDropdownOpen(false)
+            }}
+          >
+            Reset 2FA
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => {
@@ -60,6 +90,13 @@ export default function ClientUserActionMenu({ user, refetch }: ClientUserAction
         refetch={refetch} 
         open={showEditDialog} 
         onOpenChange={setShowEditDialog} 
+      />
+
+      <ClientUserReset2FADialog
+        user={user}
+        refetch={refetch}
+        open={showReset2FADialog}
+        onOpenChange={setShowReset2FADialog}
       />
     </>
   )
