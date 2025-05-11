@@ -152,6 +152,7 @@ export interface ClientUser {
     name: string;
     role: string;
     twoFactorEnabled: boolean;
+    isActive: boolean;
     profilePicture?: string;
     clients: {
         _id: string;

@@ -27,7 +27,9 @@ interface ClientUserDeactivateDialogProps {
 export default function ClientUserDeactivateDialog({ user, refetch, open, onOpenChange }: ClientUserDeactivateDialogProps) {
   const { mutate: deactivateUser, isPending } = useMutation({
     mutationFn: async () => {
-      await axiosInstance.post(apiRoutes.clientUsers.deactivate(user._id))
+      await axiosInstance.patch(apiRoutes.clientUsers.deactivate(user._id), {
+        isActive: !user.isActive
+      })
     },
     onSuccess: () => {
       refetch()

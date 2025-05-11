@@ -25,23 +25,6 @@ export default function ClientUserActionMenu({ user, refetch }: ClientUserAction
   const [showDeactivateDialog, setShowDeactivateDialog] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
-  const handleReset2FA = async () => {
-    try {
-      await axiosInstance.post(apiRoutes.clientUsers.reset2FA(user._id))
-      toast({
-        title: "2FA Reset Successful",
-        description: "The user will need to set up 2FA again on their next login.",
-      })
-      refetch()
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to reset 2FA. Please try again.",
-        variant: "destructive",
-      })
-    }
-  }
-
   return (
     <>
       <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>

@@ -43,6 +43,7 @@ export default function ClientUsers() {
                 <th className="text-left py-3 px-4 font-normal">Email</th>
                 <th className="text-left py-3 px-4 font-normal">Client</th>
                 <th className="text-left py-3 px-4 font-normal">2FA Status</th>
+                <th className="text-left py-3 px-4 font-normal">Account Status</th>
                 <th className="text-left py-3 px-4 font-normal"></th>
               </tr>
             </thead>
@@ -145,6 +146,15 @@ function ClientUserRow({user, refetch}: {user: ClientUser, refetch: () => void})
             : "bg-[#F3F4F6] text-[#6B7280]"
         }`}>
           {user.twoFactorEnabled ? "Active" : "In-Active"}
+        </span>
+      </td>
+      <td className="py-4 px-4">
+        <span className={`px-3 py-1 rounded-full text-sm ${
+          user.isActive 
+            ? "bg-[#DCFCE7] text-[#166534]" 
+            : "bg-[#F3F4F6] text-[#6B7280]"
+        }`}>
+          {user.isActive ? "Active" : "In-Active"}
         </span>
       </td>
       <td className="py-4 px-4 text-right">
