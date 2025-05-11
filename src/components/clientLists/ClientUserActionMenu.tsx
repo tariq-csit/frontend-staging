@@ -9,9 +9,6 @@ import ClientUserEditDialog from "./ClientUserEditDialog"
 import ClientUserReset2FADialog from "./ClientUserReset2FADialog"
 import ClientUserDeactivateDialog from "./ClientUserDeactivateDialog"
 import type { ClientUser } from "@/types/types"
-import { apiRoutes } from "@/lib/routes"
-import { toast } from "@/hooks/use-toast"
-import axiosInstance from "@/lib/AxiosInstance"
 
 interface ClientUserActionMenuProps {
   user: ClientUser
@@ -56,9 +53,9 @@ export default function ClientUserActionMenu({ user, refetch }: ClientUserAction
               setShowDeactivateDialog(true)
               setDropdownOpen(false)
             }}
-            className="text-destructive focus:text-destructive"
+            className={`${user.isActive ? "text-destructive focus:text-destructive" : "text-primary-900 focus:text-primary-900"}`}
           >
-            Deactivate
+            {user.isActive ? "Deactivate" : "Activate"}
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => {

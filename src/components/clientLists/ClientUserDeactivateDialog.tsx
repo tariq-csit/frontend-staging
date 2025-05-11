@@ -64,15 +64,15 @@ export default function ClientUserDeactivateDialog({ user, refetch, open, onOpen
           </Button>
           <Button
             onClick={() => deactivateUser()}
-            variant="destructive"
+            variant={user.isActive ? "destructive" : "default"}
           >
             {isPending ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Deactivating...
+                {user.isActive ? "Deactivating..." : "Activating..."}
               </>
             ) : (
-              "Deactivate User"
+              user.isActive ? "Deactivate User" : "Activate User"
             )}
           </Button>
         </DialogFooter>

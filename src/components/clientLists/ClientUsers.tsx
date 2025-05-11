@@ -140,21 +140,21 @@ function ClientUserRow({user, refetch}: {user: ClientUser, refetch: () => void})
         </div>
       </td>
       <td className="py-4 px-4">
-        <span className={`px-3 py-1 rounded-full text-sm ${
+        <span className={`px-3 py-1 rounded-md text-sm w-28 text-center inline-block ${
           user.twoFactorEnabled 
-            ? "bg-[#DCFCE7] text-[#166534]" 
-            : "bg-[#F3F4F6] text-[#6B7280]"
+            ? "bg-statusGreen text-statusTextGreen" 
+            : "bg-statusSilver text-statusTextSilver"
         }`}>
-          {user.twoFactorEnabled ? "Active" : "In-Active"}
+          {user.twoFactorEnabled ? "Active" : "Inactive"}
         </span>
       </td>
       <td className="py-4 px-4">
-        <span className={`px-3 py-1 rounded-full text-sm ${
+        <span className={`px-3 py-1 rounded-md text-sm w-28 text-center inline-block ${
           user.isActive 
-            ? "bg-[#DCFCE7] text-[#166534]" 
-            : "bg-[#F3F4F6] text-[#6B7280]"
+            ? "bg-statusGreen text-statusTextGreen" 
+            : "bg-statusSilver text-statusTextSilver"
         }`}>
-          {user.isActive ? "Active" : "In-Active"}
+          {user.isActive ? "Active" : "Inactive"}
         </span>
       </td>
       <td className="py-4 px-4 text-right">
