@@ -40,7 +40,7 @@ export default function ClientUsers() {
             <thead>
               <tr className="text-sm text-gray-500">
                 <th className="text-left py-3 px-4 font-normal">User</th>
-                <th className="text-left py-3 px-4 font-normal">Point of Contact</th>
+                <th className="text-left py-3 px-4 font-normal">Email</th>
                 <th className="text-left py-3 px-4 font-normal">Client</th>
                 <th className="text-left py-3 px-4 font-normal">2FA Status</th>
                 <th className="text-left py-3 px-4 font-normal"></th>

@@ -7,6 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import ClientUserDeleteDialog from "./ClientUserDeleteDialog"
 import ClientUserEditDialog from "./ClientUserEditDialog"
 import ClientUserReset2FADialog from "./ClientUserReset2FADialog"
+import ClientUserDeactivateDialog from "./ClientUserDeactivateDialog"
 import type { ClientUser } from "@/types/types"
 import { apiRoutes } from "@/lib/routes"
 import { toast } from "@/hooks/use-toast"
@@ -21,6 +22,7 @@ export default function ClientUserActionMenu({ user, refetch }: ClientUserAction
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showReset2FADialog, setShowReset2FADialog] = useState(false)
+  const [showDeactivateDialog, setShowDeactivateDialog] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
   const handleReset2FA = async () => {
@@ -68,6 +70,15 @@ export default function ClientUserActionMenu({ user, refetch }: ClientUserAction
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => {
+              setShowDeactivateDialog(true)
+              setDropdownOpen(false)
+            }}
+            className="text-destructive focus:text-destructive"
+          >
+            Deactivate
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
               setShowDeleteDialog(true)
               setDropdownOpen(false)
             }}
@@ -97,6 +108,13 @@ export default function ClientUserActionMenu({ user, refetch }: ClientUserAction
         refetch={refetch}
         open={showReset2FADialog}
         onOpenChange={setShowReset2FADialog}
+      />
+
+      <ClientUserDeactivateDialog
+        user={user}
+        refetch={refetch}
+        open={showDeactivateDialog}
+        onOpenChange={setShowDeactivateDialog}
       />
     </>
   )

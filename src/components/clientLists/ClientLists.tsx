@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { ChevronRight, Shield, Users } from "lucide-react"
+import { ChevronRight } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import axiosInstance from "@/lib/AxiosInstance"
 import { useQuery } from "@tanstack/react-query"
@@ -114,6 +114,7 @@ export default function ClientDashboard() {
     queryKey: ["clients"],
     queryFn: () => axiosInstance.get(apiRoutes.clients.all).then((res) => res.data),
   })
+  console.log(clients)
 
   const { data: signupCodesSent } = useQuery({
     queryKey: ["signupCodes"],
@@ -181,7 +182,7 @@ export default function ClientDashboard() {
                 {/* Grid Header */}
                 <div className="grid grid-cols-6 gap-4 text-sm text-gray-500 border-b py-3 px-4 font-normal">
                   <div>Client</div>
-                  <div>Email</div>
+                  <div>Point of Contact</div>
                   <div>Client Users</div>
                   <div>Active Pentests</div>
                   <div>Requested Pentests</div>
@@ -267,7 +268,7 @@ function ClientRow({ client, refetch }: { client: Client; refetch: () => void })
         <span className="text-blue-600">{client.pentests.length}</span>
       </div>
       <div>
-        <span className="text-blue-600">{client.pentests.length}</span>
+        <span className="text-blue-600">{client.RequestedPentestsNo}</span>
       </div>
       <div className="text-right">
         <ClientActionMenu client={client} refetch={refetch} />

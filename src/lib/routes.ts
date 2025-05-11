@@ -62,6 +62,7 @@ export const apiRoutes = {
     all: "/admin/users/client",
     onboardUser: (clientId: string) => `/admin/client/${clientId}/users/onboard`,
     detail: (clientUserId: string) => `/admin/users/client/${clientUserId}`,
+    deactivate: (clientUserId: string) => `/admin/users/client/${clientUserId}/deactivate`,
     reset2FA: (clientUserId: string) => `/admin/users/client/${clientUserId}/reset-2fa`,
   },
 

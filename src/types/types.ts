@@ -66,6 +66,7 @@ export interface Client {
       autoSendToJira: boolean;
     };
   };
+  RequestedPentestsNo: number;
   pentests: Pentest[];
   users: {
     _id: string;
