@@ -17,6 +17,7 @@ import axiosInstance from "@/lib/AxiosInstance"
 import { apiRoutes } from "@/lib/routes"
 import { FileUpload } from "@/components/FileUpload"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useSetPageTitle } from "@/hooks/useSetPageTitle"
 
 // Form schemas
 const nameFormSchema = z.object({
@@ -48,6 +49,9 @@ const passwordFormSchema = z
 export default function SettingsPage() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
+
+  // Set page title for settings page
+  useSetPageTitle("Settings");
 
   // Individual states for each notification preference
   const [commentNotification, setCommentNotification] = useState(true)

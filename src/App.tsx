@@ -26,9 +26,13 @@ import PentestsList from './components/pentests/Pentests';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Root from './components/Root';
 import { SidebarProvider } from './contexts/SidebarContext';
+import { usePageTitle } from './hooks/usePageTitle';
 
 function App() {
   const queryClient = new QueryClient();
+  
+  // Set the default page title
+  usePageTitle();
 
   return (
     <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
