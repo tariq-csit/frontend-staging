@@ -334,9 +334,12 @@ function VulnerabilityView() {
                   </div>
                 </div>
               </div>
+              <div className="flex justify-between">
               <p className="text-gray-700 mt-4 break-words whitespace-pre-wrap">
                 {displayVulnerability.cvssVector}
               </p>
+              <p>CVSS Score: {displayVulnerability.cvss}</p>
+              </div>
             </CardContent>
           </Card>
 
