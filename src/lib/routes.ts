@@ -13,6 +13,28 @@ export const apiRoutes = {
   dashboard : `/admin/dashboard`,
   recentActivities: `/admin/latest-activities`,
 
+  // Pentester Dashboard Routes
+  pentester: {
+    dashboard: `/api/pentester/dashboard`,
+    latestActivities: `/api/pentester/latest-activities`,
+    assignedPentests: {
+      all: `/api/pentester/assigned-pentests`,
+      details: (pentestId: string) => `/api/pentester/assigned-pentests/${pentestId}`,
+    },
+    assignedClients: {
+      all: `/api/pentester/assigned-clients`,
+      details: (clientId: string) => `/api/pentester/assigned-clients/${clientId}`,
+    },
+    vulnerabilities: {
+      all: (pentestId: string) => `/api/pentester/pentests/${pentestId}/vulnerabilities`,
+      details: (pentestId: string, vulnerabilityId: string) => `/api/pentester/pentests/${pentestId}/vulnerabilities/${vulnerabilityId}`,
+      create: (pentestId: string) => `/api/pentester/pentests/${pentestId}/vulnerability`,
+      update: (pentestId: string, vulnerabilityId: string) => `/api/pentester/pentests/${pentestId}/vulnerability/${vulnerabilityId}`,
+      comment: (pentestId: string, vulnerabilityId: string) => `/api/pentester/pentests/${pentestId}/vulnerability/${vulnerabilityId}/comment`,
+      status: (pentestId: string, vulnerabilityId: string) => `/api/pentester/pentests/${pentestId}/vulnerability/${vulnerabilityId}/status`,
+    },
+  },
+
   // Pentest Routes
   pentests: {
     all: `/admin/pentests/all`,
