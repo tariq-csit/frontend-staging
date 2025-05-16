@@ -1,0 +1,11 @@
+# Task ID: 7
+# Title: Create Client Information View
+# Status: pending
+# Dependencies: 3
+# Priority: medium
+# Description: Implement functionality to view assigned clients' details relevant to pentests
+# Details:
+Develop components to display client information relevant to pentests as specified in section 3.3.3. Create client information cards showing key details. Use the API endpoints GET /api/pentester/assigned-clients for client list and GET /api/pentester/assigned-clients/:id for specific client details. Include client contact information and relevant project history.
+
+# Test Strategy:
+Unit tests for client information components. Integration tests with backend API. Test rendering of client details. Test navigation between client list and detail views.

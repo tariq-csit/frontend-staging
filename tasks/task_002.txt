@@ -1,0 +1,11 @@
+# Task ID: 2
+# Title: Implement Password Management
+# Status: pending
+# Dependencies: 1
+# Priority: medium
+# Description: Create functionality for password change and reset
+# Details:
+Develop password change form that requires current password verification before allowing changes. Implement password reset functionality with secure email-based reset links. Use the API endpoints: PUT /api/change-password for password changes. Follow security best practices for password handling including proper hashing and validation.
+
+# Test Strategy:
+Unit tests for password change and reset components. Integration tests with backend API. Test password change with correct and incorrect current passwords. Test password reset flow including email delivery. Security testing for password-related vulnerabilities.

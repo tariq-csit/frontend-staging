@@ -1,0 +1,11 @@
+# Task ID: 9
+# Title: Create Vulnerability Form
+# Status: pending
+# Dependencies: 8
+# Priority: high
+# Description: Implement form for adding and editing vulnerabilities with all required fields
+# Details:
+Develop a form component for adding and editing vulnerabilities with fields for affected host, title, description (rich text editor), severity, CVSS metrics, impact, likelihood, recommended solution (rich text editor), steps to reproduce (rich text editor), and attachments as specified in section 3.4.2 and 3.4.3. Use the API endpoints POST /api/pentester/pentests/:pentestId/vulnerability for adding and PUT /api/pentester/pentests/:pentestId/vulnerability/:id for editing. Implement form validation for all fields. Integrate a rich text editor component for description fields.
+
+# Test Strategy:
+Unit tests for vulnerability form components. Integration tests with backend API. Test form validation for all fields. Test submission with various input combinations. Test rich text editor functionality. Test file attachment uploads. Test form submission performance.

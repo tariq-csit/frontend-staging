@@ -1,39 +1,38 @@
 import './App.css'
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import ClientLists from './components/clientLists/ClientLists';
+import DashboardHome from '@/components/dashboard/Dashboard';
+import Root from '@/components/Root';
 import PentestersList from './components/pentests/pentestersList/PentestersList';
-import Settings from './components/settings/Settings';
-import Login from './components/login/Login';
-import SignUp from './components/signUp/SignUp';
-import DashboardHome from './components/activePentests/Dashboard';
-import PentestDetails from './components/pentests/PentestDetails';
-import VulnerabilitiesInPentest from './components/vulenerabilityReports/VulnerabilityDetails';
-import VulnerabilityReports from './components/vulenerabilityReports/VulnerabilityReports';
-import NewPentestsForm from './components/pentests/newPentestsForm/NewPentestsForm';
 import ClientUsers from './components/clientLists/ClientUsers';
-import ReportsForm from './components/vulenerabilityReports/subcomponents/VulnerabilityReportForm';
-import { ThemeProvider } from './components/theme-provider';
-import { Toaster } from './components/ui/toaster';
-import FormPreview from './components/vulenerabilityReports/subcomponents/FormPreview';
+import Login from '@/components/login/Login';
+import PentestsList from '@/components/pentests/Pentests';
+import PentestDetails from '@/components/pentests/PentestDetails';
+import SignUp from '@/components/signUp/SignUp';
+import NewPentestsForm from '@/components/pentests/newPentestsForm/NewPentestsForm';
 import ForgotPassword from './components/login/ForgotPassword';
 import ResetPassword from './components/login/ResetPassword';
-import ManagePentestReport from './components/pentests/managePentest/ManagePentestReport';
-import PentestReport from './components/pentests/managePentest/PentestReport';
-import RetestReport from './components/pentests/managePentest/RetestReport';
-import VulnerabilityReportForm from './components/vulenerabilityReports/subcomponents/VulnerabilityReportForm';
-import PentestsList from './components/pentests/Pentests';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import Root from './components/Root';
+import FormPreview from '@/components/vulenerabilityReports/subcomponents/FormPreview';
+import VulnerabilityReportForm from '@/components/vulenerabilityReports/subcomponents/VulnerabilityReportForm';
+import VulnerabilityReports from '@/components/vulenerabilityReports/VulnerabilityReports';
+import VulnerabilitiesInPentest from '@/components/vulenerabilityReports/VulnerabilityDetails';
+import Settings from '@/components/settings/Settings';
+import ManagePentestReport from '@/components/pentests/managePentest/ManagePentestReport';
+import PentestReport from '@/components/pentests/managePentest/PentestReport';
+import RetestReport from '@/components/pentests/managePentest/RetestReport';
+import { Toaster } from './components/ui/toaster';
 import { SidebarProvider } from './contexts/SidebarContext';
 import { usePageTitle } from './hooks/usePageTitle';
+import RouteGuard from './components/RouteGuard';
+import { UserRole } from './hooks/useUser';
+import ReportsForm from '@/components/vulenerabilityReports/subcomponents/VulnerabilityReportForm';
+import { ThemeProvider } from './components/theme-provider';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 function App() {
+  usePageTitle('Slash - Security Dashboard');
   const queryClient = new QueryClient();
-  
-  // Set the default page title
-  usePageTitle();
-
   return (
     <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
       <QueryClientProvider client={queryClient}>
@@ -75,7 +74,7 @@ function App() {
         </SidebarProvider>
       </QueryClientProvider>
     </ThemeProvider>
-  )
+  );
 }
 
-export default App
+export default App;

@@ -1,0 +1,11 @@
+# Task ID: 8
+# Title: Implement Vulnerability List View
+# Status: pending
+# Dependencies: 6
+# Priority: high
+# Description: Create a view to display all vulnerabilities for a specific pentest with sorting and filtering options
+# Details:
+Develop a table view for vulnerabilities showing severity, title, affected host, and status as specified in section 3.4.1. Implement sorting functionality for all columns. Add filtering options by severity, status, and affected host. Use the API endpoint GET /api/pentester/pentests/:pentestId/vulnerabilities to fetch vulnerability data. Include visual indicators for severity levels.
+
+# Test Strategy:
+Unit tests for vulnerability list component. Integration tests with backend API. Test sorting functionality for each column. Test filtering with various criteria. Test visual indicators for different severity levels.

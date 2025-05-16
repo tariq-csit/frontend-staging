@@ -1,0 +1,11 @@
+# Task ID: 14
+# Title: Implement Notification Preferences
+# Status: pending
+# Dependencies: 13
+# Priority: low
+# Description: Create functionality for pentesters to configure their notification settings
+# Details:
+Develop notification preferences controls allowing pentesters to configure settings for comment notifications, status change notifications, vulnerability alerts, login notifications, and report comment notifications as specified in section 3.5.2. Use toggle switches for each notification type. Implement API integration for saving notification preferences. Group notification settings by category for better organization.
+
+# Test Strategy:
+Unit tests for notification preference components. Integration tests with backend API. Test toggle functionality for each notification type. Test persistence of notification settings. Test grouping and organization of notification options.

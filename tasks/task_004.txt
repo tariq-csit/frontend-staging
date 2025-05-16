@@ -1,0 +1,43 @@
+# Task ID: 4
+# Title: Implement Dashboard Overview
+# Status: pending
+# Dependencies: 3
+# Priority: high
+# Description: Create the main dashboard view with metrics, latest activities, and visualizations
+# Details:
+Develop dashboard components including metrics cards for KPIs (scheduled pentests, assigned pentests, average CVSS score, ongoing pentests, vulnerability counts, critical vulnerabilities, pentester rank). Implement activity feed showing recent activities with timestamps. Create charts for vulnerability distribution by severity. Use the API endpoint GET /api/pentester/dashboard for metrics data and GET /api/pentester/latest-activities for activity data. Use a charting library for visualizations.
+
+# Test Strategy:
+Unit tests for dashboard components. Integration tests with backend API. Test data rendering for all metrics. Test chart generation with various data scenarios. Test activity feed rendering and filtering. Performance testing to ensure dashboard loads within 2 seconds as specified in section 6.1.
+
+# Subtasks:
+## 1. Metrics Cards Development [pending]
+### Dependencies: None
+### Description: Design and implement the metrics cards to display key performance indicators such as deployment frequency, code quality, and team velocity on the dashboard.
+### Details:
+Define the metrics to be shown, create reusable card components, and ensure they can dynamically display data from the backend.
+
+## 2. Activity Feed Implementation [pending]
+### Dependencies: 4.1
+### Description: Develop the activity feed section to show recent actions, updates, or events relevant to the dashboard users.
+### Details:
+Design the feed UI, implement logic to fetch and display activity data, and ensure real-time or near-real-time updates.
+
+## 3. Chart Visualizations [pending]
+### Dependencies: 4.1
+### Description: Create interactive chart visualizations for trends and analytics, such as deployment trends, code quality over time, and team performance.
+### Details:
+Select appropriate chart libraries, design chart components, and ensure they are responsive and accessible.
+
+## 4. API Integration [pending]
+### Dependencies: 4.1, 4.2, 4.3
+### Description: Integrate the dashboard components with backend APIs to fetch real-time data for metrics cards, activity feed, and charts.
+### Details:
+Define API endpoints, implement data fetching logic, handle loading and error states, and ensure secure data transmission.
+
+## 5. Performance Optimization [pending]
+### Dependencies: 4.4
+### Description: Optimize the dashboard to ensure all components load within 2 seconds, addressing bottlenecks in data fetching, rendering, and UI responsiveness.
+### Details:
+Profile dashboard performance, implement lazy loading, caching, and code splitting as needed, and test loading times under various conditions.
+

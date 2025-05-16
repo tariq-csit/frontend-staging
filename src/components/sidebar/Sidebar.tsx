@@ -1,5 +1,5 @@
 import leftArrow from "/chevron-left.svg";
-import SidebarNav from "./SidebarNav";
+import SidebarNav, { NavItem } from "./SidebarNav";
 import setting from "/tage=setting.svg";
 import { LogOut } from "lucide-react";
 import largeLogo from "/logo-large.png";
@@ -9,15 +9,18 @@ import { apiRoutes } from "@/lib/routes";
 import axiosInstance from "@/lib/AxiosInstance";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useNavigate } from "react-router-dom";
+import { UserRole } from "@/hooks/useUser";
 
 function Sidebar(props: {
   name: string,
   image: string,
-  role: string,
+  role: UserRole,
 }) {
   const { isCollapsed, toggle, setCollapsed } = useSidebar();
   const navigate = useNavigate();
-  const navComponents = [
+  
+  // Admin navigation items
+  const adminNavItems: NavItem[] = [
     {
       link: "/dashboard",
       text: "Dashboard",
@@ -51,6 +54,64 @@ function Sidebar(props: {
       icon: "/state=pentesters.svg",
     },
   ];
+
+  // Pentester navigation items (based on PRD requirements)
+  const pentesterNavItems: NavItem[] = [
+    {
+      link: "/dashboard",
+      text: "Dashboard",
+      icon: "/state=dashboard.svg",
+    },
+    {
+      link: "/pentests",
+      text: "Assigned Pentests",
+      icon: "/state=pentests.svg",
+    },
+    {
+      link: "/vulnerability-reports",
+      text: "Vulnerability Reports",
+      icon: "/state=reports.svg",
+    },
+    {
+      link: "/clients",
+      text: "Assigned Clients",
+      icon: "/state=clients.svg",
+    },
+  ];
+
+  // Client navigation items
+  const clientNavItems: NavItem[] = [
+    {
+      link: "/dashboard",
+      text: "Dashboard",
+      icon: "/state=dashboard.svg",
+    },
+    {
+      link: "/pentests",
+      text: "My Pentests",
+      icon: "/state=pentests.svg",
+    },
+    {
+      link: "/vulnerability-reports",
+      text: "Vulnerability Reports",
+      icon: "/state=reports.svg",
+    },
+  ];
+
+  // Select navigation based on role
+  const navComponents = (() => {
+    switch (props.role) {
+      case 'admin':
+        return adminNavItems;
+      case 'pentester':
+        return pentesterNavItems;
+      case 'client':
+        return clientNavItems;
+      default:
+        return [];
+    }
+  })();
+
   return (
     <>
     <div

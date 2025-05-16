@@ -1,0 +1,43 @@
+# Task ID: 10
+# Title: Implement Vulnerability Detail View
+# Status: pending
+# Dependencies: 8
+# Priority: high
+# Description: Create a detailed view for a specific vulnerability showing all information, comments, and activity history
+# Details:
+Develop a detailed view component for vulnerabilities showing all vulnerability information, comments, and activity history as specified in section 3.4.4. Use the API endpoint GET /api/pentester/pentests/:pentestId/vulnerabilities/:id to fetch detailed vulnerability data. Implement sections for different types of information. Create a timeline view for activity history.
+
+# Test Strategy:
+Unit tests for vulnerability detail component. Integration tests with backend API. Test rendering of all vulnerability information sections. Test timeline rendering for activity history. Test handling of various data formats including rich text and attachments.
+
+# Subtasks:
+## 1. Design Information Display Section [pending]
+### Dependencies: None
+### Description: Create a comprehensive section to display all relevant vulnerability details, including summary, impact, affected assets, severity, and device profiles.
+### Details:
+This section should visually present data such as the number of affected devices, their criticality levels, and groupings by device profile. Include charts and tables for clarity, and ensure support for rich text and structured data formats.
+
+## 2. Implement Comments Section [pending]
+### Dependencies: 10.1
+### Description: Develop a dedicated area for users to add, view, and manage comments related to the vulnerability.
+### Details:
+Enable threaded discussions, support for rich text, and moderation features. Ensure comments are contextually linked to the vulnerability and can be filtered or searched.
+
+## 3. Build Activity Timeline Visualization [pending]
+### Dependencies: 10.1
+### Description: Create a timeline component to visualize the history of actions and updates related to the vulnerability.
+### Details:
+Display chronological events such as status changes, comments, attachments, and remediation actions. Support various data formats and provide interactive filtering or zooming capabilities.
+
+## 4. Develop Attachments Handling Module [pending]
+### Dependencies: 10.1
+### Description: Implement functionality for uploading, viewing, and managing attachments (e.g., screenshots, logs, proof-of-concept code) associated with the vulnerability.
+### Details:
+Support multiple file types, preview capabilities, and secure storage. Integrate attachment actions into the activity timeline and information display where relevant.
+
+## 5. Enable Navigation Between Sections [pending]
+### Dependencies: 10.1, 10.2, 10.3, 10.4
+### Description: Design and implement intuitive navigation controls to switch between information display, comments, activity timeline, and attachments sections.
+### Details:
+Ensure seamless user experience with clear section indicators, responsive design, and accessibility considerations. Support deep linking to specific sections for collaboration and review.
+

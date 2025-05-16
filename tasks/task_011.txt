@@ -1,0 +1,11 @@
+# Task ID: 11
+# Title: Implement Vulnerability Comments System
+# Status: pending
+# Dependencies: 10
+# Priority: medium
+# Description: Create functionality for adding and viewing comments on vulnerabilities, including support for internal comments
+# Details:
+Develop a comment system for vulnerabilities with support for adding comments, viewing comment history, and distinguishing between internal comments (visible only to pentesters and admins) and regular comments as specified in section 3.4.5. Implement file attachment functionality for comments. Use the API endpoint POST /api/pentester/pentests/:pentestId/vulnerability/:id/comment for adding comments. Create a threaded view for comments with proper timestamps and user information.
+
+# Test Strategy:
+Unit tests for comment components. Integration tests with backend API. Test adding comments with and without attachments. Test visibility rules for internal comments. Test comment threading and sorting.

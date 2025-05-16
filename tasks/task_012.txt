@@ -1,0 +1,11 @@
+# Task ID: 12
+# Title: Implement Vulnerability Status Management
+# Status: pending
+# Dependencies: 10
+# Priority: medium
+# Description: Create functionality to change and track vulnerability status changes over time
+# Details:
+Develop components for changing vulnerability status and tracking status changes over time as specified in section 3.4.6. Implement a status change control with appropriate status options. Create a status history timeline. Use the API endpoint PUT /api/pentester/pentests/:pentestId/vulnerability/:id/status for updating status. Include validation to ensure proper status transitions.
+
+# Test Strategy:
+Unit tests for status management components. Integration tests with backend API. Test status change functionality with various transitions. Test status history timeline rendering. Test validation for invalid status transitions.

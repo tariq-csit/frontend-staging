@@ -3,6 +3,13 @@ import { NavLink, useLocation } from "react-router-dom";
 
 const style = `flex w-full px-4 py-3 gap-4 items-center rounded-nav transition-all duration-200`;
 
+export type NavItem = {
+  link: string;
+  text: string;
+  icon: string | React.ReactNode;
+  subItems?: NavItem[];
+};
+
 type propsType = {
   link: string;
   onClick?: () => void;
@@ -10,11 +17,7 @@ type propsType = {
   icon: React.ReactNode | string;
   navText: string;
   setCollapsed: (status:boolean)=>void;
-  subItems?: Array<{
-    link: string;
-    icon: string;
-    text: string;
-  }>;
+  subItems?: NavItem[];
 };
 
 function SidebarNav(props: propsType) {
@@ -81,11 +84,15 @@ function SidebarNav(props: propsType) {
                 }`
               }
             >
-              <img
-                className="w-5 h-5"
-                src={item.icon}
-                alt={`${item.text} icon`}
-              />
+              {typeof item.icon === 'string' ? (
+                <img
+                  className="w-5 h-5"
+                  src={item.icon}
+                  alt={`${item.text} icon`}
+                />
+              ) : (
+                item.icon
+              )}
               <p className="text-xs lg:text-sm font-poppins font-medium leading-3 sm:leading-tight">
                 {item.text}
               </p>

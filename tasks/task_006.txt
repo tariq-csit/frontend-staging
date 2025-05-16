@@ -1,0 +1,11 @@
+# Task ID: 6
+# Title: Implement Pentest Detail View
+# Status: pending
+# Dependencies: 5
+# Priority: high
+# Description: Create a detailed view for a specific pentest showing comprehensive information
+# Details:
+Develop a detailed view component for pentests showing basic information (name, type, dates, status, service), assets to be tested, testing credentials, additional notes, attachments, client information, and vulnerability count as specified in section 3.3.2. Use the API endpoint GET /api/pentester/assigned-pentests/:id to fetch detailed pentest data. Implement tabs or sections for organizing different types of information.
+
+# Test Strategy:
+Unit tests for pentest detail component. Integration tests with backend API. Test rendering of all pentest information sections. Test navigation between different information sections. Test handling of various data formats including attachments.

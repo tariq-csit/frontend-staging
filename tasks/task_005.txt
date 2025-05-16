@@ -1,0 +1,11 @@
+# Task ID: 5
+# Title: Develop Assigned Pentests List
+# Status: pending
+# Dependencies: 3
+# Priority: high
+# Description: Create a view to display all pentests assigned to the pentester with sorting and filtering capabilities
+# Details:
+Implement a table view for assigned pentests showing key information: name, type, status, dates, service, client as specified in section 3.3.1. Add sorting functionality for all columns. Implement filtering options by status, date range, and client. Use the API endpoint GET /api/pentester/assigned-pentests to fetch pentest data. Include pagination for efficient data loading.
+
+# Test Strategy:
+Unit tests for pentest list component. Integration tests with backend API. Test sorting functionality for each column. Test filtering with various criteria. Test pagination. Performance testing for large datasets.
