@@ -28,12 +28,6 @@ import Root from './components/Root';
 import { SidebarProvider } from './contexts/SidebarContext';
 import { usePageTitle } from './hooks/usePageTitle';
 
-// Pentester Dashboard Imports
-import PentesterLogin from './components/pentester/auth/Login';
-import PentesterLayout from './layouts/PentesterLayout';
-import ProtectedRoute from './components/pentester/auth/ProtectedRoute';
-import PentesterDashboard from './pages/pentester/Dashboard';
-
 function App() {
   const queryClient = new QueryClient();
   
@@ -45,7 +39,6 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <SidebarProvider>
           <Routes>
-            {/* Admin and Common Routes */}
             <Route path='/login' element={<Login />} />
             <Route path='/signup' element={<SignUp />} />
             <Route path='/forgot-password' element={<ForgotPassword />} />
@@ -76,17 +69,6 @@ function App() {
               <Route path='/pentesters' element={<PentestersList />} />
 
               <Route path='/settings' element={<Settings />} />
-            </Route>
-
-            {/* Pentester Dashboard Routes */}
-            <Route path='/pentester/login' element={<PentesterLogin />} />
-            
-            {/* Protected Pentester Routes */}
-            <Route path='/pentester' element={<ProtectedRoute />}>
-              <Route element={<PentesterLayout />}>
-                <Route path='dashboard' element={<PentesterDashboard />} />
-                {/* Additional pentester routes will be added here */}
-              </Route>
             </Route>
           </Routes>
           <Toaster />
