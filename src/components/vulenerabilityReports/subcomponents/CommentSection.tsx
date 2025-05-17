@@ -12,6 +12,7 @@ import axiosInstance from "@/lib/AxiosInstance"
 import { apiRoutes } from "@/lib/routes"
 import { useMutation } from "@tanstack/react-query"
 import { useToast } from "@/hooks/use-toast"
+import { useUser } from "@/hooks/useUser"
 
 interface File {
   name: string
@@ -56,10 +57,16 @@ export default function CommentBox({ pentestId, vulnerabilityId, refetch }: { pe
   const [comment, setComment] = useState("")
   const [isUploading, setIsUploading] = useState(false)
   const { toast } = useToast()
+  const { isPentester } = useUser()
 
   const { mutate: addComment, isPending: isSubmitting } = useMutation({
     mutationFn: (data: { comment: string, internal: boolean, attachments: File[] }) => 
-      axiosInstance.post(apiRoutes.pentests.vulnerabilities.comment(pentestId, vulnerabilityId), data),
+      axiosInstance.post(
+        isPentester() 
+          ? apiRoutes.pentester.vulnerabilities.comment(pentestId, vulnerabilityId) 
+          : apiRoutes.pentests.vulnerabilities.comment(pentestId, vulnerabilityId), 
+        data
+      ),
     onSuccess: () => {
       toast({
         title: "Success",

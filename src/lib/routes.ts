@@ -95,34 +95,20 @@ export const apiRoutes = {
     
     // Vulnerabilities
     vulnerabilities: {
-      create: (pentestId: string) => `/pentester/pentests/${pentestId}/vulnerabilities`,
+      create: (pentestId: string) => `/pentester/pentests/${pentestId}/vulnerability`,
       all: (pentestId: string) => `/pentester/pentests/${pentestId}/vulnerabilities`,
       details: (pentestId: string, vulnerabilityId: string) => `/pentester/pentests/${pentestId}/vulnerabilities/${vulnerabilityId}`,
-      update: (pentestId: string, vulnerabilityId: string) => `/pentester/pentests/${pentestId}/vulnerabilities/${vulnerabilityId}`,
-      delete: (pentestId: string, vulnerabilityId: string) => `/pentester/pentests/${pentestId}/vulnerabilities/${vulnerabilityId}`,
-      updateStatus: (pentestId: string, vulnerabilityId: string) => `/pentester/pentests/${pentestId}/vulnerabilities/${vulnerabilityId}/status`,
-      attachments: (pentestId: string, vulnerabilityId: string) => `/pentester/pentests/${pentestId}/vulnerabilities/${vulnerabilityId}/attachments`,
-    },
-    
-    // Reports
-    reports: {
-      generateDraft: (pentestId: string) => `/pentester/pentests/${pentestId}/reports/draft`,
-      submitForReview: (pentestId: string) => `/pentester/pentests/${pentestId}/reports/submit`,
-      getReport: (pentestId: string) => `/pentester/pentests/${pentestId}/reports`,
-      getRetestReport: (pentestId: string) => `/pentester/pentests/${pentestId}/retest-reports`,
-      uploadEvidence: (pentestId: string) => `/pentester/pentests/${pentestId}/evidence`,
+      update: (pentestId: string, vulnerabilityId: string) => `/pentester/pentests/${pentestId}/vulnerability/${vulnerabilityId}`,
+      delete: (pentestId: string, vulnerabilityId: string) => `/pentester/pentests/${pentestId}/vulnerability/${vulnerabilityId}`,
+      updateStatus: (pentestId: string, vulnerabilityId: string) => `/pentester/pentests/${pentestId}/vulnerability/${vulnerabilityId}/status`,
+      attachments: (pentestId: string, vulnerabilityId: string) => `/pentester/pentests/${pentestId}/vulnerability/${vulnerabilityId}/attachments`,
+      comment: (pentestId: string, vulnerabilityId: string) => `/pentester/pentests/${pentestId}/vulnerability/${vulnerabilityId}/comment`,
     },
     
     // Clients 
     assignedClients: `/pentester/assigned-clients`,
     clientDetails: (clientId: string) => `/pentester/assigned-clients/${clientId}`,
     
-    // Profile Management
-    profile: `/pentester/profile`,
-    updateProfile: `/pentester/profile/update`,
-    changePassword: `/pentester/profile/change-password`,
-    expertiseAreas: `/pentester/profile/expertise-areas`,
-    updateAvailability: `/pentester/profile/availability`,
   },
 
   // Upload Routes

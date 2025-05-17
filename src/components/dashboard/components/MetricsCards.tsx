@@ -76,12 +76,12 @@ const MetricsCards: React.FC<MetricsCardsProps> = ({
     return (
       <>
         {[1, 2, 3].map((i) => (
-          <div key={i} className="flex p-3 sm:p-5 lg:p-6 items-center sm:gap-6 flex-component rounded-component bg-white shadow-6">
+          <div key={i} className="flex p-2 sm:p-4 items-center sm:gap-6 flex-component rounded-component bg-white shadow-6">
             <div className="w-full flex justify-between items-center flex-component">
               <div className="flex items-center self-stretch justify-between gap-3 sm:gap-6">
-                <Skeleton className="w-10 sm:w-12 lg:w-14 h-10 sm:h-12 lg:h-[3.75rem] rounded-full" />
+                <Skeleton className="w-10 sm:w-12 lg:w-14 h-8 sm:h-10 lg:h-12 rounded-full" />
                 <div className="flex flex-col items-start gap-1">
-                  <Skeleton className="h-7 w-16" />
+                  <Skeleton className="h-4 w-16" />
                   <Skeleton className="h-4 w-24" />
                 </div>
               </div>
@@ -96,7 +96,7 @@ const MetricsCards: React.FC<MetricsCardsProps> = ({
   if (isPentester) {
     return (
       <>
-        <div className="bg-white p-4 rounded-component shadow-6 flex items-start">
+        <div className="bg-white p-4 rounded-component shadow-6 flex items-center">
           <div className="bg-red-50 w-12 h-12 rounded-full flex items-center justify-center mr-4">
             <Clock className="text-red-500" />
           </div>
@@ -111,7 +111,7 @@ const MetricsCards: React.FC<MetricsCardsProps> = ({
           <ChevronRight className="text-gray-400" />
         </div>
         
-        <div className="bg-white p-4 rounded-component shadow-6 flex items-start">
+        <div className="bg-white p-4 rounded-component shadow-6 flex items-center">
           <div className="bg-yellow-50 w-12 h-12 rounded-full flex items-center justify-center mr-4">
             <BarChart4 className="text-yellow-500" />
           </div>
@@ -126,7 +126,7 @@ const MetricsCards: React.FC<MetricsCardsProps> = ({
           <ChevronRight className="text-gray-400" />
         </div>
         
-        <div className="bg-white p-4 rounded-component shadow-6 flex items-start">
+        <div className="bg-white p-4 rounded-component shadow-6 flex items-center">
           <div className="bg-pink-50 w-12 h-12 rounded-full flex items-center justify-center mr-4">
             <svg className="w-6 h-6 text-pink-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>

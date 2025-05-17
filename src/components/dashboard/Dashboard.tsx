@@ -13,7 +13,7 @@ import {
 } from "./components";
 
 function DashboardHome() {
-  const { user } = useUser();
+  const { user, loading } = useUser();
   const isPentester = user?.role === 'pentester';
 
   // Admin dashboard data fetching
@@ -27,6 +27,7 @@ function DashboardHome() {
       const response = await axiosInstance.get(isPentester ? apiRoutes.pentester.dashboard : apiRoutes.dashboard);
       return response.data;
     },
+    enabled: !loading 
   });
 
   console.log(dashboardData);
@@ -41,6 +42,8 @@ function DashboardHome() {
   const isPentesterData = (data: AdminMetrics | PentesterMetrics | undefined): data is PentesterMetrics => {
     return isPentester && data !== undefined;
   };
+
+  if (loading) return null
 
   return (
     <div className="flex flex-col gap-6 flex-component self-stretch w-full">
