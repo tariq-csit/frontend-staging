@@ -87,9 +87,10 @@ export const apiRoutes = {
     assignedPentests: `/pentester/assigned-pentests`,
     pendingPentests: `/pentester/pending-pentests`,
     completedPentests: `/pentester/completed-pentests`,
+
     
     // Single Pentest Management
-    pentestDetails: (pentestId: string) => `/pentester/pentests/${pentestId}`,
+    pentestDetails: (pentestId: string) => `/pentester/assigned-pentests/${pentestId}`,
     updatePentestStatus: (pentestId: string) => `/pentester/pentests/${pentestId}/status`,
     
     // Vulnerabilities
@@ -114,7 +115,7 @@ export const apiRoutes = {
     
     // Clients 
     assignedClients: `/pentester/assigned-clients`,
-    clientDetails: (clientId: string) => `/pentester/clients/${clientId}`,
+    clientDetails: (clientId: string) => `/pentester/assigned-clients/${clientId}`,
     
     // Profile Management
     profile: `/pentester/profile`,

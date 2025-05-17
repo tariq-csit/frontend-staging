@@ -1,5 +1,5 @@
 import './App.css'
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import ClientLists from './components/clientLists/ClientLists';
 import DashboardHome from '@/components/dashboard/Dashboard';
@@ -24,8 +24,6 @@ import RetestReport from '@/components/pentests/managePentest/RetestReport';
 import { Toaster } from './components/ui/toaster';
 import { SidebarProvider } from './contexts/SidebarContext';
 import { usePageTitle } from './hooks/usePageTitle';
-import RouteGuard from './components/RouteGuard';
-import { UserRole } from './hooks/useUser';
 import ReportsForm from '@/components/vulenerabilityReports/subcomponents/VulnerabilityReportForm';
 import { ThemeProvider } from './components/theme-provider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
