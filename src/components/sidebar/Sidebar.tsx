@@ -72,11 +72,6 @@ function Sidebar(props: {
       text: "Vulnerability Reports",
       icon: "/state=reports.svg",
     },
-    {
-      link: "/clients",
-      text: "Assigned Clients",
-      icon: "/state=clients.svg",
-    },
   ];
 
   // Client navigation items

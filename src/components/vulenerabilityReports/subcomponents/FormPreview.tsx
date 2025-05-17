@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator"
 import { useSidebar } from "@/contexts/SidebarContext"
 import VulnerabilitySeverityBadge from "./VulnerabilitySeverityBadge"
 import VulnerabilityStatusBadge from "./VulnerabilityStatusBadge"
+import { useUser } from "@/hooks/useUser"
 
 interface StatusOption {
   value: string
@@ -28,23 +29,26 @@ interface StatusOption {
 function VulnerabilityView() {
   const { pentestId, vulnerabilityId } = useParams<{ pentestId: string; vulnerabilityId: string }>()
   const navigate = useNavigate()
+  const { isPentester, loading } = useUser();
 
   const { data: vulnerability, refetch: refetchVulnerability, isLoading: isLoadingVulnerability } = useQuery({
     queryKey: ["pentest", pentestId, "vulnerability", vulnerabilityId],
     queryFn: () =>
       axiosInstance
-        .get<Vulnerability>(apiRoutes.pentests.vulnerabilities.details(pentestId!, vulnerabilityId!))
+        .get<Vulnerability>(isPentester() ? apiRoutes.pentester.vulnerabilities.details(pentestId!, vulnerabilityId!) : apiRoutes.pentests.vulnerabilities.details(pentestId!, vulnerabilityId!))
         .then((res) => res.data),
+    enabled: !loading 
   })
 
   const { data: pentest, isLoading: isLoadingPentest } = useQuery({
     queryKey: ["pentest", pentestId],
-    queryFn: () => axiosInstance.get<Pentest>(apiRoutes.pentests.details(pentestId!)).then((res) => res.data),
+    queryFn: () => axiosInstance.get<Pentest>(isPentester() ? apiRoutes.pentester.pentestDetails(pentestId!) : apiRoutes.pentests.details(pentestId!)).then((res) => res.data),
+    enabled: !loading 
   })
 
   const { mutate: updateVulnerabilityStatus, isPending: isUpdatingVulnerabilityStatus } = useMutation({
     mutationFn: (status: string) =>
-      axiosInstance.patch(apiRoutes.pentests.vulnerabilities.status(pentestId!, vulnerabilityId!), {
+      axiosInstance.patch(isPentester() ? apiRoutes.pentester.vulnerabilities.updateStatus(pentestId!, vulnerabilityId!) : apiRoutes.pentests.vulnerabilities.status(pentestId!, vulnerabilityId!), {
         status: status,
       }),
     onSuccess: () => {
@@ -57,7 +61,7 @@ function VulnerabilityView() {
   })
 
   const { mutate: deleteVulnerability } = useMutation({
-    mutationFn: () => axiosInstance.delete(apiRoutes.pentests.vulnerabilities.details(pentestId!, vulnerabilityId!)),
+    mutationFn: () => axiosInstance.delete(isPentester() ? apiRoutes.pentester.vulnerabilities.delete(pentestId!, vulnerabilityId!) : apiRoutes.pentests.vulnerabilities.details(pentestId!, vulnerabilityId!)),
     onSuccess: () => {
       navigate(`/vulnerability-reports/${pentestId}`)
       toast({
@@ -450,7 +454,7 @@ function VulnerabilityView() {
             <Separator className="my-6" />
 
             {/* Action buttons */}
-            <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="grid grid-flow-col gap-4 mb-4">
               <Button
                 variant="outline"
                 className="border-[#4a3a9c] text-[#4a3a9c] hover:bg-[#f0eeff] flex items-center justify-center gap-2 text-sm lg:text-base"
@@ -459,6 +463,7 @@ function VulnerabilityView() {
                 <Edit className="h-4 w-4 lg:h-5 lg:w-5" />
                 Edit
               </Button>
+              {!isPentester() && (
               <Button
                 variant="outline"
                 className="border-[#9c3a3a] text-[#9c3a3a] hover:bg-[#ffeeee] flex items-center justify-center gap-2 text-sm lg:text-base"
@@ -473,6 +478,7 @@ function VulnerabilityView() {
                 <Trash2 className="h-4 w-4 lg:h-5 lg:w-5" />
                 Delete
               </Button>
+              )}
             </div>
 
             <Link to={`/vulnerability-reports/${pentestId}`}>
