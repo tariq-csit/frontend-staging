@@ -1,3 +1,5 @@
+import { Pentest } from "@/types/types";
+
 export interface VulnerabilityCounts {
   Critical: number;
   High: number;
@@ -34,3 +36,15 @@ export interface AdminMetrics {
   Scheduled: number;
   VulnerabilitiesByMonth: Array<{ month: number; count: number }>;
 } 
+
+export interface ClientMetrics {
+  ongoingPentests: number;
+  scheduledPentests: number;
+  totalVulnerabilities: number;
+  vulnerabilitiesByMonth: Array<{
+    count: number;
+    month: number;
+    year: number;
+  }>;
+  pentests: Pentest[];
+}

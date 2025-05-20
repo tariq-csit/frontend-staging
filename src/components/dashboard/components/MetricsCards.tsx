@@ -16,18 +16,27 @@ interface AdminMetrics {
   Scheduled: number;
 }
 
+interface ClientMetrics {
+  ongoingPentests: number;
+  scheduledPentests: number;
+  totalVulnerabilities: number;
+}
 interface MetricsCardsProps {
   isPentester: boolean;
+  isClient?: boolean;
   isLoading: boolean;
   pentesterData?: PentesterMetrics;
   adminData?: AdminMetrics;
+  clientData?: ClientMetrics;
 }
 
 const MetricsCards: React.FC<MetricsCardsProps> = ({
   isPentester,
+  isClient,
   isLoading,
   pentesterData,
   adminData,
+  clientData,
 }) => {
   // Spring animations for metrics
   const adminAnimatedValues = {
@@ -35,19 +44,19 @@ const MetricsCards: React.FC<MetricsCardsProps> = ({
       from: { number: 0 },
       number: adminData?.TotalClients || 0,
       config: { mass: 1, tension: 20, friction: 10 },
-      immediate: isPentester,
+      immediate: isPentester || isClient,
     }),
     ongoing: useSpring({
       from: { number: 0 },
       number: adminData?.Ongoing || 0,
       config: { mass: 1, tension: 20, friction: 10 },
-      immediate: isPentester,
+      immediate: isPentester || isClient,
     }),
     scheduled: useSpring({
       from: { number: 0 },
       number: adminData?.Scheduled || 0,
       config: { mass: 1, tension: 20, friction: 10 },
-      immediate: isPentester,
+      immediate: isPentester || isClient,
     }),
   };
 
@@ -69,6 +78,27 @@ const MetricsCards: React.FC<MetricsCardsProps> = ({
       number: parseFloat(pentesterData?.average_cvss_score || "0"),
       config: { mass: 1, tension: 20, friction: 10 },
       immediate: !isPentester,
+    }),
+  };
+
+  const clientAnimatedValues = {
+    ongoingPentests: useSpring({
+      from: { number: 0 },
+      number: clientData?.ongoingPentests || 0,
+      config: { mass: 1, tension: 20, friction: 10 },
+      immediate: !isClient,
+    }),
+    scheduledPentests: useSpring({
+      from: { number: 0 },
+      number: clientData?.scheduledPentests || 0,
+      config: { mass: 1, tension: 20, friction: 10 },
+      immediate: !isClient,
+    }),
+    totalVulnerabilities: useSpring({
+      from: { number: 0 },
+      number: clientData?.totalVulnerabilities || 0,
+      config: { mass: 1, tension: 20, friction: 10 },
+      immediate: !isClient,
     }),
   };
 
@@ -142,6 +172,48 @@ const MetricsCards: React.FC<MetricsCardsProps> = ({
             <div className="text-sm text-gray-600">Average CVSS Score</div>
           </div>
           <ChevronRight className="text-gray-400" />
+        </div>
+      </>
+    );
+  }
+
+  else if (isClient) {
+    return (
+      <>
+        <div>
+          <Bugs 
+            icon="/Ongoing.svg" 
+            num={clientData?.ongoingPentests || 0} 
+            text="Ongoing Pentests" 
+          >
+            <animated.span>
+              {clientAnimatedValues.ongoingPentests.number.to((n: number) => Math.floor(n))}
+            </animated.span>
+          </Bugs>
+        </div>
+
+        <div>
+          <Bugs 
+            icon="/Shecduled.svg" 
+            num={clientData?.scheduledPentests || 0} 
+            text="Scheduled Pentests" 
+          >
+            <animated.span>
+              {clientAnimatedValues.scheduledPentests.number.to((n: number) => Math.floor(n))}
+            </animated.span>
+          </Bugs>
+        </div>
+
+        <div>
+          <Bugs 
+            icon="/Bug.svg" 
+            num={clientData?.totalVulnerabilities || 0} 
+            text="Total Vulnerabilities" 
+          >
+            <animated.span>
+              {clientAnimatedValues.totalVulnerabilities.number.to((n: number) => Math.floor(n))}
+            </animated.span>
+          </Bugs>
         </div>
       </>
     );

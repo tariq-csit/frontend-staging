@@ -111,6 +111,55 @@ export const apiRoutes = {
     
   },
 
+  // Client Dashboard Routes
+  client: {
+    // Dashboard
+    dashboard: `/clients/dashboard`,
+    latestActivities: `/clients/latest-activities`,
+    
+    // Organization/Client Info
+    organization: `/clients/organization`,
+    
+    // Pentests
+    pentests: {
+      all: `/clients/pentests/all`,
+      details: (pentestId: string) => `/clients/pentests/${pentestId}`,
+      schedule: `/clients/pentests/schedule`,
+      vulnerabilities: {
+        all: (pentestId: string) => `/clients/pentests/${pentestId}/vulnerabilities`,
+        details: (pentestId: string, vulnerabilityId: string) => `/clients/pentests/${pentestId}/vulnerabilities/${vulnerabilityId}`,
+        status: (pentestId: string, vulnerabilityId: string) => `/clients/pentests/${pentestId}/vulnerability/${vulnerabilityId}/status`,
+        comment: (pentestId: string, vulnerabilityId: string) => `/clients/pentests/${pentestId}/vulnerability/${vulnerabilityId}/comment`,
+      },
+      // Reports
+      reports: {
+        getPentestReport: (pentestId: string) => `/clients/pentests/${pentestId}/pentest-report`,
+        getRetestReport: (pentestId: string) => `/clients/pentests/${pentestId}/retest-report`,
+        requestReportPassword: (pentestId: string) => `/clients/pentests/${pentestId}/request-report-password`,
+        requestRetestPassword: (pentestId: string) => `/clients/pentests/${pentestId}/request-retest-password`,
+        // Report Comments
+        addPentestReportComment: (pentestId: string) => `/clients/pentests/${pentestId}/pentest-report/comments`,
+        getPentestReportComments: (pentestId: string) => `/clients/pentests/${pentestId}/pentest-report/comments`,
+        addRetestReportComment: (pentestId: string) => `/clients/pentests/${pentestId}/retest-report/comments`,
+        getRetestReportComments: (pentestId: string) => `/clients/pentests/${pentestId}/retest-report/comments`,
+      },
+    },
+    
+    // Pentest Requests
+    pentestRequests: {
+      all: `/clients/pentest-requests`,
+      details: (requestId: string) => `/clients/pentest-requests/${requestId}`,
+    },
+    
+    // Team Management
+    team: {
+      all: `/clients/users`,
+      details: (userId: string) => `/clients/users/${userId}`,
+      add: `/clients/users`,
+      remove: (userId: string) => `/clients/users/${userId}`,
+    },
+  },
+
   // Upload Routes
   uploadLogo: `/upload/company-logo`,
   uploadProfilePicture: `/upload/profile-picture`,
