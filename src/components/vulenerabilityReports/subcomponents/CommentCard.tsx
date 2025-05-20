@@ -38,7 +38,7 @@ export default function CommentCard({ author, content, createdAt, internal = fal
             </Avatar>
           </div>
           <div className="flex items-center gap-2">
-            <span className="font-medium text-gray-900 break-words whitespace-pre-wrap">{author.name}</span>
+            <span className="font-medium text-gray-900 truncate max-w-48">{author.name}</span>
             {internal && <span className="px-3 py-1 text-xs bg-[#a78bfa] text-white rounded-full">Internal</span>}
           </div>
         </div>
