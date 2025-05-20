@@ -1,0 +1,7 @@
+/*
+  Access-Control-Allow-Origin: https://lhe-slash.securitywall.co
+  X-Frame-Options: SAMEORIGIN
+  Content-Security-Policy: frame-ancestors https://lhe-slash.securitywall.co
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+  X-Robots-Tag: noindex
