@@ -29,7 +29,7 @@ interface StatusOption {
 function VulnerabilityView() {
   const { pentestId, vulnerabilityId } = useParams<{ pentestId: string; vulnerabilityId: string }>()
   const navigate = useNavigate()
-  const { isPentester, loading } = useUser();
+  const { isPentester, loading, user } = useUser();
 
   const { data: vulnerability, refetch: refetchVulnerability, isLoading: isLoadingVulnerability } = useQuery({
     queryKey: ["pentest", pentestId, "vulnerability", vulnerabilityId],
@@ -70,6 +70,17 @@ function VulnerabilityView() {
       })
     },
   })
+
+  // Check if current user is the reporter of this vulnerability
+  const isReporter = () => {
+    if (!vulnerability || !user) return false;
+    console.log("vulnerability", vulnerability)
+    // Check if reporter exists and is an array
+    if (!vulnerability.reporter) return false;
+    console.log("reporter", vulnerability.reporter)
+    // Check if the current user's ID is in the reporter array
+    return vulnerability.reporter._id === user._id
+  };
 
   const statusOptions: StatusOption[] = [
     { 
@@ -338,11 +349,11 @@ function VulnerabilityView() {
                   </div>
                 </div>
               </div>
-              <div className="flex justify-between">
+              <div className="flex flex-col gap-2">
               <p className="text-gray-700 mt-4 break-words whitespace-pre-wrap">
                 {displayVulnerability.cvssVector}
               </p>
-              <p>CVSS Score: {displayVulnerability.cvss}</p>
+              <p className="font-bold">CVSS Score: <span className="font-normal">{displayVulnerability.cvss}</span></p>
               </div>
             </CardContent>
           </Card>
@@ -387,26 +398,6 @@ function VulnerabilityView() {
           <div className="lg:fixed lg:w-[inherit] max-w-[400px] bg-white rounded-lg shadow-sm p-6 top-10">
             {/* Header with logo and title */}
             <div className="flex items-center gap-4 mb-6">
-              {/* <div className="w-16 h-16 lg:w-24 lg:h-24 rounded-full bg-[#f2f9e8] flex items-center justify-center">
-                <div className="relative">
-                  <div className="w-8 h-8 lg:w-12 lg:h-12 rounded-full bg-[#a5d86a] flex items-center justify-center">
-                    <Lock className="text-white w-4 h-4 lg:w-6 lg:h-6" />
-                  </div>
-                  <div className="absolute inset-0 w-full h-full">
-                    <svg width="100%" height="100%" viewBox="0 0 100 100">
-                      <circle
-                        cx="50"
-                        cy="50"
-                        r="45"
-                        fill="none"
-                        stroke="#6bbbf7"
-                        strokeWidth="2"
-                        strokeDasharray="10 5"
-                      />
-                    </svg>
-                  </div>
-                </div>
-              </div> */}
               <h1 className="text-xl lg:text-3xl font-bold text-[#1a1a2e] break-words">{displayPentest.name}</h1>
             </div>
 
@@ -455,14 +446,17 @@ function VulnerabilityView() {
 
             {/* Action buttons */}
             <div className="grid grid-flow-col gap-4 mb-4">
-              <Button
-                variant="outline"
-                className="border-[#4a3a9c] text-[#4a3a9c] hover:bg-[#f0eeff] flex items-center justify-center gap-2 text-sm lg:text-base"
-                onClick={() => navigate(`/vulnerability-reports/${pentestId}/vulnerabilities/${vulnerabilityId}/edit`)}
-              >
-                <Edit className="h-4 w-4 lg:h-5 lg:w-5" />
-                Edit
-              </Button>
+              {/* Only show Edit button if current user is the reporter or not a pentester (admin) */}
+              {(isReporter()) && (
+                <Button
+                  variant="outline"
+                  className="border-[#4a3a9c] text-[#4a3a9c] hover:bg-[#f0eeff] flex items-center justify-center gap-2 text-sm lg:text-base"
+                  onClick={() => navigate(`/vulnerability-reports/${pentestId}/vulnerabilities/${vulnerabilityId}/edit`)}
+                >
+                  <Edit className="h-4 w-4 lg:h-5 lg:w-5" />
+                  Edit
+                </Button>
+              )}
               {!isPentester() && (
               <Button
                 variant="outline"

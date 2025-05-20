@@ -12,6 +12,7 @@ import { Loader2, PlusIcon } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { FileUpload } from "@/components/FileUpload";
+import { toast } from "@/hooks/use-toast";
 
 interface UploadResponse {
   url: string;
@@ -26,6 +27,7 @@ const formSchema = z.object({
 export default function AddClientDialog({refetch}: {refetch: () => void}) {
   const [open, setOpen] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -48,13 +50,21 @@ export default function AddClientDialog({refetch}: {refetch: () => void}) {
     onSuccess: () => {
       // refetch the clients list
       refetch();
+      toast({
+        title: "Client added successfully",
+        description: "The client has been added successfully",
+      })
       form.reset();
       setOpen(false);
+    },
+    onError: (error) => {
+      console.error('Error during client creation:', error);
     }
   })
 
   const {mutate: uploadLogo} = useMutation({
     mutationFn: async (file: File) => {
+      setIsUploadingLogo(true);
       const formData = new FormData();
       formData.append("logo", file);
       const response = await axiosInstance.post(apiRoutes.uploadLogo, formData, {
@@ -66,9 +76,15 @@ export default function AddClientDialog({refetch}: {refetch: () => void}) {
     },
     onSuccess: (data) => {
       form.setValue("uploadLogo", data.url);
+      toast({
+        title: "Logo uploaded successfully",
+        description: "The logo has been uploaded successfully",
+      })
+      setIsUploadingLogo(false);
     },
     onError: (error) => {
       console.error('Error uploading logo:', error);
+      setIsUploadingLogo(false);
     }
   });
 
@@ -147,7 +163,6 @@ export default function AddClientDialog({refetch}: {refetch: () => void}) {
                           field.onChange("");
                         }
                       }}
-                      maxFiles={1}
                       maxSize={5 * 1024 * 1024} // 5MB
                       acceptedTypes={{
                         'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.svg']
@@ -168,8 +183,9 @@ export default function AddClientDialog({refetch}: {refetch: () => void}) {
               Cancel
             </Button>
           </DialogClose>
-          <Button type="submit" onClick={form.handleSubmit(onSubmit)} disabled={isAddingClient}>
-            {isAddingClient ? (<><Loader2 className="w-4 h-4 animate-spin" /><span>Adding Client...</span></>) : "Add Client"}
+          <Button type="submit" onClick={form.handleSubmit(onSubmit)} disabled={isAddingClient || isUploadingLogo}>
+            {isAddingClient ? (<><Loader2 className="w-4 h-4 animate-spin" /><span>Adding Client...</span></>) : 
+              isUploadingLogo ? (<><Loader2 className="w-4 h-4 animate-spin" /><span>Uploading Logo...</span></>) : "Add Client"}
           </Button>
         </DialogFooter>
       </DialogContent>

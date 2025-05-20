@@ -1,5 +1,5 @@
 import './App.css'
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import ClientLists from './components/clientLists/ClientLists';
 import DashboardHome from '@/components/dashboard/Dashboard';
@@ -27,6 +27,31 @@ import { usePageTitle } from './hooks/usePageTitle';
 import ReportsForm from '@/components/vulenerabilityReports/subcomponents/VulnerabilityReportForm';
 import { ThemeProvider } from './components/theme-provider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useUser } from './hooks/useUser';
+import { ReactNode } from 'react';
+import { toast } from './hooks/use-toast';
+
+// Component that only allows admin users to access a route
+const AdminProtectedRoute = ({ children }: { children: ReactNode }) => {
+  const { user, loading, isPentester } = useUser();
+  
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+  
+  // If user is a pentester, redirect back and show a toast
+  if (isPentester()) {
+    toast({
+      title: "You are not authorized to access this page",
+      description: "Please contact your administrator",
+      variant: "destructive",
+    })
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  // Otherwise render the children (the protected component)
+  return <>{children}</>;
+};
 
 function App() {
   usePageTitle('Slash - Security Dashboard');
@@ -46,7 +71,11 @@ function App() {
 
               <Route path='/pentests' element={<PentestsList />} />
               <Route path='/pentests/:pentestId/' element={<PentestDetails />} />
-              <Route path='/pentests/:pentestId/edit' element={<NewPentestsForm />} />
+              <Route path='/pentests/:pentestId/edit' element={
+                <AdminProtectedRoute>
+                  <NewPentestsForm />
+                </AdminProtectedRoute>
+              } />
               <Route path='/pentests/:pentestId/vulnerabilities' element={<VulnerabilitiesInPentest />} />
               <Route path='/pentests/create' element={<NewPentestsForm />} />
 
