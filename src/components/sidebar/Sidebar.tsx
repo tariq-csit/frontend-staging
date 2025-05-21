@@ -1,7 +1,7 @@
 import leftArrow from "/chevron-left.svg";
 import SidebarNav, { NavItem } from "./SidebarNav";
 import setting from "/tage=setting.svg";
-import { LogOut } from "lucide-react";
+import { LogOut, Network, Users } from "lucide-react";
 import largeLogo from "/logo-large.png";
 import smallLogo from "/logo-small.png";
 import ProfileNav from "./ProfileNav";
@@ -83,13 +83,23 @@ function Sidebar(props: {
     },
     {
       link: "/pentests",
-      text: "My Pentests",
+      text: "Pentests",
       icon: "/state=pentests.svg",
     },
     {
       link: "/vulnerability-reports",
       text: "Vulnerability Reports",
       icon: "/state=reports.svg",
+    },
+    {
+      link: "/integration",
+      text: "Integration",
+      icon: <Network className="w-6 h-6 text-gray-500" />,
+    },
+    {
+      link: "/my-team",
+      text: "My Team",
+      icon: <Users className="w-6 h-6 text-gray-500" />,
     },
   ];
 

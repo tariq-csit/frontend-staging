@@ -188,7 +188,7 @@ export interface PentestRequest {
 export interface RequestedPentest {
   id?: string;  // For list view
   _id?: string;  // For detail view
-  title: string;
+  name: string;
   type?: string;
   startDate?: string;
   endDate?: string;
