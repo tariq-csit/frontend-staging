@@ -19,39 +19,36 @@ interface File {
   url: string
 }
 
-async function uploadFiles(files: FileList): Promise<Array<{url: string, name: string}>> {
-  const uploadPromises = Array.from(files).map(async (file) => {
+async function uploadFiles(files: FileList): Promise<File[]> {
+  const uploadedFiles: File[] = [];
+  
+  for (let i = 0; i < files.length; i++) {
     const formData = new FormData();
-    formData.append('attachment', file);
-
-    try {
-      const response = await axiosInstance.post(apiRoutes.uploadVulnerabilityAttachment, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          
-        },
-      });
-      const fileData = response.data;
-      return {
-        url: fileData.url,
-        name: fileData.name
-      };
-    } catch (error) {
-      console.error(`Error uploading file ${file.name}:`, error);
-      throw error;
-    }
-  });
-
-  try {
-    const results = await Promise.all(uploadPromises);
-    return results;
-  } catch (error) {
-    console.error('Error in batch file upload:', error);
-    throw error;
+    formData.append('attachment', files[i]);
+    
+    const response = await axiosInstance.post(apiRoutes.uploadVulnerabilityAttachment, formData);
+    const data = response.data;
+    
+    uploadedFiles.push({
+      name: data.name,
+      url: data.url
+    });
   }
+  
+  return uploadedFiles;
 }
 
-export default function CommentBox({ pentestId, vulnerabilityId, refetch }: { pentestId: string, vulnerabilityId: string, refetch: () => void }) {
+export default function CommentBox({ 
+  pentestId, 
+  vulnerabilityId, 
+  refetch, 
+  isClient = false 
+}: { 
+  pentestId: string, 
+  vulnerabilityId: string, 
+  refetch: () => void,
+  isClient?: boolean 
+}) {
   const [isInternal, setIsInternal] = useState(false)
   const [files, setFiles] = useState<File[]>([])
   const [comment, setComment] = useState("")
@@ -60,13 +57,15 @@ export default function CommentBox({ pentestId, vulnerabilityId, refetch }: { pe
   const { isPentester } = useUser()
 
   const { mutate: addComment, isPending: isSubmitting } = useMutation({
-    mutationFn: (data: { comment: string, internal: boolean, attachments: File[] }) => 
-      axiosInstance.post(
-        isPentester() 
-          ? apiRoutes.pentester.vulnerabilities.comment(pentestId, vulnerabilityId) 
-          : apiRoutes.pentests.vulnerabilities.comment(pentestId, vulnerabilityId), 
-        data
-      ),
+    mutationFn: (data: { comment: string, internal: boolean, attachments: File[] }) => {
+      if (isClient) {
+        return axiosInstance.post(apiRoutes.client.pentests.vulnerabilities.comment(pentestId, vulnerabilityId), data);
+      } else if (isPentester()) {
+        return axiosInstance.post(apiRoutes.pentester.vulnerabilities.comment(pentestId, vulnerabilityId), data);
+      } else {
+        return axiosInstance.post(apiRoutes.pentests.vulnerabilities.comment(pentestId, vulnerabilityId), data);
+      }
+    },
     onSuccess: () => {
       toast({
         title: "Success",

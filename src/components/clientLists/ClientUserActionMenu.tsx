@@ -13,9 +13,10 @@ import type { ClientUser } from "@/types/types"
 interface ClientUserActionMenuProps {
   user: ClientUser
   refetch: () => void
+  isClientView?: boolean
 }
 
-export default function ClientUserActionMenu({ user, refetch }: ClientUserActionMenuProps) {
+export default function ClientUserActionMenu({ user, refetch, isClientView = false }: ClientUserActionMenuProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [showReset2FADialog, setShowReset2FADialog] = useState(false)
@@ -74,6 +75,7 @@ export default function ClientUserActionMenu({ user, refetch }: ClientUserAction
         refetch={refetch}
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
+        isClientView={isClientView}
       />
 
       <ClientUserEditDialog 
@@ -81,6 +83,7 @@ export default function ClientUserActionMenu({ user, refetch }: ClientUserAction
         refetch={refetch} 
         open={showEditDialog} 
         onOpenChange={setShowEditDialog} 
+        isClientView={isClientView}
       />
 
       <ClientUserReset2FADialog

@@ -16,33 +16,44 @@ import {
 } from "@/components/ui/dialog"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useUser } from "@/hooks/useUser"
 
 interface ClientUserDeactivateDialogProps {
   user: ClientUser
   refetch: () => void
   open: boolean
   onOpenChange: Dispatch<SetStateAction<boolean>>
+  isClientView?: boolean
 }
 
-export default function ClientUserDeactivateDialog({ user, refetch, open, onOpenChange }: ClientUserDeactivateDialogProps) {
+export default function ClientUserDeactivateDialog({ user, refetch, open, onOpenChange, isClientView = false }: ClientUserDeactivateDialogProps) {
+  const { isClient } = useUser();
+
   const { mutate: deactivateUser, isPending } = useMutation({
     mutationFn: async () => {
-      await axiosInstance.patch(apiRoutes.clientUsers.deactivate(user._id), {
+      // Use the client-specific endpoint if the user is a client
+      const endpoint = isClient() 
+        ? apiRoutes.client.team.deactivate(user._id)
+        : apiRoutes.clientUsers.deactivate(user._id);
+      
+      await axiosInstance.patch(endpoint, {
         isActive: !user.isActive
       })
     },
     onSuccess: () => {
       refetch()
       toast({
-        title: "User Deactivated",
-        description: `${user.name} has been deactivated successfully.`,
+        title: user.isActive 
+          ? (isClientView ? "Team Member Deactivated" : "User Deactivated")
+          : (isClientView ? "Team Member Activated" : "User Activated"),
+        description: `${user.name} has been ${user.isActive ? "deactivated" : "activated"} successfully.`,
       })
       onOpenChange(false)
     },
     onError: () => {
       toast({
         title: "Error",
-        description: "Failed to deactivate user. Please try again.",
+        description: `Failed to ${user.isActive ? "deactivate" : "activate"} ${isClientView ? "team member" : "user"}. Please try again.`,
         variant: "destructive",
       })
     }
@@ -52,9 +63,15 @@ export default function ClientUserDeactivateDialog({ user, refetch, open, onOpen
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Deactivate User</DialogTitle>
+          <DialogTitle>
+            {user.isActive 
+              ? (isClientView ? "Deactivate Team Member" : "Deactivate User")
+              : (isClientView ? "Activate Team Member" : "Activate User")
+            }
+          </DialogTitle>
           <DialogDescription>
-            Are you sure you want to deactivate {user.name}? They will no longer be able to access the system.
+            Are you sure you want to {user.isActive ? "deactivate" : "activate"} {isClientView ? "team member" : "user"} {user.name}? 
+            {user.isActive ? " They will no longer be able to access the system." : " They will regain access to the system."}
           </DialogDescription>
         </DialogHeader>
 
@@ -72,7 +89,9 @@ export default function ClientUserDeactivateDialog({ user, refetch, open, onOpen
                 {user.isActive ? "Deactivating..." : "Activating..."}
               </>
             ) : (
-              user.isActive ? "Deactivate User" : "Activate User"
+              user.isActive 
+                ? (isClientView ? "Deactivate Team Member" : "Deactivate User") 
+                : (isClientView ? "Activate Team Member" : "Activate User")
             )}
           </Button>
         </DialogFooter>

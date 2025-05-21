@@ -5,6 +5,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import VulnerabilitySeverityBadge from "./VulnerabilitySeverityBadge"
 import VulnerabilityStatusBadge from "./VulnerabilityStatusBadge"
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
 
 function VulnerabilityItemSkeleton() {
   return (
@@ -49,9 +51,10 @@ interface VulnerabilitiesListProps {
   vulnerabilities: Vulnerability[]
   pentestId: string
   isLoading?: boolean
+  isClientView?: boolean
 }
 
-function VulnerabilitiesList({ vulnerabilities, pentestId, isLoading }: VulnerabilitiesListProps) {
+function VulnerabilitiesList({ vulnerabilities, pentestId, isLoading, isClientView = false }: VulnerabilitiesListProps) {
   const containerClasses = "flex flex-col overflow-x-auto justify-between gap-6 w-full font-poppins";
   const listClasses = "flex flex-col gap-4";
 
@@ -67,9 +70,19 @@ function VulnerabilitiesList({ vulnerabilities, pentestId, isLoading }: Vulnerab
     )
   }
 
-
   return (
     <div className={containerClasses}>
+      {!isClientView && (
+        <div className="flex justify-end mb-4">
+          <Link to={`/vulnerability-reports/${pentestId}/vulnerabilities/add`}>
+            <Button className="flex items-center gap-2">
+              <PlusCircle className="h-4 w-4" />
+              Add New Vulnerability
+            </Button>
+          </Link>
+        </div>
+      )}
+
       <div className={listClasses}>
         {vulnerabilities?.map((vulnerability, i) => (
           <div key={i} className="border-inputBorder p-4 grid grid-cols-9 items-center gap-8 border rounded-md min-w-[1000px]">

@@ -18,8 +18,16 @@ import { toast } from "@/hooks/use-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Loader2 } from "lucide-react"
 import { FileUpload } from "@/components/FileUpload"
+import { useUser } from "@/hooks/useUser"
 
-const formSchema = z.object({
+// Different schemas for client and admin users
+const clientFormSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+  profilePicture: z.string().optional(),
+})
+
+const adminFormSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
   client: z.string().min(1),
@@ -31,27 +39,41 @@ interface ClientUserEditDialogProps {
   refetch: () => void
   open: boolean
   onOpenChange: Dispatch<SetStateAction<boolean>>
+  isClientView?: boolean
 }
 
 interface UploadResponse {
   url: string;
 }
 
-export default function ClientUserEditDialog({ user, refetch, open, onOpenChange }: ClientUserEditDialogProps) {
+export default function ClientUserEditDialog({ user, refetch, open, onOpenChange, isClientView = false }: ClientUserEditDialogProps) {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const { isClient } = useUser();
+  
+  // Use the appropriate schema based on user role
+  const formSchema = isClient() ? clientFormSchema : adminFormSchema;
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: user.name,
-      email: user.email,
-      client: user.clients[0]._id,
-      profilePicture: user.profilePicture || "",
-    },
+    defaultValues: isClient()
+      ? {
+          name: user.name,
+          email: user.email,
+          profilePicture: user.profilePicture || "",
+        }
+      : {
+          name: user.name,
+          email: user.email,
+          client: user.clients[0]._id,
+          profilePicture: user.profilePicture || "",
+        },
   })
 
+  // Only fetch clients for admin users
   const { data: clients } = useQuery({
     queryKey: ["clients"],
     queryFn: () => axiosInstance.get(apiRoutes.clients.all).then((res) => res.data),
+    enabled: !isClient(), // Only fetch if user is not a client
   })
 
   const { mutate: uploadProfilePicture } = useMutation({
@@ -74,19 +96,33 @@ export default function ClientUserEditDialog({ user, refetch, open, onOpenChange
   })
 
   const { mutate: updateUser, isPending } = useMutation({
-    mutationFn: async (values: z.infer<typeof formSchema>) => {
-      const res = await axiosInstance.put(apiRoutes.clientUsers.detail(user._id), {
-        name: values.name,
-        email: values.email,
-        profilePicture: values.profilePicture,
-        clientId: values.client,
-      })
+    mutationFn: async (values: any) => {
+      // Use the client-specific endpoint if the user is a client
+      const endpoint = isClient() 
+        ? apiRoutes.client.team.details(user._id) 
+        : apiRoutes.clientUsers.detail(user._id);
+      
+      // Only send client ID for admin users
+      const payload = isClient()
+        ? {
+            name: values.name,
+            email: values.email,
+            profilePicture: values.profilePicture,
+          }
+        : {
+            name: values.name,
+            email: values.email,
+            profilePicture: values.profilePicture,
+            clientId: values.client,
+          };
+      
+      const res = await axiosInstance.put(endpoint, payload)
       return res.data
     },
     onSuccess: () => {
       toast({
-        title: "Client user updated successfully",
-        description: "The client user has been updated successfully",
+        title: isClientView ? "Team member updated successfully" : "Client user updated successfully",
+        description: isClientView ? "The team member has been updated successfully" : "The client user has been updated successfully",
       })
       refetch()
       onOpenChange(false)
@@ -94,7 +130,7 @@ export default function ClientUserEditDialog({ user, refetch, open, onOpenChange
     },
   })
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: any) {
     try {
       updateUser(values)
     } catch (error) {
@@ -106,7 +142,7 @@ export default function ClientUserEditDialog({ user, refetch, open, onOpenChange
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Edit Client User</DialogTitle>
+          <DialogTitle>{isClientView ? "Edit Team Member" : "Edit Client User"}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -166,33 +202,37 @@ export default function ClientUserEditDialog({ user, refetch, open, onOpenChange
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="client"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Client</FormLabel>
-                  <FormControl>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select a client" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {clients?.map((client: any) => (
-                          <SelectItem key={client._id} value={client._id}>
-                            {client.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            
+            {/* Only show client field for admin users */}
+            {!isClient() && (
+              <FormField
+                control={form.control}
+                name="client"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>{isClientView ? "Organization" : "Client"}</FormLabel>
+                    <FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder={isClientView ? "Select an organization" : "Select a client"} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {clients?.map((client: any) => (
+                            <SelectItem key={client._id} value={client._id}>
+                              {client.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
           </form>
         </Form>
 

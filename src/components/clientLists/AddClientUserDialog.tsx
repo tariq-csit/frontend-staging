@@ -13,45 +13,74 @@ import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
 import { Client } from "@/types/types";
 import { Loader2 } from "lucide-react";
+import { useUser } from "@/hooks/useUser";
 
-const formSchema = z.object({
+// Different schemas for client and admin users
+const clientFormSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+});
+
+const adminFormSchema = z.object({
   name: z.string().min(1),
   email: z.string().email(),
   client: z.string().min(1),
-})
+});
 
-export default function AddClientUserDialog({refetch}: {refetch: () => void}) {
+export default function AddClientUserDialog({refetch, isClientView = false}: {refetch: () => void, isClientView?: boolean}) {
   const [open, setOpen] = useState(false);
-
+  const { isClient } = useUser();
+  
+  // Use the appropriate schema based on user role
+  const formSchema = isClient() ? clientFormSchema : adminFormSchema;
+  
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      client: "",
-    },
-  })
+    defaultValues: isClient() 
+      ? {
+          name: "",
+          email: "",
+        }
+      : {
+          name: "",
+          email: "",
+          client: "",
+        },
+  });
 
+  // Only fetch clients for admin users
   const {data: clients} = useQuery({
     queryKey: ["clients"],
     queryFn: () => axiosInstance.get(apiRoutes.clients.all).then((res) => res.data),
-  })
+    enabled: !isClient(), // Only fetch if user is not a client
+  });
 
   const { mutate: onboardClientUser, isPending } = useMutation({
-    mutationFn: async (values: z.infer<typeof formSchema>) => {
-      const response = await axiosInstance.post(apiRoutes.clients.onboardUser, {
-        name: values.name,
-        email: values.email,
-        password: "", 
-        profilePicture: "",
-        clientId: values.client,
-      });
+    mutationFn: async (values: any) => {
+      // Use the client-specific endpoint if the user is a client
+      const endpoint = isClient() ? apiRoutes.client.team.add : apiRoutes.clients.onboardUser;
+      
+      // Only send client ID for admin users
+      const payload = isClient()
+        ? {
+            name: values.name,
+            email: values.email,
+          }
+        : {
+            name: values.name,
+            email: values.email,
+            clientId: values.client,
+            password: "", 
+            profilePicture: "",
+          };
+          
+      const response = await axiosInstance.post(endpoint, payload);
       return response.data;
     },
     onSuccess: () => {
       form.reset();
       toast({
-        title: "Client user added successfully",
+        title: isClientView ? "Team member added successfully" : "Client user added successfully",
       });
       refetch();
       setOpen(false);
@@ -59,25 +88,29 @@ export default function AddClientUserDialog({refetch}: {refetch: () => void}) {
     onError: (error) => {
       console.error('Error onboarding client user:', error);
       toast({
-        title: "Error onboarding client user",
+        title: isClientView ? "Error adding team member" : "Error onboarding client user",
         description: error.message,
         variant: "destructive",
       });
     }
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  function onSubmit(values: any) {
     onboardClientUser(values);
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="default">Add Client User</Button>
+        <Button variant="default">
+          {isClientView ? "Add Team Member" : "Add Client User"}
+        </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg p-0 overflow-hidden">
         <DialogHeader className="px-6 pt-6 pb-4 border-b">
-          <DialogTitle className="text-xl font-bold">Add Client User</DialogTitle>
+          <DialogTitle className="text-xl font-bold">
+            {isClientView ? "Add Team Member" : "Add Client User"}
+          </DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
@@ -118,37 +151,41 @@ export default function AddClientUserDialog({refetch}: {refetch: () => void}) {
                 )}
               />
             </div>
-            <FormField
-              control={form.control}
-              name="client"
-              render={({ field }) => (
-                <FormItem className="w-full">
-                  <FormLabel>Client</FormLabel>
-                  <FormControl>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormItem className="w-full">
-                          <SelectTrigger className="w-full">
-                            <SelectValue className="w-full" placeholder="Select a client" />
-                          </SelectTrigger>
-                        <FormControl>
-                          <SelectContent>
-                            {clients && clients.map((client: Client) => (
-                              <SelectItem key={client._id} value={client._id}>
-                                {client.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </FormControl>
-                      </FormItem>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            
+            {/* Only show client field for admin users */}
+            {!isClient() && (
+              <FormField
+                control={form.control}
+                name="client"
+                render={({ field }) => (
+                  <FormItem className="w-full">
+                    <FormLabel>{isClientView ? "Organization" : "Client"}</FormLabel>
+                    <FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormItem className="w-full">
+                            <SelectTrigger className="w-full">
+                              <SelectValue className="w-full" placeholder={isClientView ? "Select an organization" : "Select a client"} />
+                            </SelectTrigger>
+                          <FormControl>
+                            <SelectContent>
+                              {clients && clients.map((client: Client) => (
+                                <SelectItem key={client._id} value={client._id}>
+                                  {client.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </FormControl>
+                        </FormItem>
+                      </Select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
           </form>
         </Form>
 
@@ -165,7 +202,7 @@ export default function AddClientUserDialog({refetch}: {refetch: () => void}) {
                 Adding...
               </>
             ) : (
-              "Add Client User"
+              isClientView ? "Add Team Member" : "Add Client User"
             )}
           </Button>
         </DialogFooter>

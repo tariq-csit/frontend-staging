@@ -97,7 +97,7 @@ function Sidebar(props: {
       icon: <Network className="w-6 h-6 text-gray-500" />,
     },
     {
-      link: "/my-team",
+      link: "/clients/users",
       text: "My Team",
       icon: <Users className="w-6 h-6 text-gray-500" />,
     },

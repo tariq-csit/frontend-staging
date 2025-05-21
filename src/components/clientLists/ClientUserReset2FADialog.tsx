@@ -16,18 +16,26 @@ import {
 } from "@/components/ui/dialog"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useUser } from "@/hooks/useUser"
 
 interface ClientUserReset2FADialogProps {
   user: ClientUser
   refetch: () => void
   open: boolean
   onOpenChange: Dispatch<SetStateAction<boolean>>
+  isClientView?: boolean
 }
 
-export default function ClientUserReset2FADialog({ user, refetch, open, onOpenChange }: ClientUserReset2FADialogProps) {
+export default function ClientUserReset2FADialog({ user, refetch, open, onOpenChange, isClientView = false }: ClientUserReset2FADialogProps) {
+  const { isClient } = useUser();
+
   const { mutate: reset2FA, isPending } = useMutation({
     mutationFn: async () => {
-      await axiosInstance.post(apiRoutes.clientUsers.reset2FA(user._id))
+      // Use the client-specific endpoint if the user is a client
+      const endpoint = isClient() 
+        ? apiRoutes.client.team.reset2FA(user._id)
+        : apiRoutes.clientUsers.reset2FA(user._id);
+      await axiosInstance.post(endpoint)
     },
     onSuccess: () => {
       refetch()
@@ -52,7 +60,7 @@ export default function ClientUserReset2FADialog({ user, refetch, open, onOpenCh
         <DialogHeader>
           <DialogTitle>Reset Two-Factor Authentication</DialogTitle>
           <DialogDescription>
-            Are you sure you want to reset 2FA for {user.name}? They will need to set it up again on their next login.
+            Are you sure you want to reset 2FA for {isClientView ? "team member" : "user"} {user.name}? They will need to set it up again on their next login.
           </DialogDescription>
         </DialogHeader>
 

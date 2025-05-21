@@ -8,7 +8,7 @@ import axiosInstance from "@/lib/AxiosInstance"
 import { apiRoutes } from "@/lib/routes"
 import type { Attachment, Pentest, User, Vulnerability } from "@/types/types"
 import { useMutation, useQuery } from "@tanstack/react-query"
-import { Edit, Loader2, Lock, Trash2 } from "lucide-react"
+import { Edit, Loader2, Lock, Trash2, SendHorizontal } from "lucide-react"
 import { Select, SelectTrigger, SelectItem, SelectContent, SelectValue } from "@/components/ui/select"
 import { toast } from "@/hooks/use-toast"
 import CommentCard from "./CommentCard"
@@ -29,28 +29,58 @@ interface StatusOption {
 function VulnerabilityView() {
   const { pentestId, vulnerabilityId } = useParams<{ pentestId: string; vulnerabilityId: string }>()
   const navigate = useNavigate()
-  const { isPentester, loading, user } = useUser();
+  const { isPentester, isClient, loading, user } = useUser();
 
   const { data: vulnerability, refetch: refetchVulnerability, isLoading: isLoadingVulnerability } = useQuery({
     queryKey: ["pentest", pentestId, "vulnerability", vulnerabilityId],
-    queryFn: () =>
-      axiosInstance
-        .get<Vulnerability>(isPentester() ? apiRoutes.pentester.vulnerabilities.details(pentestId!, vulnerabilityId!) : apiRoutes.pentests.vulnerabilities.details(pentestId!, vulnerabilityId!))
-        .then((res) => res.data),
+    queryFn: () => {
+      if (isClient()) {
+        return axiosInstance
+          .get<Vulnerability>(apiRoutes.client.pentests.vulnerabilities.details(pentestId!, vulnerabilityId!))
+          .then((res) => res.data);
+      } else if (isPentester()) {
+        return axiosInstance
+          .get<Vulnerability>(apiRoutes.pentester.vulnerabilities.details(pentestId!, vulnerabilityId!))
+          .then((res) => res.data);
+      } else {
+        return axiosInstance
+          .get<Vulnerability>(apiRoutes.pentests.vulnerabilities.details(pentestId!, vulnerabilityId!))
+          .then((res) => res.data);
+      }
+    },
     enabled: !loading 
   })
 
   const { data: pentest, isLoading: isLoadingPentest } = useQuery({
     queryKey: ["pentest", pentestId],
-    queryFn: () => axiosInstance.get<Pentest>(isPentester() ? apiRoutes.pentester.pentestDetails(pentestId!) : apiRoutes.pentests.details(pentestId!)).then((res) => res.data),
+    queryFn: () => {
+      if (isClient()) {
+        return axiosInstance.get<Pentest>(apiRoutes.client.pentests.details(pentestId!)).then((res) => res.data);
+      } else if (isPentester()) {
+        return axiosInstance.get<Pentest>(apiRoutes.pentester.pentestDetails(pentestId!)).then((res) => res.data);
+      } else {
+        return axiosInstance.get<Pentest>(apiRoutes.pentests.details(pentestId!)).then((res) => res.data);
+      }
+    },
     enabled: !loading 
   })
 
   const { mutate: updateVulnerabilityStatus, isPending: isUpdatingVulnerabilityStatus } = useMutation({
-    mutationFn: (status: string) =>
-      axiosInstance.patch(isPentester() ? apiRoutes.pentester.vulnerabilities.updateStatus(pentestId!, vulnerabilityId!) : apiRoutes.pentests.vulnerabilities.status(pentestId!, vulnerabilityId!), {
-        status: status,
-      }),
+    mutationFn: (status: string) => {
+      if (isClient()) {
+        return axiosInstance.patch(apiRoutes.client.pentests.vulnerabilities.status(pentestId!, vulnerabilityId!), {
+          status: status,
+        });
+      } else if (isPentester()) {
+        return axiosInstance.patch(apiRoutes.pentester.vulnerabilities.updateStatus(pentestId!, vulnerabilityId!), {
+          status: status,
+        });
+      } else {
+        return axiosInstance.patch(apiRoutes.pentests.vulnerabilities.status(pentestId!, vulnerabilityId!), {
+          status: status,
+        });
+      }
+    },
     onSuccess: () => {
       refetchVulnerability()
       toast({
@@ -71,13 +101,30 @@ function VulnerabilityView() {
     },
   })
 
+  const { mutate: sendToJira, isPending: isSendingToJira } = useMutation({
+    mutationFn: () => {
+      return axiosInstance.post(apiRoutes.client.pentests.vulnerabilities.status(pentestId!, vulnerabilityId!) + '/jira');
+    },
+    onSuccess: () => {
+      toast({
+        title: "Sent to Jira",
+        description: "Vulnerability has been sent to Jira successfully",
+      })
+    },
+    onError: (error) => {
+      toast({
+        title: "Failed to send to Jira",
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+        variant: "destructive",
+      })
+    }
+  })
+
   // Check if current user is the reporter of this vulnerability
   const isReporter = () => {
     if (!vulnerability || !user) return false;
-    console.log("vulnerability", vulnerability)
     // Check if reporter exists and is an array
     if (!vulnerability.reporter) return false;
-    console.log("reporter", vulnerability.reporter)
     // Check if the current user's ID is in the reporter array
     return vulnerability.reporter._id === user._id
   };
@@ -387,6 +434,7 @@ function VulnerabilityView() {
             pentestId={pentestId ?? ""}
             vulnerabilityId={vulnerabilityId ?? ""}
             refetch={refetchVulnerability}
+            isClient={isClient()}
           />
         </div>
 
@@ -446,8 +494,21 @@ function VulnerabilityView() {
 
             {/* Action buttons */}
             <div className="grid grid-flow-col gap-4 mb-4">
-              {/* Only show Edit button if current user is the reporter or not a pentester (admin) */}
-              {(isReporter()) && (
+              {/* For Clients: Add Send to Jira button */}
+              {isClient() && (
+                <Button
+                  variant="outline"
+                  className="border-[#3a9c4a] text-[#3a9c4a] hover:bg-[#eeffee] flex items-center justify-center gap-2 text-sm lg:text-base"
+                  onClick={() => sendToJira()}
+                  disabled={isSendingToJira}
+                >
+                  <SendHorizontal className="h-4 w-4 lg:h-5 lg:w-5" />
+                  Send to Jira
+                </Button>
+              )}
+              
+              {/* Only show Edit button for pentester who is the reporter */}
+              {(isReporter() && isPentester()) && (
                 <Button
                   variant="outline"
                   className="border-[#4a3a9c] text-[#4a3a9c] hover:bg-[#f0eeff] flex items-center justify-center gap-2 text-sm lg:text-base"
@@ -457,21 +518,23 @@ function VulnerabilityView() {
                   Edit
                 </Button>
               )}
-              {!isPentester() && (
-              <Button
-                variant="outline"
-                className="border-[#9c3a3a] text-[#9c3a3a] hover:bg-[#ffeeee] flex items-center justify-center gap-2 text-sm lg:text-base"
-                onClick={() => {
-                  if (
-                    window.confirm("Are you sure you want to delete this vulnerability? This action cannot be undone.")
-                  ) {
-                    deleteVulnerability()
-                  }
-                }}
-              >
-                <Trash2 className="h-4 w-4 lg:h-5 lg:w-5" />
-                Delete
-              </Button>
+              
+              {/* Only show Delete button for admins, not pentesters or clients */}
+              {!isPentester() && !isClient() && (
+                <Button
+                  variant="outline"
+                  className="border-[#9c3a3a] text-[#9c3a3a] hover:bg-[#ffeeee] flex items-center justify-center gap-2 text-sm lg:text-base"
+                  onClick={() => {
+                    if (
+                      window.confirm("Are you sure you want to delete this vulnerability? This action cannot be undone.")
+                    ) {
+                      deleteVulnerability()
+                    }
+                  }}
+                >
+                  <Trash2 className="h-4 w-4 lg:h-5 lg:w-5" />
+                  Delete
+                </Button>
               )}
             </div>
 

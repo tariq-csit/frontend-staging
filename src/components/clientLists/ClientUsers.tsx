@@ -9,10 +9,19 @@ import { ClientUser } from "@/types/types";
 import { useState } from "react";
 import ClientUserActionMenu from "./ClientUserActionMenu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useUser } from "@/hooks/useUser";
+
 export default function ClientUsers() {
+  const { isClient } = useUser();
   const {data: clientUsers, refetch} = useQuery({
     queryKey: ["clientUsers"],
-    queryFn: () => axiosInstance.get(apiRoutes.clientUsers.all).then((res) => res.data),
+    queryFn: () => {
+      // Use the client-specific endpoint if the user is a client
+      const endpoint = isClient() 
+        ? apiRoutes.client.team.all
+        : apiRoutes.clientUsers.all;
+      return axiosInstance.get(endpoint).then((res) => res.data);
+    }
   })
 
   const [search, setSearch] = useState("");
@@ -22,15 +31,22 @@ export default function ClientUsers() {
 
       {/* Client Users Section */}
       <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-xl font-semibold mb-4">Client User List</h2>
+        <h2 className="text-xl font-semibold mb-4">
+          {isClient() ? "Team Members" : "Client User List"}
+        </h2>
 
         {/* Search and Actions */}
         <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
           <div className="w-full md:w-1/2">
-            <Input onChange={(e) => setSearch(e.target.value)} value={search} placeholder="Search for Client User" className="w-full" />
+            <Input 
+              onChange={(e) => setSearch(e.target.value)} 
+              value={search} 
+              placeholder={isClient() ? "Search for Team Member" : "Search for Client User"} 
+              className="w-full" 
+            />
           </div>
           <div className="flex gap-2">
-            <AddClientUserDialog refetch={refetch} />
+            <AddClientUserDialog refetch={refetch} isClientView={isClient()} />
           </div>
         </div>
 
@@ -41,7 +57,9 @@ export default function ClientUsers() {
               <tr className="text-sm text-gray-500">
                 <th className="text-left py-3 px-4 font-normal">User</th>
                 <th className="text-left py-3 px-4 font-normal">Email</th>
-                <th className="text-left py-3 px-4 font-normal">Client</th>
+                <th className="text-left py-3 px-4 font-normal">
+                  {isClient() ? "Organization" : "Client"}
+                </th>
                 <th className="text-left py-3 px-4 font-normal">2FA Status</th>
                 <th className="text-left py-3 px-4 font-normal">Account Status</th>
                 <th className="text-left py-3 px-4 font-normal"></th>
@@ -49,7 +67,7 @@ export default function ClientUsers() {
             </thead>
             <tbody>
               {clientUsers && clientUsers?.filter((user: ClientUser) => user.name.toLowerCase().includes(search.toLowerCase())).map((user: ClientUser) => (
-                <ClientUserRow key={user._id} user={user} refetch={refetch} />
+                <ClientUserRow key={user._id} user={user} refetch={refetch} isClientView={isClient()} />
               ))}
             </tbody>
           </table>
@@ -116,7 +134,7 @@ function FilterIcon() {
   )
 }
 
-function ClientUserRow({user, refetch}: {user: ClientUser, refetch: () => void}) {
+function ClientUserRow({user, refetch, isClientView = false}: {user: ClientUser, refetch: () => void, isClientView?: boolean}) {
   return (
     <tr className="border-t hover:bg-gray-50">
       <td className="py-4 px-4">
@@ -158,7 +176,7 @@ function ClientUserRow({user, refetch}: {user: ClientUser, refetch: () => void})
         </span>
       </td>
       <td className="py-4 px-4 text-right">
-        <ClientUserActionMenu user={user} refetch={refetch} />
+        <ClientUserActionMenu user={user} refetch={refetch} isClientView={isClientView} />
       </td>
     </tr>
   )

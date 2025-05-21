@@ -16,25 +16,33 @@ import {
 } from "@/components/ui/dialog"
 import { Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useUser } from "@/hooks/useUser"
 
 interface ClientUserDeleteDialogProps {
   user: ClientUser
   refetch: () => void
   open: boolean
   onOpenChange: Dispatch<SetStateAction<boolean>>
+  isClientView?: boolean
 }
 
-export default function ClientUserDeleteDialog({ user, refetch, open, onOpenChange }: ClientUserDeleteDialogProps) {
+export default function ClientUserDeleteDialog({ user, refetch, open, onOpenChange, isClientView = false }: ClientUserDeleteDialogProps) {
+  const { isClient } = useUser();
+
   const { mutate: deleteUser, isPending } = useMutation({
     mutationFn: async () => {
       await new Promise((resolve) => setTimeout(resolve, 500))
-      await axiosInstance.delete(apiRoutes.clientUsers.detail(user._id))
+      // Use the client-specific endpoint if the user is a client
+      const endpoint = isClient() 
+        ? apiRoutes.client.team.details(user._id)
+        : apiRoutes.clientUsers.detail(user._id);
+      await axiosInstance.delete(endpoint)
     },
     onSuccess: () => {
       refetch()
       toast({
-        title: "Client user deleted successfully",
-        description: "The client user has been deleted successfully",
+        title: isClientView ? "Team member deleted successfully" : "Client user deleted successfully",
+        description: isClientView ? "The team member has been deleted successfully" : "The client user has been deleted successfully",
       })
       onOpenChange(false)
     },
@@ -44,7 +52,7 @@ export default function ClientUserDeleteDialog({ user, refetch, open, onOpenChan
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Delete Client User</DialogTitle>
+          <DialogTitle>{isClientView ? "Delete Team Member" : "Delete Client User"}</DialogTitle>
           <DialogDescription>
             Are you sure you want to delete {user.name}? This action cannot be undone.
           </DialogDescription>
