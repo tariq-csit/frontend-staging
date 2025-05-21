@@ -48,7 +48,7 @@ function VulnerabilityView() {
           .then((res) => res.data);
       }
     },
-    enabled: !loading 
+    enabled: !loading && !!pentestId && !!vulnerabilityId
   })
 
   const { data: pentest, isLoading: isLoadingPentest } = useQuery({
@@ -165,7 +165,7 @@ function VulnerabilityView() {
   const displayVulnerability = vulnerability
   const displayPentest = pentest
 
-  if (isLoadingVulnerability || isLoadingPentest) {
+  if (isLoadingVulnerability || isLoadingPentest || loading || !displayVulnerability || !displayPentest) {
     return (
       <div className="flex justify-center items-center h-screen">
         <Loader2 className="w-10 h-10 animate-spin" />
@@ -173,9 +173,9 @@ function VulnerabilityView() {
     )
   }
 
-  if (!displayVulnerability || !displayPentest) {
-    return <div>No data found</div>
-  }
+  // if (!displayVulnerability || !displayPentest || loading) {
+  //   return <div>No data found</div>
+  // }
 
   return (
     <div className="w-full mx-auto py-6 font-sans">
@@ -446,12 +446,12 @@ function VulnerabilityView() {
           <div className="lg:fixed lg:w-[inherit] max-w-[400px] bg-white rounded-lg shadow-sm p-6 top-10">
             {/* Header with logo and title */}
             <div className="flex items-center gap-4 mb-6">
-              <h1 className="text-xl lg:text-3xl font-bold text-[#1a1a2e] break-words">{displayPentest.name}</h1>
+              <h1 className="text-xl lg:text-3xl font-bold text-[#1a1a2e] break-words">{displayPentest.title}</h1>
             </div>
 
             {/* Client info */}
             <div className="mb-6">
-              <h2 className="text-lg lg:text-xl font-bold mb-3">Client:</h2>
+              <h2 className="text-lg lg:text-xl font-bold mb-3">{isClient() ? "Organization" : "Client"}:</h2>
               <div className="flex items-center gap-3">
                 <img
                   src={displayPentest.clients[0].logoUrl || "/placeholder.svg"}
@@ -495,15 +495,15 @@ function VulnerabilityView() {
             {/* Action buttons */}
             <div className="grid grid-flow-col gap-4 mb-4">
               {/* For Clients: Add Send to Jira button */}
-              {isClient() && (
+              {isClient() && displayVulnerability.hasJiraIntegration && (
                 <Button
-                  variant="outline"
-                  className="border-[#3a9c4a] text-[#3a9c4a] hover:bg-[#eeffee] flex items-center justify-center gap-2 text-sm lg:text-base"
+                  variant="secondary"
+                  className="flex items-center border-blue-500 hover:bg-blue-100 border justify-center gap-2 text-sm lg:text-base"
                   onClick={() => sendToJira()}
                   disabled={isSendingToJira}
                 >
-                  <SendHorizontal className="h-4 w-4 lg:h-5 lg:w-5" />
-                  Send to Jira
+                  <img src="/Jira Icon.svg" alt="Jira" className="w-4 h-4 lg:w-5 lg:h-5" />
+                  {displayVulnerability.hasJiraIntegration ? "Send to Jira" : "No Jira Integration"}
                 </Button>
               )}
               

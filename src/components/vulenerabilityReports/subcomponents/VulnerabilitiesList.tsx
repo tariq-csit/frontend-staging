@@ -72,16 +72,6 @@ function VulnerabilitiesList({ vulnerabilities, pentestId, isLoading, isClientVi
 
   return (
     <div className={containerClasses}>
-      {!isClientView && (
-        <div className="flex justify-end mb-4">
-          <Link to={`/vulnerability-reports/${pentestId}/vulnerabilities/add`}>
-            <Button className="flex items-center gap-2">
-              <PlusCircle className="h-4 w-4" />
-              Add New Vulnerability
-            </Button>
-          </Link>
-        </div>
-      )}
 
       <div className={listClasses}>
         {vulnerabilities?.map((vulnerability, i) => (

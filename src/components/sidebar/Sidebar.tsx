@@ -92,14 +92,14 @@ function Sidebar(props: {
       icon: "/state=reports.svg",
     },
     {
-      link: "/integration",
-      text: "Integration",
-      icon: <Network className="w-6 h-6 text-gray-500" />,
-    },
-    {
       link: "/clients/users",
       text: "My Team",
       icon: <Users className="w-6 h-6 text-gray-500" />,
+    },
+    {
+      link: "/integration",
+      text: "Integration",
+      icon: <Network className="w-6 h-6 text-gray-500" />,
     },
   ];
 

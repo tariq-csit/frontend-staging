@@ -9,7 +9,7 @@ import ClientUserEditDialog from "./ClientUserEditDialog"
 import ClientUserReset2FADialog from "./ClientUserReset2FADialog"
 import ClientUserDeactivateDialog from "./ClientUserDeactivateDialog"
 import type { ClientUser } from "@/types/types"
-
+import { useUser } from "@/hooks/useUser"
 interface ClientUserActionMenuProps {
   user: ClientUser
   refetch: () => void
@@ -22,6 +22,7 @@ export default function ClientUserActionMenu({ user, refetch, isClientView = fal
   const [showReset2FADialog, setShowReset2FADialog] = useState(false)
   const [showDeactivateDialog, setShowDeactivateDialog] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
+  const {isClient, loading} = useUser()
 
   return (
     <>
@@ -33,10 +34,12 @@ export default function ClientUserActionMenu({ user, refetch, isClientView = fal
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem
-            onClick={() => {
-              setShowEditDialog(true)
-              setDropdownOpen(false)
+          {!isClient && (
+            <>
+              <DropdownMenuItem
+                onClick={() => {
+                  setShowEditDialog(true)
+                setDropdownOpen(false)
             }}
           >
             Edit
@@ -57,7 +60,9 @@ export default function ClientUserActionMenu({ user, refetch, isClientView = fal
             className={`${user.isActive ? "text-destructive focus:text-destructive" : "text-primary-900 focus:text-primary-900"}`}
           >
             {user.isActive ? "Deactivate" : "Activate"}
-          </DropdownMenuItem>
+            </DropdownMenuItem>
+            </>
+          )}
           <DropdownMenuItem
             onClick={() => {
               setShowDeleteDialog(true)

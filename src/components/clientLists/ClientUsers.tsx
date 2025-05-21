@@ -10,10 +10,11 @@ import { useState } from "react";
 import ClientUserActionMenu from "./ClientUserActionMenu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUser } from "@/hooks/useUser";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ClientUsers() {
-  const { isClient } = useUser();
-  const {data: clientUsers, refetch} = useQuery({
+  const { isClient, loading: userLoading } = useUser();
+  const {data: clientUsers, refetch, isLoading: dataLoading} = useQuery({
     queryKey: ["clientUsers"],
     queryFn: () => {
       // Use the client-specific endpoint if the user is a client
@@ -21,9 +22,11 @@ export default function ClientUsers() {
         ? apiRoutes.client.team.all
         : apiRoutes.clientUsers.all;
       return axiosInstance.get(endpoint).then((res) => res.data);
-    }
+    },
+    enabled: !userLoading, // Only fetch when user data is loaded
   })
 
+  const isLoading = userLoading || dataLoading;
   const [search, setSearch] = useState("");
 
   return (
@@ -32,21 +35,30 @@ export default function ClientUsers() {
       {/* Client Users Section */}
       <div className="bg-white rounded-lg shadow-sm p-6">
         <h2 className="text-xl font-semibold mb-4">
-          {isClient() ? "Team Members" : "Client User List"}
+          {userLoading ? <Skeleton className="h-7 w-40" /> : (isClient() ? "Team Members" : "Client User List")}
         </h2>
 
         {/* Search and Actions */}
         <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
           <div className="w-full md:w-1/2">
-            <Input 
-              onChange={(e) => setSearch(e.target.value)} 
-              value={search} 
-              placeholder={isClient() ? "Search for Team Member" : "Search for Client User"} 
-              className="w-full" 
-            />
+            {userLoading ? (
+              <Skeleton className="h-10 w-full" />
+            ) : (
+              <Input 
+                onChange={(e) => setSearch(e.target.value)} 
+                value={search} 
+                placeholder={isClient() ? "Search for Team Member" : "Search for Client User"} 
+                className="w-full" 
+                disabled={isLoading}
+              />
+            )}
           </div>
           <div className="flex gap-2">
-            <AddClientUserDialog refetch={refetch} isClientView={isClient()} />
+            {userLoading ? (
+              <Skeleton className="h-10 w-40" />
+            ) : (
+              <AddClientUserDialog refetch={refetch} isClientView={isClient()} />
+            )}
           </div>
         </div>
 
@@ -58,7 +70,7 @@ export default function ClientUsers() {
                 <th className="text-left py-3 px-4 font-normal">User</th>
                 <th className="text-left py-3 px-4 font-normal">Email</th>
                 <th className="text-left py-3 px-4 font-normal">
-                  {isClient() ? "Organization" : "Client"}
+                  {userLoading ? <Skeleton className="h-5 w-20" /> : (isClient() ? "Organization" : "Client")}
                 </th>
                 <th className="text-left py-3 px-4 font-normal">2FA Status</th>
                 <th className="text-left py-3 px-4 font-normal">Account Status</th>
@@ -66,14 +78,54 @@ export default function ClientUsers() {
               </tr>
             </thead>
             <tbody>
-              {clientUsers && clientUsers?.filter((user: ClientUser) => user.name.toLowerCase().includes(search.toLowerCase())).map((user: ClientUser) => (
-                <ClientUserRow key={user._id} user={user} refetch={refetch} isClientView={isClient()} />
-              ))}
+              {isLoading ? (
+                // Show skeleton rows while loading
+                Array(5).fill(0).map((_, index) => (
+                  <ClientUserSkeletonRow key={index} />
+                ))
+              ) : (
+                clientUsers && clientUsers
+                  ?.filter((user: ClientUser) => user.name.toLowerCase().includes(search.toLowerCase()))
+                  .map((user: ClientUser) => (
+                    <ClientUserRow key={user._id} user={user} refetch={refetch} isClientView={isClient()} />
+                  ))
+              )}
             </tbody>
           </table>
         </div>
       </div>
     </div>
+  )
+}
+
+function ClientUserSkeletonRow() {
+  return (
+    <tr className="border-t">
+      <td className="py-4 px-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="w-8 h-8 rounded-full" />
+          <Skeleton className="h-5 w-24" />
+        </div>
+      </td>
+      <td className="py-4 px-4">
+        <Skeleton className="h-5 w-40" />
+      </td>
+      <td className="py-4 px-4">
+        <div className="flex items-center gap-3">
+          <Skeleton className="w-8 h-8 rounded-full" />
+          <Skeleton className="h-5 w-24" />
+        </div>
+      </td>
+      <td className="py-4 px-4">
+        <Skeleton className="h-6 w-28 rounded-md" />
+      </td>
+      <td className="py-4 px-4">
+        <Skeleton className="h-6 w-28 rounded-md" />
+      </td>
+      <td className="py-4 px-4 text-right">
+        <Skeleton className="h-8 w-8 rounded-md ml-auto" />
+      </td>
+    </tr>
   )
 }
 

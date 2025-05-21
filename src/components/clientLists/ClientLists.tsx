@@ -180,9 +180,9 @@ export default function ClientDashboard() {
             {filteredClients && filteredClients?.length > 0 ? (
               <div className="overflow-x-auto">
                 {/* Grid Header */}
-                <div className="grid grid-cols-6 gap-4 text-sm text-gray-500 border-b py-3 px-4 font-normal">
+                <div className="grid grid-cols-7 gap-4 text-sm text-gray-500 border-b py-3 px-4 font-normal">
                   <div>Client</div>
-                  <div>Point of Contact</div>
+                  <div className="col-span-2">Point of Contact</div>
                   <div>Client Users</div>
                   <div>Active Pentests</div>
                   <div>Requested Pentests</div>
@@ -249,9 +249,8 @@ function TabButton({
 }
 
 function ClientRow({ client, refetch }: { client: Client; refetch: () => void }) {
-  console.log(client.name, client.logoUrl)
   return (
-    <div className="grid grid-cols-6 gap-4 py-4 px-4 hover:bg-gray-50">
+    <div className="grid grid-cols-7 gap-4 py-4 px-4 hover:bg-gray-50">
       <div>
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
@@ -260,7 +259,7 @@ function ClientRow({ client, refetch }: { client: Client; refetch: () => void })
           <span className="font-medium">{client.name}</span>
         </div>
       </div>
-      <div className="text-gray-600">{client.poc_email}</div>
+      <div className="text-gray-600 col-span-2">{client.poc_email}</div>
       <div>
         <span className="text-blue-600">{client.users.length}</span>
       </div>

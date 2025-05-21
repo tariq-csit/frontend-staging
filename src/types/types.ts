@@ -43,6 +43,7 @@ export interface Vulnerability {
   comments: Comment[];
   createdAt: string;
   updatedAt: string;
+  hasJiraIntegration: boolean;
 }
 
 export interface SignUpData {
@@ -106,7 +107,7 @@ interface Report {
 
 export interface Pentest {
   _id: string;
-  name: string;
+  title: string;
   type: string;
   startDate: string;
   endDate: string;
@@ -188,7 +189,7 @@ export interface PentestRequest {
 export interface RequestedPentest {
   id?: string;  // For list view
   _id?: string;  // For detail view
-  name: string;
+  title: string;
   type?: string;
   startDate?: string;
   endDate?: string;
@@ -201,7 +202,7 @@ export interface RequestedPentest {
     name: string;
     _id: string;
   }[];
-  status?: string;
+  status?: 'Pending' | 'Approved' | 'Rejected';
   createdAt: string;
   requestedBy: string | {
     name: string;
