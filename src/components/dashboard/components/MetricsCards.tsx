@@ -206,7 +206,7 @@ const MetricsCards: React.FC<MetricsCardsProps> = ({
 
         <div>
           <Bugs 
-            icon="/Bug.svg" 
+            icon="/Clients (1).svg" 
             num={clientData?.totalVulnerabilities || 0} 
             text="Total Vulnerabilities" 
           >

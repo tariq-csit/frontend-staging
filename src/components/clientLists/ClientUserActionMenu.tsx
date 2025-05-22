@@ -24,6 +24,8 @@ export default function ClientUserActionMenu({ user, refetch, isClientView = fal
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const {isClient, loading} = useUser()
 
+  if (loading) return null
+
   return (
     <>
       <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
@@ -34,7 +36,7 @@ export default function ClientUserActionMenu({ user, refetch, isClientView = fal
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          {!isClient && (
+          {!isClient() && (
             <>
               <DropdownMenuItem
                 onClick={() => {

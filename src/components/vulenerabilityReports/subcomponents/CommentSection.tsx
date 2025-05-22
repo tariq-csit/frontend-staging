@@ -2,12 +2,12 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useRef, useEffect, KeyboardEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
-import { Paperclip, Trash, Loader2 } from "lucide-react"
+import { Paperclip, Trash, Loader2, KeyboardCommandIcon } from "lucide-react"
 import axiosInstance from "@/lib/AxiosInstance"
 import { apiRoutes } from "@/lib/routes"
 import { useMutation } from "@tanstack/react-query"
@@ -55,6 +55,7 @@ export default function CommentBox({
   const [isUploading, setIsUploading] = useState(false)
   const { toast } = useToast()
   const { isPentester } = useUser()
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const { mutate: addComment, isPending: isSubmitting } = useMutation({
     mutationFn: (data: { comment: string, internal: boolean, attachments: File[] }) => {
@@ -89,8 +90,20 @@ export default function CommentBox({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    addComment({ comment, internal: isInternal, attachments: files })
+    if (comment.trim() && !isSubmitting && !isUploading) {
+      addComment({ comment, internal: isInternal, attachments: files })
+    }
   }
+
+  const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    // Check for Ctrl+Enter or Cmd+Enter (Mac)
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      if (comment.trim() && !isSubmitting && !isUploading) {
+        e.preventDefault();
+        handleSubmit(e as unknown as React.FormEvent);
+      }
+    }
+  };
 
   return (
     <div className="w-full">
@@ -117,11 +130,13 @@ export default function CommentBox({
             )}
           </div>
           <Textarea
-            placeholder="Add Comment..."
+            ref={textareaRef}
+            placeholder="Add Comment... (Ctrl+Enter to submit)"
             className="min-h-[30px] p-4 border-none bg-transparent text-foreground resize-none focus-visible:ring-0 focus-visible:ring-offset-0" 
             value={comment} 
             maxLength={2000}
             onChange={(e) => setComment(e.target.value)}
+            onKeyDown={handleKeyDown}
             disabled={isSubmitting}
           /> 
           <input
@@ -183,20 +198,28 @@ export default function CommentBox({
             </Label>
           </div>
 
-          <Button 
-            type="submit" 
-            className="bg-indigo-700 hover:bg-indigo-800 text-white"
-            disabled={isSubmitting || isUploading || !comment.trim()}
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Adding Comment...
-              </>
-            ) : (
-              "Add Comment"
-            )}
-          </Button>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-gray-500 hidden sm:inline-flex items-center">
+              <span className="mr-1">Press</span>
+              <kbd className="px-1.5 py-0.5 text-xs bg-gray-100 border border-gray-200 rounded-md">Ctrl</kbd>
+              <span className="mx-1">+</span>
+              <kbd className="px-1.5 py-0.5 text-xs bg-gray-100 border border-gray-200 rounded-md">Enter</kbd>
+            </span>
+            <Button 
+              type="submit" 
+              className="bg-indigo-700 hover:bg-indigo-800 text-white"
+              disabled={isSubmitting || isUploading || !comment.trim()}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Adding Comment...
+                </>
+              ) : (
+                "Add Comment"
+              )}
+            </Button>
+          </div>
         </div>
 
         {isInternal && (
