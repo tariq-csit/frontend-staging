@@ -33,8 +33,8 @@ export default function ClientUsers() {
     <div className="">
 
       {/* Client Users Section */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-xl font-semibold mb-4">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+        <h2 className="text-xl font-semibold mb-4 dark:text-gray-100">
           {userLoading ? <Skeleton className="h-7 w-40" /> : (isClient() ? "Team Members" : "Client User List")}
         </h2>
 
@@ -48,7 +48,7 @@ export default function ClientUsers() {
                 onChange={(e) => setSearch(e.target.value)} 
                 value={search} 
                 placeholder={isClient() ? "Search for Team Member" : "Search for Client User"} 
-                className="w-full" 
+                className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:placeholder:text-gray-400" 
                 disabled={isLoading}
               />
             )}
@@ -66,7 +66,7 @@ export default function ClientUsers() {
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="text-sm text-gray-500">
+              <tr className="text-sm text-gray-500 dark:text-gray-400">
                 <th className="text-left py-3 px-4 font-normal">User</th>
                 <th className="text-left py-3 px-4 font-normal">Email</th>
                 <th className="text-left py-3 px-4 font-normal">
@@ -77,7 +77,7 @@ export default function ClientUsers() {
                 <th className="text-left py-3 px-4 font-normal"></th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y dark:divide-gray-700">
               {isLoading ? (
                 // Show skeleton rows while loading
                 Array(5).fill(0).map((_, index) => (
@@ -100,7 +100,7 @@ export default function ClientUsers() {
 
 function ClientUserSkeletonRow() {
   return (
-    <tr className="border-t">
+    <tr className="border-t dark:border-gray-700">
       <td className="py-4 px-4">
         <div className="flex items-center gap-3">
           <Skeleton className="w-8 h-8 rounded-full" />
@@ -131,12 +131,12 @@ function ClientUserSkeletonRow() {
 
 function StatCard({ icon, value, label }: { icon: React.ReactNode, value: string, label: string }) {
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4 flex items-center justify-between">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 flex items-center justify-between">
       <div className="flex items-center gap-4">
-        <div className="bg-gray-100 p-3 rounded-full">{icon}</div>
+        <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded-full">{icon}</div>
         <div>
-          <div className="text-xl font-bold">{value}</div>
-          <div className="text-gray-500">{label}</div>
+          <div className="text-xl font-bold dark:text-gray-100">{value}</div>
+          <div className="text-gray-500 dark:text-gray-400">{label}</div>
         </div>
       </div>
       <ChevronRight className="h-5 w-5 text-gray-400" />
@@ -146,10 +146,10 @@ function StatCard({ icon, value, label }: { icon: React.ReactNode, value: string
 
 function TabButton({ label, count, active = false }: { label: string, count: string, active?: boolean }) {
   return (
-    <button className={`px-4 py-2 relative ${active ? "text-indigo-600 font-medium" : "text-gray-500"}`}>
+    <button className={`px-4 py-2 relative ${active ? "text-indigo-600 dark:text-indigo-400 font-medium" : "text-gray-500 dark:text-gray-400"}`}>
       {label}
-      <span className="ml-2 bg-gray-100 text-gray-700 text-xs px-1.5 py-0.5 rounded-md">{count}</span>
-      {active && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600"></div>}
+      <span className="ml-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-xs px-1.5 py-0.5 rounded-md">{count}</span>
+      {active && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-indigo-600 dark:bg-indigo-400"></div>}
     </button>
   )
 }
@@ -188,32 +188,32 @@ function FilterIcon() {
 
 function ClientUserRow({user, refetch, isClientView = false}: {user: ClientUser, refetch: () => void, isClientView?: boolean}) {
   return (
-    <tr className="border-t hover:bg-gray-50">
+    <tr className="border-t dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
       <td className="py-4 px-4">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
+          <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
             <Avatar>
               <AvatarImage src={user.profilePicture || "/placeholder.svg"} alt={user.name} />
               <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
             </Avatar>
           </div>
-          <span className="font-medium">{user.name}</span>
+          <span className="font-medium dark:text-gray-100">{user.name}</span>
         </div>
       </td>
-      <td className="py-4 px-4 text-gray-600">{user.email}</td>
+      <td className="py-4 px-4 text-gray-600 dark:text-gray-300">{user.email}</td>
       <td className="py-4 px-4">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center overflow-hidden">
+          <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
             <img src={user.clients[0].logoUrl || "/placeholder.svg"} alt="Client logo" className="w-full h-full object-cover" />
           </div>
-          <span>{user.clients[0].name}</span>
+          <span className="dark:text-gray-100">{user.clients[0].name}</span>
         </div>
       </td>
       <td className="py-4 px-4">
         <span className={`px-3 py-1 rounded-md text-sm w-28 text-center inline-block ${
           user.twoFactorEnabled 
-            ? "bg-statusGreen text-statusTextGreen" 
-            : "bg-statusSilver text-statusTextSilver"
+            ? "bg-statusGreen text-statusTextGreen dark:bg-green-900 dark:text-green-200" 
+            : "bg-statusSilver text-statusTextSilver dark:bg-gray-700 dark:text-gray-300"
         }`}>
           {user.twoFactorEnabled ? "Active" : "Inactive"}
         </span>
@@ -221,8 +221,8 @@ function ClientUserRow({user, refetch, isClientView = false}: {user: ClientUser,
       <td className="py-4 px-4">
         <span className={`px-3 py-1 rounded-md text-sm w-28 text-center inline-block ${
           user.isActive 
-            ? "bg-statusGreen text-statusTextGreen" 
-            : "bg-statusSilver text-statusTextSilver"
+            ? "bg-statusGreen text-statusTextGreen dark:bg-green-900 dark:text-green-200" 
+            : "bg-statusSilver text-statusTextSilver dark:bg-gray-700 dark:text-gray-300"
         }`}>
           {user.isActive ? "Active" : "Inactive"}
         </span>

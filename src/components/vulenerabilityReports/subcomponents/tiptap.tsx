@@ -296,7 +296,7 @@ const Tiptap = (props: {
     content: sanitizeHtml(props.description),
     editorProps: {
       attributes: {
-        class: "min-h-[200px] border-b border-t border-input rounded-md p-4 focus:outline-none",
+        class: "min-h-[200px] border-b border-t border-input dark:bg-gray-900 dark:border-gray-700 rounded-md p-4 focus:outline-none",
       }
     },
     parseOptions: {
@@ -450,7 +450,7 @@ const Tiptap = (props: {
   return (
     <div
       className={cn(
-        "flex flex-col gap-2 py-2 border-input border rounded-md",
+        "flex flex-col gap-2 py-2 border-input border dark:border-gray-700 dark:bg-gray-900 rounded-md",
         isUploading && "opacity-70 pointer-events-none"
       )}
       onDrop={handleDrop}

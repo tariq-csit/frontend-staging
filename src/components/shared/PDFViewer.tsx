@@ -15,7 +15,7 @@ export default function PDFViewer({ fileUrl }: PDFViewerProps) {
   const defaultLayoutPluginInstance = defaultLayoutPlugin();
 
   return (
-    <div className="bg-white rounded-lg p-4 shadow-sm" style={{ height: '750px' }}>
+    <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm" style={{ height: '750px' }}>
       <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
         <Viewer
           fileUrl={fileUrl}

@@ -91,8 +91,8 @@ function ResetPassword() {
   }
 
   return (
-    <div className="flex flex-col h-screen justify-center max-w-md mx-auto gap-4">
-      <h1 className="font-poppins text-[2rem] font-semibold">Reset Password</h1>
+    <div className="flex flex-col h-screen justify-center max-w-md mx-auto gap-4 dark:bg-gray-900 p-8 rounded-lg">
+      <h1 className="font-poppins text-[2rem] font-semibold dark:text-gray-100">Reset Password</h1>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col items-start gap-6">
           <FormField
@@ -100,11 +100,11 @@ function ResetPassword() {
             name="password"
             render={({ field }) => (
               <FormItem className="w-full">
-                <FormLabel>New Password</FormLabel>
+                <FormLabel className="dark:text-gray-200">New Password</FormLabel>
                 <FormControl>
-                  <Input {...field} type="password" className="w-full" />
+                  <Input {...field} type="password" className="w-full dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100" />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="dark:text-red-400" />
               </FormItem>
             )}
           />
@@ -113,17 +113,17 @@ function ResetPassword() {
             name="confirmPassword"
             render={({ field }) => (
               <FormItem className="w-full">
-                <FormLabel>Confirm Password</FormLabel>
+                <FormLabel className="dark:text-gray-200">Confirm Password</FormLabel>
                 <FormControl>
-                  <Input {...field} type="password" className="w-full" />
+                  <Input {...field} type="password" className="w-full dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100" />
                 </FormControl>
-                <FormMessage />
+                <FormMessage className="dark:text-red-400" />
               </FormItem>
             )}
           />
           <Button 
             type="submit" 
-            className="w-full bg-indigo-700 hover:bg-indigo-800"
+            className="w-full bg-indigo-700 hover:bg-indigo-800 dark:bg-indigo-600 dark:hover:bg-indigo-700"
             disabled={isPending}
           >
             {isPending ? "Resetting Password..." : "Reset Password"}

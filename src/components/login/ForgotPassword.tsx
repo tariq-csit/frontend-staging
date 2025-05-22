@@ -77,10 +77,10 @@ function ForgotPassword() {
       <div className="flex px-10 flex-col items-center justify-center gap-8 self-center font-poppins">
         <div className="flex flex-col items-center gap-8 self-stretch max-w-md">
           <div className="flex flex-col justify-center items-start gap-3 self-stretch">
-            <h1 className="font-poppins text-[2.5rem] font-semibold">
+            <h1 className="font-poppins text-[2.5rem] font-semibold dark:text-gray-100">
               Forgot Password?
             </h1>
-            <p className="self-stretch text-inputBorder font-poppins text-lg">
+            <p className="self-stretch text-inputBorder dark:text-gray-400 font-poppins text-lg">
               Enter your email address and we'll send you a link to reset your password.
             </p>
           </div>
@@ -95,14 +95,14 @@ function ForgotPassword() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Enter your Email</FormLabel>
+                      <FormLabel className="dark:text-gray-200">Enter your Email</FormLabel>
                       <FormControl>
                         <Input
-                          className="w-full"
+                          className="w-full dark:bg-gray-800 dark:border-gray-700 dark:text-gray-100"
                           {...field}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="dark:text-red-400" />
                     </FormItem>
                   )}
                 />
@@ -113,7 +113,7 @@ function ForgotPassword() {
                 className="w-full"
               />
               <Button 
-                className="w-full text-lg py-4" 
+                className="w-full text-lg py-4 dark:bg-indigo-600 dark:hover:bg-indigo-700" 
                 type="submit"
                 disabled={forgotPasswordMutation.isPending || !turnstileToken}
               >
@@ -128,16 +128,16 @@ function ForgotPassword() {
               </Button>
             </form>
           </Form>
-          <p className="font-poppins text-inputBorder">
+          <p className="font-poppins text-inputBorder dark:text-gray-400">
             Remember your password?
-            <Link to={'/'} className="text-primary-900 font-medium cursor-pointer">
+            <Link to={'/'} className="text-primary-900 dark:text-indigo-400 font-medium cursor-pointer">
               {" "}
               Sign in
             </Link>
           </p>
         </div>
       </div>
-      <p className="text-center w-full text-primary-900 font-inter">
+      <p className="text-center w-full text-primary-900 dark:text-indigo-400 font-inter">
         Copyright © {new Date().getFullYear()} Slash
       </p>
     </div>

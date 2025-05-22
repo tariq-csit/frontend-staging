@@ -167,8 +167,8 @@ function VulnerabilityView() {
 
   if (isLoadingVulnerability || isLoadingPentest || loading || !displayVulnerability || !displayPentest) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <Loader2 className="w-10 h-10 animate-spin" />
+      <div className="flex justify-center items-center h-screen dark:bg-gray-900">
+        <Loader2 className="w-10 h-10 animate-spin dark:text-gray-200" />
       </div>
     )
   }
@@ -178,14 +178,14 @@ function VulnerabilityView() {
   // }
 
   return (
-    <div className="w-full mx-auto py-6 font-sans">
+    <div className="w-full mx-auto py-6 font-sans dark:bg-gray-900">
       <div className="container mx-auto flex flex-col lg:flex-row gap-8">
         {/* Main content - with dynamic width based on sidebar state */}
         <div className={`${useSidebar().isCollapsed ? 'lg:w-[75%]' : 'lg:w-[70%]'} space-y-6`}>
           {/* Title Card */}
-          <Card className="py-4">
+          <Card className="py-4 dark:bg-gray-800 dark:border-gray-700">
             <CardHeader className="pb-2">
-              <CardTitle className="text-2xl font-bold break-words">{displayVulnerability.title}</CardTitle>
+              <CardTitle className="text-2xl font-bold break-words dark:text-gray-100">{displayVulnerability.title}</CardTitle>
               <div className="flex items-center gap-2 mt-2">
                 <VulnerabilitySeverityBadge severity={displayVulnerability.severity} />
                 <VulnerabilityStatusBadge status={displayVulnerability.status} />
@@ -194,22 +194,22 @@ function VulnerabilityView() {
           </Card>
 
           {/* Section 1: Affected Hosts */}
-          <Card>
-            <CardHeader className="pb-2 bg-gray-50">
-              <CardTitle className="text-xl font-semibold">1. Affected Host(s)</CardTitle>
+          <Card className="dark:bg-gray-800 dark:border-gray-700">
+            <CardHeader className="pb-2 bg-gray-50 dark:bg-gray-800/50">
+              <CardTitle className="text-xl font-semibold dark:text-gray-100">1. Affected Host(s)</CardTitle>
             </CardHeader>
             <CardContent className="pt-4">
               <div className="space-y-3">
-                <h3 className="font-medium text-gray-800">Affected Host(s)</h3>
+                <h3 className="font-medium text-gray-800 dark:text-gray-100">Affected Host(s)</h3>
                 <ul className="pl-6 space-y-1">
                   {displayVulnerability.affected_host.includes(",") ? (
                     displayVulnerability.affected_host.split(",").map((host, i) => (
-                      <li key={i} className="text-gray-700 list-disc break-words whitespace-pre-wrap">
+                      <li key={i} className="text-gray-700 dark:text-gray-100 list-disc break-words whitespace-pre-wrap">
                         {host.trim()}
                       </li>
                     ))
                   ) : (
-                    <li className="text-gray-700 list-disc break-words whitespace-pre-wrap">{displayVulnerability.affected_host}</li>
+                    <li className="text-gray-700 dark:text-gray-100 list-disc break-words whitespace-pre-wrap">{displayVulnerability.affected_host}</li>
                   )}
                 </ul>
               </div>
@@ -217,25 +217,25 @@ function VulnerabilityView() {
           </Card>
 
           {/* Section 2: Basic Details */}
-          <Card>
-            <CardHeader className="pb-2 bg-gray-50">
-              <CardTitle className="text-xl font-semibold">2. Basic Details</CardTitle>
+          <Card className="dark:bg-gray-800 dark:border-gray-700">
+            <CardHeader className="pb-2 bg-gray-50 dark:bg-gray-800/50">
+              <CardTitle className="text-xl font-semibold dark:text-gray-100">2. Basic Details</CardTitle>
             </CardHeader>
             <CardContent className="pt-4 space-y-6">
               <div className="space-y-2">
-                <h3 className="font-medium text-gray-800">Title</h3>
-                <p className="text-gray-700 break-words whitespace-pre-wrap">{displayVulnerability.title}</p>
+                <h3 className="font-medium text-gray-800 dark:text-gray-100">Title</h3>
+                <p className="text-gray-700 dark:text-gray-100 break-words whitespace-pre-wrap">{displayVulnerability.title}</p>
               </div>
 
               <div className="space-y-2">
-                <h3 className="font-medium text-gray-800">Severity</h3>
-                <p className="text-gray-700 break-words whitespace-pre-wrap">{displayVulnerability.severity}</p>
+                <h3 className="font-medium text-gray-800 dark:text-gray-100">Severity</h3>
+                <p className="text-gray-700 dark:text-gray-100 break-words whitespace-pre-wrap">{displayVulnerability.severity}</p>
               </div>
 
               <div className="space-y-2">
-                <h3 className="font-medium text-gray-800">Description</h3>
+                <h3 className="font-medium text-gray-800 dark:text-gray-100">Description</h3>
                 <div
-                  className="text-gray-700 prose max-w-none break-words whitespace-pre-wrap"
+                  className="text-gray-700 dark:text-gray-100 prose max-w-none break-words whitespace-pre-wrap"
                   dangerouslySetInnerHTML={{
                     __html: displayVulnerability.description || "",
                   }}
@@ -245,15 +245,15 @@ function VulnerabilityView() {
           </Card>
 
           {/* Section 3: Recommendations and Steps to Reproduce */}
-          <Card>
-            <CardHeader className="pb-2 bg-gray-50">
-              <CardTitle className="text-xl font-semibold">3. Recommendations and Steps to Reproduce</CardTitle>
+          <Card className="dark:bg-gray-800 dark:border-gray-700">
+            <CardHeader className="pb-2 bg-gray-50 dark:bg-gray-800/50">
+              <CardTitle className="text-xl font-semibold dark:text-gray-100">3. Recommendations and Steps to Reproduce</CardTitle>
             </CardHeader>
             <CardContent className="pt-4 space-y-6">
               <div className="space-y-2">
-                <h3 className="font-medium text-gray-800">Steps to Reproduce</h3>
+                <h3 className="font-medium text-gray-800 dark:text-gray-100">Steps to Reproduce</h3>
                 <div
-                  className="text-gray-700 prose max-w-none break-words whitespace-pre-wrap"
+                  className="text-gray-700 dark:text-gray-100 prose max-w-none break-words whitespace-pre-wrap"
                   dangerouslySetInnerHTML={{
                     __html: displayVulnerability.steps_to_reproduce || "",
                   }}
@@ -261,9 +261,9 @@ function VulnerabilityView() {
               </div>
 
               <div className="space-y-2">
-                <h3 className="font-medium text-gray-800">Recommended Solution</h3>
+                <h3 className="font-medium text-gray-800 dark:text-gray-100">Recommended Solution</h3>
                 <div
-                  className="text-gray-700 prose max-w-none break-words whitespace-pre-wrap"
+                  className="text-gray-700 dark:text-gray-100 prose max-w-none break-words whitespace-pre-wrap"
                   dangerouslySetInnerHTML={{
                     __html: displayVulnerability.recommended_solution || "",
                   }}
@@ -273,35 +273,35 @@ function VulnerabilityView() {
           </Card>
 
           {/* Section 4: Impact and Likelihood */}
-          <Card>
-            <CardHeader className="pb-2 bg-gray-50">
-              <CardTitle className="text-xl font-semibold">4. Impact and Likelihood</CardTitle>
+          <Card className="dark:bg-gray-800 dark:border-gray-700">
+            <CardHeader className="pb-2 bg-gray-50 dark:bg-gray-800/50">
+              <CardTitle className="text-xl font-semibold dark:text-gray-100">4. Impact and Likelihood</CardTitle>
             </CardHeader>
             <CardContent className="pt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                  <h3 className="font-medium text-gray-800">Impact</h3>
-                  <p className="text-gray-700 break-words whitespace-pre-wrap">{displayVulnerability.impact}</p>
+                  <h3 className="font-medium text-gray-800 dark:text-gray-100">Impact</h3>
+                  <p className="text-gray-700 dark:text-gray-100 break-words whitespace-pre-wrap">{displayVulnerability.impact}</p>
                 </div>
                 <div className="space-y-2">
-                  <h3 className="font-medium text-gray-800">Likelihood</h3>
-                  <p className="text-gray-700 break-words whitespace-pre-wrap">{displayVulnerability.likelihood}</p>
+                  <h3 className="font-medium text-gray-800 dark:text-gray-100">Likelihood</h3>
+                  <p className="text-gray-700 dark:text-gray-100 break-words whitespace-pre-wrap">{displayVulnerability.likelihood}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* Section 5: CVSS Metrics */}
-          <Card>
-            <CardHeader className="pb-2 bg-gray-50">
-              <CardTitle className="text-xl font-semibold">5. CVSS Metrics</CardTitle>
+          <Card className="dark:bg-gray-800 dark:border-gray-700">
+            <CardHeader className="pb-2 bg-gray-50 dark:bg-gray-800/50">
+              <CardTitle className="text-xl font-semibold dark:text-gray-100">5. CVSS Metrics</CardTitle>
             </CardHeader>
             <CardContent className="pt-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                 <div className="space-y-4">
                   <div>
-                    <h3 className="font-medium text-gray-800">Attack Vector</h3>
-                    <p className="text-gray-700 break-words whitespace-pre-wrap">
+                    <h3 className="font-medium text-gray-800 dark:text-gray-100">Attack Vector</h3>
+                    <p className="text-gray-700 dark:text-gray-100 break-words whitespace-pre-wrap">
                       {displayVulnerability.cvssVector?.split("/")[1]?.split(":")[1] === "A"
                         ? "Adjacent Network"
                         : displayVulnerability.cvssVector?.split("/")[1]?.split(":")[1] === "N"
@@ -314,8 +314,8 @@ function VulnerabilityView() {
                     </p>
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-800">Attack Complexity</h3>
-                    <p className="text-gray-700 break-words whitespace-pre-wrap">
+                    <h3 className="font-medium text-gray-800 dark:text-gray-100">Attack Complexity</h3>
+                    <p className="text-gray-700 dark:text-gray-100 break-words whitespace-pre-wrap">
                       {displayVulnerability.cvssVector?.split("/")[2]?.split(":")[1] === "L"
                         ? "Low"
                         : displayVulnerability.cvssVector?.split("/")[2]?.split(":")[1] === "H"
@@ -324,8 +324,8 @@ function VulnerabilityView() {
                     </p>
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-800">Privileges Required</h3>
-                    <p className="text-gray-700">
+                    <h3 className="font-medium text-gray-800 dark:text-gray-100">Privileges Required</h3>
+                    <p className="text-gray-700 dark:text-gray-100">
                       {displayVulnerability.cvssVector?.split("/")[3]?.split(":")[1] === "N"
                         ? "None"
                         : displayVulnerability.cvssVector?.split("/")[3]?.split(":")[1] === "L"
@@ -336,8 +336,8 @@ function VulnerabilityView() {
                     </p>
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-800">User Interaction</h3>
-                    <p className="text-gray-700">
+                    <h3 className="font-medium text-gray-800 dark:text-gray-100">User Interaction</h3>
+                    <p className="text-gray-700 dark:text-gray-100">
                       {displayVulnerability.cvssVector?.split("/")[4]?.split(":")[1] === "N"
                         ? "None"
                         : displayVulnerability.cvssVector?.split("/")[4]?.split(":")[1] === "R"
@@ -349,8 +349,8 @@ function VulnerabilityView() {
 
                 <div className="space-y-4">
                   <div>
-                    <h3 className="font-medium text-gray-800">Scope</h3>
-                    <p className="text-gray-700">
+                    <h3 className="font-medium text-gray-800 dark:text-gray-100">Scope</h3>
+                    <p className="text-gray-700 dark:text-gray-100">
                       {displayVulnerability.cvssVector?.split("/")[5]?.split(":")[1] === "U"
                         ? "Unchanged"
                         : displayVulnerability.cvssVector?.split("/")[5]?.split(":")[1] === "C"
@@ -359,8 +359,8 @@ function VulnerabilityView() {
                     </p>
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-800">Confidentiality</h3>
-                    <p className="text-gray-700">
+                    <h3 className="font-medium text-gray-800 dark:text-gray-100">Confidentiality</h3>
+                    <p className="text-gray-700 dark:text-gray-100">
                       {displayVulnerability.cvssVector?.split("/")[6]?.split(":")[1] === "N"
                         ? "None"
                         : displayVulnerability.cvssVector?.split("/")[6]?.split(":")[1] === "L"
@@ -371,8 +371,8 @@ function VulnerabilityView() {
                     </p>
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-800">Integrity</h3>
-                    <p className="text-gray-700">
+                    <h3 className="font-medium text-gray-800 dark:text-gray-100">Integrity</h3>
+                    <p className="text-gray-700 dark:text-gray-100">
                       {displayVulnerability.cvssVector?.split("/")[7]?.split(":")[1] === "N"
                         ? "None"
                         : displayVulnerability.cvssVector?.split("/")[7]?.split(":")[1] === "L"
@@ -383,8 +383,8 @@ function VulnerabilityView() {
                     </p>
                   </div>
                   <div>
-                    <h3 className="font-medium text-gray-800">Availability</h3>
-                    <p className="text-gray-700">
+                    <h3 className="font-medium text-gray-800 dark:text-gray-100">Availability</h3>
+                    <p className="text-gray-700 dark:text-gray-100">
                       {displayVulnerability.cvssVector?.split("/")[8]?.split(":")[1] === "N"
                         ? "None"
                         : displayVulnerability.cvssVector?.split("/")[8]?.split(":")[1] === "L"
@@ -397,7 +397,7 @@ function VulnerabilityView() {
                 </div>
               </div>
               <div className="flex flex-col gap-2">
-              <p className="text-gray-700 mt-4 break-words whitespace-pre-wrap">
+              <p className="text-gray-700 dark:text-gray-100 mt-4 break-words whitespace-pre-wrap">
                 {displayVulnerability.cvssVector}
               </p>
               <p className="font-bold">CVSS Score: <span className="font-normal">{displayVulnerability.cvss}</span></p>
@@ -406,9 +406,9 @@ function VulnerabilityView() {
           </Card>
 
           {/* Section 6: Attachments */}
-          <Card>
-            <CardHeader className="pb-2 bg-gray-50">
-              <CardTitle className="text-xl font-semibold">6. Attachments</CardTitle>
+          <Card className="dark:bg-gray-800 dark:border-gray-700">
+            <CardHeader className="pb-2 bg-gray-50 dark:bg-gray-800/50">
+              <CardTitle className="text-xl font-semibold dark:text-gray-100">6. Attachments</CardTitle>
             </CardHeader>
             <CardContent className="pt-4">
               <FileAttachmentPreview attachments={displayVulnerability.attachments as Attachment[]} />
@@ -443,10 +443,10 @@ function VulnerabilityView() {
           <div className="hidden lg:block"> {/* Spacer div */}
             <div className="h-[600px]"></div>
           </div>
-          <div className="lg:fixed lg:w-[inherit] max-w-[400px] bg-white rounded-lg shadow-sm p-6 top-10">
+          <div className="lg:fixed lg:w-[inherit] max-w-[400px] bg-white dark:bg-gray-800 dark:border-gray-700 rounded-lg shadow-sm p-6 top-10">
             {/* Header with logo and title */}
             <div className="flex items-center gap-4 mb-6">
-              <h1 className="text-xl lg:text-3xl font-bold text-[#1a1a2e] break-words">{displayPentest.title}</h1>
+              <h1 className="text-xl lg:text-3xl font-bold text-[#1a1a2e] dark:text-gray-100 break-words">{displayPentest.title}</h1>
             </div>
 
             {/* Client info */}
@@ -523,7 +523,7 @@ function VulnerabilityView() {
               {!isPentester() && !isClient() && (
                 <Button
                   variant="outline"
-                  className="border-[#9c3a3a] text-[#9c3a3a] hover:bg-[#ffeeee] flex items-center justify-center gap-2 text-sm lg:text-base"
+                  className="border-[#9c3a3a] text-[#9c3a3a] hover:bg-[#ffeeee] dark:border-[#9c3a3a] dark:text-[#9c3a3a] dark:hover:bg-red-900 dark:hover:text-white flex items-center justify-center gap-2 text-sm lg:text-base"
                   onClick={() => {
                     if (
                       window.confirm("Are you sure you want to delete this vulnerability? This action cannot be undone.")

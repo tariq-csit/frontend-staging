@@ -25,8 +25,8 @@ export default function CommentCard({ author, content, createdAt, internal = fal
       className={cn(
         "p-4 rounded-lg flex flex-col gap-2",
         internal
-          ? "bg-[#f5f3ff] border-2 border-[#7e22ce]" // Light purple for internal comments
-          : "bg-white", // White with purple border for regular comments
+          ? "bg-[#f5f3ff] dark:bg-gray-800 border-2 border-[#7e22ce]" // Light purple for internal comments
+          : "bg-white dark:bg-gray-800", // White with purple border for regular comments
       )}
     >
       <div className="flex justify-between items-center gap-3 mb-3">
@@ -34,16 +34,16 @@ export default function CommentCard({ author, content, createdAt, internal = fal
           <div className="relative h-10 w-10 rounded-full overflow-hidden">
             <Avatar>
               <AvatarImage src={author.profilePicture || "/placeholder.svg"} alt={author.name} />
-              <AvatarFallback>{author.name.charAt(0)}</AvatarFallback>
+              <AvatarFallback className="dark:bg-gray-950">{author.name.charAt(0)}</AvatarFallback>
             </Avatar>
           </div>
           <div className="flex items-center gap-2">
-            <span className="font-medium text-gray-900 truncate max-w-48">{author.name}</span>
-            {internal && <span className="px-3 py-1 text-xs bg-[#a78bfa] text-white rounded-full">Internal</span>}
+            <span className="font-medium text-gray-900 dark:text-gray-100 truncate max-w-48">{author.name}</span>
+            {internal && <span className="px-3 py-1 text-xs bg-[#a78bfa] dark:bg-[#3b2f5f] dark:border-[#a78bfa] dark:border text-white dark:text-gray-100 rounded-full">Internal</span>}
           </div>
         </div>
         <div>
-          <span className="text-sm text-gray-500 break-words whitespace-pre-wrap">
+          <span className="text-sm text-gray-500 dark:text-gray-100 break-words whitespace-pre-wrap">
             {new Date(createdAt).toLocaleDateString('en-US', {
               day: 'numeric',
               month: 'long',
@@ -55,7 +55,7 @@ export default function CommentCard({ author, content, createdAt, internal = fal
         </div>
       </div>
 
-      <div className="text-gray-800 break-words whitespace-pre-wrap">{content}</div>
+      <div className="text-gray-800 dark:text-gray-100 break-words whitespace-pre-wrap">{content}</div>
 
       <div className="flex gap-4 w-full overflow-x-auto">
       {attachments && attachments.map((attachment) => (
@@ -73,15 +73,15 @@ export default function CommentCard({ author, content, createdAt, internal = fal
                 </div>
             </div>
           ) : (
-            <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-md hover:bg-gray-100 transition-colors group cursor-pointer" onClick={() => window.open(attachment.url, '_blank')}>
-              <div className="bg-red-100 p-1.5 rounded-md">
-                <FileText className="h-4 w-4 text-red-500" />
+            <div className="flex items-center gap-2 bg-gray-50 dark:bg-gray-900 p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors group cursor-pointer" onClick={() => window.open(attachment.url, '_blank')}>
+              <div className="bg-red-100 dark:bg-red-900 p-1.5 rounded-md">
+                <FileText className="h-4 w-4 text-red-500 dark:text-red-300" />
               </div>
               <a 
                 href={attachment.url} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-sm text-gray-700 group-hover:text-primary truncate break-words whitespace-pre-wrap max-w-[200px]"
+                className="text-sm text-gray-700 dark:text-gray-100 group-hover:text-primary truncate break-words whitespace-pre-wrap max-w-[200px]"
                 onClick={(e) => e.preventDefault()}
               >
                 {attachment.name}

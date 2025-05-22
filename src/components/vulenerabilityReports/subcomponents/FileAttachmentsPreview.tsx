@@ -136,7 +136,7 @@ const FileAttachmentPreview: React.FC<{attachments: Attachment[]}> = ({ attachme
           return (
             <div
               key={index}
-              className="attachment-item min-w-[200px] border rounded-lg overflow-hidden bg-white shadow-sm hover:shadow-md transition-all duration-300"
+              className="attachment-item min-w-[200px] border rounded-lg overflow-hidden bg-white dark:bg-gray-800 shadow-sm hover:shadow-md transition-all duration-300"
             >
               {isImage ? (
                 <div className="relative group">
@@ -157,16 +157,16 @@ const FileAttachmentPreview: React.FC<{attachments: Attachment[]}> = ({ attachme
                       }}
                       variant="default"
                       size="icon"
-                      className="bg-white/80 hover:bg-white"
+                      className="bg-white/80 hover:bg-white dark:bg-gray-800 dark:hover:bg-gray-700"
                     >
                       <DownloadIcon className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>
               ) : (
-                <div className="h-32 flex items-center justify-center bg-gray-50">
+                <div className="h-32 flex items-center justify-center bg-gray-50 dark:bg-gray-800">
                   <div className="text-center p-4">
-                    <div className="bg-blue-500 text-white font-bold p-3 rounded-lg inline-flex items-center gap-2 mb-2">
+                    <div className="bg-blue-500 text-white dark:text-gray-100 font-bold p-3 rounded-lg inline-flex items-center gap-2 mb-2">
                       <span>{fileType}</span>
                     </div>
                   </div>
@@ -177,7 +177,7 @@ const FileAttachmentPreview: React.FC<{attachments: Attachment[]}> = ({ attachme
                   {attachment.name}
                 </p>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-500 dark:text-gray-100">
                     {attachment.size && formatFileSize(attachment.size)}
                   </span>
                   <Button

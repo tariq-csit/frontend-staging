@@ -10,6 +10,7 @@ import {
   addMonths,
 } from "date-fns"
 import { twMerge } from "tailwind-merge"
+import DOMPurify from "dompurify"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -33,5 +34,18 @@ export function formatTimeDifference(startDate: Date, endDate: Date) {
     minutes,
     seconds,
   }
+}
+
+// Function to sanitize HTML content
+export function sanitizeHtml(html: string): string {
+  return DOMPurify.sanitize(html, {
+    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'img', 'blockquote', 'code', 'pre'],
+    ALLOWED_ATTR: ['src', 'alt', 'title', 'class'],
+    ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|cid|xmpp|data):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+    ADD_TAGS: ['img'],
+    ADD_ATTR: ['target'],
+    SANITIZE_DOM: true,
+    WHOLE_DOCUMENT: false,
+  })
 }
 

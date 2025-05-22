@@ -28,7 +28,7 @@ function SignUp() {
   return (
     <div className="flex flex-col sm:flex-row h-screen">
       <div className="bg-[url('/login-image.png')] bg-cover bg-center h-[20vh] sm:h-auto sm:w-1/2"></div>
-      <div className="flex flex-col overflow-y-scroll sm:w-1/2 py-12 px-6 sm:px-16 self-stretch bg-[#F5F5F5]">
+      <div className="flex flex-col overflow-y-scroll sm:w-1/2 py-12 px-6 sm:px-16 self-stretch bg-[#F5F5F5] dark:bg-gray-900">
       <div className="">
         {signUpData.code === "" && signUpData.name === "" ? (
           <Code setSignUpData={setSignUpData as (data: Partial<SignUpData>) => void} signUpData={signUpData} />

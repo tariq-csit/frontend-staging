@@ -16,7 +16,7 @@ function ReportsButton({ pentestId }: { pentestId: string }) {
         <button className='sm:w-1/2 self-stretch rounded-lg border border-dashed border-primary-900 bg-primary-900/20 flex justify-center items-center min-h-60' onClick={handleClick}>
           <div className="flex items-center gap-[10px]">
           <PlusIcon className="h-6 w-6" />
-          <span className="text-2xl text-primary-900">Add Vulnerabilities</span>
+          <span className="text-2xl text-primary-900 dark:text-primary">Add Vulnerabilities</span>
           </div>
         </button>
   )

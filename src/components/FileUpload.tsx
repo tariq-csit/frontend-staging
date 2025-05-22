@@ -136,7 +136,7 @@ export function FileUpload({
     <div className={cn("space-y-4", className)}>
       <div
         className={cn(
-          "relative flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-6 transition-colors",
+          "relative flex flex-col items-center justify-center rounded-lg border-2 dark:border border-dashed dark:bg-gray-900 p-6 transition-colors",
           dragActive ? "border-primary bg-primary/5" : "border-muted-foreground/25 hover:border-primary/50",
           disabled && "cursor-not-allowed opacity-60",
         )}

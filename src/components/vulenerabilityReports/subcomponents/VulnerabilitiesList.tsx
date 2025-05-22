@@ -5,12 +5,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import VulnerabilitySeverityBadge from "./VulnerabilitySeverityBadge"
 import VulnerabilityStatusBadge from "./VulnerabilityStatusBadge"
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
 
 function VulnerabilityItemSkeleton() {
   return (
-    <div className="border-gray-100 p-4 grid grid-cols-9 items-center gap-8 border rounded-md min-w-[1000px]">
+    <div className="border-gray-100 dark:border-gray-700 p-4 grid grid-cols-9 items-center gap-8 border rounded-md min-w-[1000px]">
       <div className="flex flex-col gap-1 col-span-4">
         <Skeleton className="h-4 w-16 mb-1" />
         <Skeleton className="h-5 w-3/4" />
@@ -75,7 +73,7 @@ function VulnerabilitiesList({ vulnerabilities, pentestId, isLoading, isClientVi
 
       <div className={listClasses}>
         {vulnerabilities?.map((vulnerability, i) => (
-          <div key={i} className="border-inputBorder p-4 grid grid-cols-9 items-center gap-8 border rounded-md min-w-[1000px]">
+          <div key={i} className="border-inputBorder dark:bg-gray-900 dark:border-gray-900 p-4 grid grid-cols-9 items-center gap-8 border rounded-md min-w-[1000px]">
             <div className="flex flex-col gap-1 col-span-3">
               <span className="text-sm text-muted-foreground">Name</span>
               <TooltipProvider>
@@ -111,7 +109,7 @@ function VulnerabilitiesList({ vulnerabilities, pentestId, isLoading, isClientVi
             </div>
 
             <div className="col-span-1 flex justify-end items-center">
-              <Link className="text-primary-900 text-sm" to={`/vulnerability-reports/${pentestId}/vulnerabilities/${vulnerability._id}`}>View details</Link>
+              <Link className="text-primary-900 dark:text-primary text-sm" to={`/vulnerability-reports/${pentestId}/vulnerabilities/${vulnerability._id}`}>View details</Link>
             </div>
           </div>
         ))}
@@ -119,5 +117,5 @@ function VulnerabilitiesList({ vulnerabilities, pentestId, isLoading, isClientVi
     </div>
   );
 }
-
 export default VulnerabilitiesList;
+

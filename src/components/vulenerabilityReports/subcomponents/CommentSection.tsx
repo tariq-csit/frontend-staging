@@ -2,12 +2,12 @@
 
 import type React from "react"
 
-import { useState, useRef, useEffect, KeyboardEvent } from "react"
+import { useState, useRef, KeyboardEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
-import { Paperclip, Trash, Loader2, KeyboardCommandIcon } from "lucide-react"
+import { Paperclip, Trash, Loader2 } from "lucide-react"
 import axiosInstance from "@/lib/AxiosInstance"
 import { apiRoutes } from "@/lib/routes"
 import { useMutation } from "@tanstack/react-query"
@@ -108,14 +108,14 @@ export default function CommentBox({
   return (
     <div className="w-full">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="relative rounded-md bg-background text-foreground border border-gray-200">
+        <div className="relative rounded-md bg-background text-foreground border border-gray-200 dark:border-gray-700">
           <div className="mt-2">
             {files.length > 0 && (
               <div className="flex flex-nowrap px-4 py-2 space-x-2">
                 {files.map((file, index) => (
-                  <div key={index} className="flex items-center gap-2 w-fit p-2 border border-gray-200 rounded-md shadow-sm">
-                    <Paperclip className="h-5 w-5 text-gray-500 mr-2" />
-                    <span className="text-sm text-gray-700 break-words whitespace-pre-wrap max-w-[200px]">{file.name}</span>
+                  <div key={index} className="flex items-center gap-2 w-fit p-2 border border-gray-200 dark:border-gray-700 rounded-md shadow-sm">
+                    <Paperclip className="h-5 w-5 text-gray-500 dark:text-gray-100 mr-2" />
+                    <span className="text-sm text-gray-700 dark:text-gray-100 break-words whitespace-pre-wrap max-w-[200px]">{file.name}</span>
                     <Button 
                       size="icon" 
                       variant="ghost" 
@@ -142,7 +142,7 @@ export default function CommentBox({
           <input
             type="file"
             multiple
-            className="absolute right-4 top-4 text-gray-400 hover:text-primary-900 transition-all duration-300"
+            className="absolute right-4 top-4 text-gray-400 dark:text-gray-100 hover:text-primary-900 transition-all duration-300"
             aria-label="Attach files"
             onChange={async (e) => {
               const fileList = e.target.files;
@@ -179,7 +179,7 @@ export default function CommentBox({
             {isUploading ? (
               <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
-              <Paperclip className="h-5 w-5 group-hover:text-primary transition-all duration-300" />
+              <Paperclip className="h-5 w-5 group-hover:text-primary dark:text-gray-100 transition-all duration-300" />
             )}
           </label>
         </div>
@@ -193,7 +193,7 @@ export default function CommentBox({
               className="data-[state=checked]:bg-indigo-600"
               disabled={isSubmitting}
             />
-            <Label htmlFor="internal-comment" className="text-sm text-gray-500">
+            <Label htmlFor="internal-comment" className="text-sm text-gray-500 dark:text-gray-100">
               Make internal comment
             </Label>
           </div>
@@ -201,9 +201,9 @@ export default function CommentBox({
           <div className="flex items-center gap-2">
             <span className="text-xs text-gray-500 hidden sm:inline-flex items-center">
               <span className="mr-1">Press</span>
-              <kbd className="px-1.5 py-0.5 text-xs bg-gray-100 border border-gray-200 rounded-md">Ctrl</kbd>
+              <kbd className="px-1.5 py-0.5 text-xs bg-gray-100 border border-gray-200 dark:bg-gray-800 dark:border-gray-700 rounded-md">Ctrl</kbd>
               <span className="mx-1">+</span>
-              <kbd className="px-1.5 py-0.5 text-xs bg-gray-100 border border-gray-200 rounded-md">Enter</kbd>
+              <kbd className="px-1.5 py-0.5 text-xs bg-gray-100 border border-gray-200 dark:bg-gray-800 dark:border-gray-700 rounded-md">Enter</kbd>
             </span>
             <Button 
               type="submit" 
