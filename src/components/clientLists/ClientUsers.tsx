@@ -85,7 +85,7 @@ export default function ClientUsers() {
                 ))
               ) : (
                 clientUsers && clientUsers
-                  ?.filter((user: ClientUser) => user.name.toLowerCase().includes(search.toLowerCase()))
+                  ?.filter((user: ClientUser) => user.name.toLowerCase().includes(search.toLowerCase()) && user.role === "client")
                   .map((user: ClientUser) => (
                     <ClientUserRow key={user._id} user={user} refetch={refetch} isClientView={isClient()} />
                   ))

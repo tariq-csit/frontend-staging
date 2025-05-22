@@ -214,4 +214,5 @@ export interface RequestedPentest {
     name: string;
     logoUrl?: string;
   };
+  decisionMessage?: string;
 }
