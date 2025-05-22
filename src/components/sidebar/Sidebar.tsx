@@ -10,6 +10,7 @@ import axiosInstance from "@/lib/AxiosInstance";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useNavigate } from "react-router-dom";
 import { UserRole } from "@/hooks/useUser";
+import { ModeToggle } from "@/components/mode-toggle";
 
 function Sidebar(props: {
   name: string,
@@ -94,12 +95,12 @@ function Sidebar(props: {
     {
       link: "/clients/users",
       text: "My Team",
-      icon: <Users className="w-6 h-6 text-gray-500" />,
+      icon: <Users className="w-6 h-6 text-gray-500 dark:text-gray-400" />,
     },
     {
       link: "/integration",
       text: "Integration",
-      icon: <Network className="w-6 h-6 text-gray-500" />,
+      icon: <Network className="w-6 h-6 text-gray-500 dark:text-gray-400" />,
     },
   ];
 
@@ -120,22 +121,22 @@ function Sidebar(props: {
   return (
     <>
     <div
-      className={`sm:flex bg-white w-[18.5rem] fixed z-10  ${
+      className={`sm:flex bg-white dark:bg-gray-800 w-[18.5rem] fixed z-10  ${
         isCollapsed ? "hidden sm:w-[4.75rem]":'flex sm:w-[15rem] lg:w-[17.5rem]'} h-auto min-h-screen flex-col justify-between items-start shrink-0 rounded-component`}
     >
       <div className="flex flex-col justify-center gap-6 self-stretch ">
         <div className="flex  items-center gap-[0.75rem] self-stretch">
           <img
-            className={`${isCollapsed ? "p-0": 'p-6'}  mt-4 sm:mt-2`}
+            className={`${isCollapsed ? "p-0": 'p-6'}  mt-4 sm:mt-2 dark:invert`}
             src={isCollapsed ? smallLogo : largeLogo}
           />
           <div
-            className={`border cursor-pointer -right-3 hidden sm:visible border-secondary duration-200 bg-white sm:flex p-1 items-center gap-[0.625rem] rounded-full absolute ${
+            className={`border cursor-pointer -right-3 hidden sm:visible border-secondary dark:border-gray-600 duration-200 bg-white dark:bg-gray-800 sm:flex p-1 items-center gap-[0.625rem] rounded-full absolute ${
               isCollapsed ? "rotate-180" : ""
             }  top-7`}
             onClick={toggle}
           >
-            <img src={leftArrow} alt="left arrow" />
+            <img src={leftArrow} alt="left arrow" className="dark:invert" />
           </div>
         </div>
         <div
@@ -159,7 +160,7 @@ function Sidebar(props: {
           <div
             className={`${
               isCollapsed ? "w-[2.75rem]" : "mx-auto w-5/6 sm:w-48 lg:w-[14.625rem]"
-            } my-3 h-[0.0625rem] bg-secondary`}
+            } my-3 h-[0.0625rem] bg-secondary dark:bg-gray-600`}
           />
           <SidebarNav
             link="/settings"
@@ -171,7 +172,7 @@ function Sidebar(props: {
           <SidebarNav
             link="#"
             navText="Logout"
-            icon={<LogOut />}
+            icon={<LogOut className="dark:text-gray-400" />}
             collapsed={isCollapsed}
             setCollapsed={setCollapsed}
             onClick={async () => {
@@ -182,7 +183,22 @@ function Sidebar(props: {
           />
         </div>
       </div>
+
+      <div className="flex flex-col mx-auto gap-2 items-center">
+      {/* Theme toggle button */}
+      <div className={`w-full flex justify-center py-3 ${isCollapsed ? 'px-0' : 'px-6'}`}>
+        {isCollapsed ? (
+          <ModeToggle />
+        ) : (
+          <div className="flex justify-between items-center w-full rounded-md p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200">
+            <span className="text-xs lg:text-sm font-poppins font-medium dark:text-gray-200">Toggle theme</span>
+            <ModeToggle />
+          </div>
+        )}
+      </div>
+      
       <ProfileNav image={props.image} role={props.role} name={props.name} collapsed={isCollapsed}/>
+      </div>
     </div>
     </>
   );

@@ -20,13 +20,13 @@ function Navbar(props: { name: string; image: string; role: string }) {
     }
   };
   return (
-    <div className="flex pl-0 pr-6 sm:pr-10 w-full py-4 flex-col h-12 justify-center items-center self-stretch border-b border-secondary bg-white shadow-6">
+    <div className="flex pl-0 pr-6 sm:pr-10 w-full py-4 flex-col h-12 justify-center items-center self-stretch border-b border-secondary bg-white dark:bg-background shadow-6">
       <div className="flex pl-10 justify-end items-center gap-6 self-stretch">
         <div className="flex justify-center items-center gap-5 sm:gap-8 lg:gap-[2.8125rem]">
           <div className="flex items-center gap-3">
             <div className="text-end">
               <p className="text-xs font-poppins font-medium">{props.name}</p>
-              <p className="text-xs text-inputBorder font-poppins font-normal">
+              <p className="text-xs text-inputBorder dark:text-gray-400 font-poppins font-normal">
                 {props.role}
               </p>
             </div>

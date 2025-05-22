@@ -38,8 +38,8 @@ function SidebarNav(props: propsType) {
         to={props.link}
         className={`${style} ${
           active
-            ? "bg-primary-100 font-poppins text-primary-900"
-            : "bg-white text-[#34465f] sm:opacity-75 hover:opacity-100"
+            ? "bg-primary-100 dark:bg-indigo-900/30 font-poppins text-primary-900 dark:text-indigo-300"
+            : "bg-white dark:bg-gray-800 text-[#34465f] dark:text-gray-300 sm:opacity-75 hover:opacity-100"
         }`}
         onClick={() => {
           const isMobile = window.innerWidth < 640;
@@ -53,7 +53,7 @@ function SidebarNav(props: propsType) {
           <img
             className={`w-5 h-5 ${
               props.collapsed ? "scale-150" : ""
-            }`}
+            } dark:invert-[.75]`}
             src={props.icon}
             alt={`${props.navText} icon`}
           />
@@ -79,14 +79,14 @@ function SidebarNav(props: propsType) {
               className={({ isActive }) =>
                 `${style} ${
                   isActive
-                    ? "bg-primary-100 font-poppins text-primary-900"
-                    : "bg-white text-[#34465f] sm:opacity-75 hover:opacity-100"
+                    ? "bg-primary-100 dark:bg-indigo-900/30 font-poppins text-primary-900 dark:text-indigo-300"
+                    : "bg-white dark:bg-gray-800 text-[#34465f] dark:text-gray-300 sm:opacity-75 hover:opacity-100"
                 }`
               }
             >
               {typeof item.icon === 'string' ? (
                 <img
-                  className="w-5 h-5"
+                  className="w-5 h-5 dark:invert-[.75]"
                   src={item.icon}
                   alt={`${item.text} icon`}
                 />

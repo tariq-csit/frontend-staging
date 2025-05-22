@@ -63,11 +63,11 @@ function Layout() {
   }, [isCollapsed, setCollapsed]);
 
   return (
-    <div className="flex min-h-screen bg-[#E5E5E5]">
+    <div className="flex min-h-screen bg-[#E5E5E5] dark:bg-gray-900 transition-colors duration-200">
       {/* Sidebar */}
       <div
         ref={sidebarRef}
-        className={`fixed left-0 top-0 h-full z-10 bg-white transition-all duration-200 ${
+        className={`fixed left-0 top-0 h-full z-10 bg-white dark:bg-gray-800 transition-all duration-200 ${
           isCollapsed
             ? "w-0 overflow-hidden sm:w-[4.75rem]"
             : "w-[15rem] sm:w-[15rem] lg:w-[17.5rem]"
@@ -88,11 +88,11 @@ function Layout() {
       >
         {/* Toggle button for mobile */}
         <div
-          className={`sm:hidden bg-secondary z-50 rounded-full p-2 fixed top-2 left-2 cursor-pointer ${isCollapsed ? 'block' : 'hidden'}`}
+          className={`sm:hidden bg-secondary dark:bg-gray-700 z-50 rounded-full p-2 fixed top-2 left-2 cursor-pointer ${isCollapsed ? 'block' : 'hidden'}`}
           onClick={() => setCollapsed(false)}
         >
           <img
-            className="w-3 h-3"
+            className="w-3 h-3 dark:invert"
             src={bars}
             alt="Toggle Sidebar"
           />

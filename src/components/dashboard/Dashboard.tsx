@@ -38,7 +38,7 @@ function DashboardHome() {
   const isLoading = dashboardLoading;
   const error = dashboardError;
 
-  if (error) return <p>Error fetching dashboard data</p>;
+  if (error) return <p className="text-foreground dark:text-gray-300">Error fetching dashboard data</p>;
 
   // Type guard to check if data is PentesterMetrics
   const isPentesterData = (data: AdminMetrics | PentesterMetrics | ClientMetrics | undefined): data is PentesterMetrics => {
@@ -68,7 +68,7 @@ function DashboardHome() {
   };
 
   return (
-    <div className="flex flex-col gap-6 flex-component self-stretch w-full">
+    <div className="flex flex-col gap-6 flex-component self-stretch w-full text-foreground dark:text-gray-200">
       {/* Top metrics cards section */}
       <div className="grid grid-cols-1 sm:grid-cols-3 py-0 w-full gap-3 sm:gap-6 self-stretch">
         <MetricsCards 
@@ -101,7 +101,7 @@ function DashboardHome() {
 
       {/* Bottom section - conditional pentester impact or admin's pentest list */}
       {isPentester ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center self-stretch shadow-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center self-stretch shadow-6 dark:shadow-gray-800">
           <PentesterImpactSection 
             isLoading={dashboardLoading}
             vulnerabilityCounts={isPentesterData(dashboardData) ? dashboardData.total_vulnerabilities : undefined}
