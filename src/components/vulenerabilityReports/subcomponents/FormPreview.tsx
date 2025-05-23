@@ -133,32 +133,32 @@ function VulnerabilityView() {
     { 
       value: "New", 
       label: "New", 
-      color: "bg-[#E5E7EB]",
-      textColor: "text-[#6B7280]" 
+      color: "bg-[#E5E7EB] dark:bg-[#6B7280]",
+      textColor: "text-[#6B7280] dark:text-white" 
     },
     { 
       value: "Triaged", 
       label: "Triaged", 
-      color: "bg-[#DAE6FD]",
-      textColor: "text-[#2382F6]" 
+      color: "bg-[#DAE6FD] dark:bg-[#2382F6]",
+      textColor: "text-[#2382F6] dark:text-white" 
     },
     { 
       value: "Ready For Retest", 
       label: "Ready for Retest", 
-      color: "bg-[#FDE68A]",
-      textColor: "text-[#92400E]" 
+      color: "bg-[#FDE68A] dark:bg-[#92400E]",
+      textColor: "text-[#92400E] dark:text-white" 
     },
     { 
       value: "Resolved", 
       label: "Resolved", 
-      color: "bg-[#86EFAC]",
-      textColor: "text-[#166534]" 
+      color: "bg-[#86EFAC] dark:bg-[#166534]",
+      textColor: "text-[#166534] dark:text-white" 
     },
     { 
       value: "Not Applicable", 
       label: "Not Applicable", 
-      color: "bg-[#FCA5A5]",
-      textColor: "text-[#991B1B]" 
+      color: "bg-[#FCA5A5] dark:bg-[#991B1B]",
+      textColor: "text-[#991B1B] dark:text-white" 
     },
   ]
 
@@ -473,15 +473,15 @@ function VulnerabilityView() {
                 disabled={isUpdatingVulnerabilityStatus}
               >
                 <SelectTrigger
-                  className={`w-full lg:w-[180px] ${
+                  className={`w-full lg:w-[180px] bg-black border ${
                     statusOptions.find((option) => option.value === displayVulnerability.status)?.color
-                  } border-none`}
+                  }`}
                 >
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent>
                   {statusOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value} className={`${option.color} ${option.textColor} my-1 rounded-md`}>
+                    <SelectItem key={option.value} value={option.value} className={`${option.color} ${option.textColor} my-1 rounded-md hover:${option.color} dark:hover:${option.color}`}>
                       {option.label}
                     </SelectItem>
                   ))}
