@@ -29,7 +29,7 @@ const adminFormSchema = z.object({
 
 export default function AddClientUserDialog({refetch, isClientView = false}: {refetch: () => void, isClientView?: boolean}) {
   const [open, setOpen] = useState(false);
-  const { isClient } = useUser();
+  const { isClient, loading } = useUser();
   
   // Use the appropriate schema based on user role
   const formSchema = isClient() ? clientFormSchema : adminFormSchema;
@@ -52,7 +52,7 @@ export default function AddClientUserDialog({refetch, isClientView = false}: {re
   const {data: clients} = useQuery({
     queryKey: ["clients"],
     queryFn: () => axiosInstance.get(apiRoutes.clients.all).then((res) => res.data),
-    enabled: !isClient(), // Only fetch if user is not a client
+    enabled: !isClient() && !loading, // Only fetch if user is not a client
   });
 
   const { mutate: onboardClientUser, isPending } = useMutation({
