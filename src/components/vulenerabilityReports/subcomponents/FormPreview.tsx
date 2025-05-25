@@ -134,31 +134,31 @@ function VulnerabilityView() {
       value: "New", 
       label: "New", 
       color: "bg-[#E5E7EB] dark:bg-[#6B7280]",
-      textColor: "text-[#6B7280] dark:text-white" 
+      textColor: "text-[#6B7280] dark:text-[#FFFFFF]" 
     },
     { 
       value: "Triaged", 
       label: "Triaged", 
       color: "bg-[#DAE6FD] dark:bg-[#2382F6]",
-      textColor: "text-[#2382F6] dark:text-white" 
+      textColor: "text-[#2382F6] dark:text-[#FFFFFF]" 
     },
     { 
       value: "Ready For Retest", 
       label: "Ready for Retest", 
-      color: "bg-[#FDE68A] dark:bg-[#92400E]",
-      textColor: "text-[#92400E] dark:text-white" 
+      color: "bg-[#FDE68A] dark:bg-[#F59E0B]",
+      textColor: "text-[#92400E] dark:text-[#FFFFFF]" 
     },
     { 
       value: "Resolved", 
       label: "Resolved", 
       color: "bg-[#86EFAC] dark:bg-[#166534]",
-      textColor: "text-[#166534] dark:text-white" 
+      textColor: "text-[#166534] dark:text-[#FFFFFF]" 
     },
     { 
       value: "Not Applicable", 
       label: "Not Applicable", 
       color: "bg-[#FCA5A5] dark:bg-[#991B1B]",
-      textColor: "text-[#991B1B] dark:text-white" 
+      textColor: "text-[#991B1B] dark:text-[#FFFFFF]" 
     },
   ]
 

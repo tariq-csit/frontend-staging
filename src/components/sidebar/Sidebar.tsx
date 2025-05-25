@@ -11,6 +11,7 @@ import { useSidebar } from "@/contexts/SidebarContext";
 import { useNavigate } from "react-router-dom";
 import { UserRole } from "@/hooks/useUser";
 import { ModeToggle } from "@/components/mode-toggle";
+import { cn } from "@/lib/utils";
 
 function Sidebar(props: {
   name: string,
@@ -184,17 +185,13 @@ function Sidebar(props: {
         </div>
       </div>
 
-      <div className="flex flex-col mx-auto gap-2 items-center">
+      <div className={cn(
+        "flex flex-col  gap-2 items-center",
+        isCollapsed ? "mx-4" : "mx-8"
+      )}>
       {/* Theme toggle button */}
-      <div className={`w-full flex justify-center py-3 ${isCollapsed ? 'px-0' : 'px-6'}`}>
-        {isCollapsed ? (
+      <div className={`w-full flex justify-start py-3`}>
           <ModeToggle />
-        ) : (
-          <div className="flex justify-between items-center w-full rounded-md p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200">
-            <span className="text-xs lg:text-sm font-poppins font-medium dark:text-gray-200">Toggle theme</span>
-            <ModeToggle />
-          </div>
-        )}
       </div>
       
       <ProfileNav image={props.image} role={props.role} name={props.name} collapsed={isCollapsed}/>

@@ -1,6 +1,5 @@
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { ChevronRight, MoreVertical } from "lucide-react"
+import { ChevronRight } from "lucide-react"
 import AddClientUserDialog from "./AddClientUserDialog";
 import { apiRoutes } from "@/lib/routes";
 import { useQuery } from "@tanstack/react-query";
