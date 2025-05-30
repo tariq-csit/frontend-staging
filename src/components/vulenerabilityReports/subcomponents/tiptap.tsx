@@ -265,12 +265,12 @@ const Tiptap = (props: {
       StarterKit.configure({
         blockquote: {
           HTMLAttributes: {
-            class: "border-l-4 border-gray-400 pl-4 italic text-gray-600",
+            class: "border-l-4 border-gray-400 pl-4 italic text-gray-600 dark:border-gray-600 dark:text-gray-300",
           },
         },
         codeBlock: {
           HTMLAttributes: {
-            class: "bg-gray-100 p-2 rounded-md font-mono text-sm",
+            class: "bg-gray-100 p-2 rounded-md font-mono text-sm dark:bg-gray-800 dark:text-gray-200",
           },
         },
         bulletList: {
