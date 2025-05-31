@@ -1,0 +1,91 @@
+---
+description: create a new component or use the component.
+globs: 
+alwaysApply: false
+---
+# Component Organization Guide
+
+## Directory Structure
+
+Components are organized by feature and role:
+
+```
+src/components/
+├── auth/                    # Authentication components
+├── dashboard/               # Single dashboard with role-based content
+├── sidebar/                 # Role-specific navigation
+├── activePentests/          # Pentest management
+├── vulenerabilityReports/   # Vulnerability system
+├── ui/                      # Shared UI components
+└── shared/                  # Cross-role components
+```
+
+## Component Patterns
+
+### Single Component with Role Logic
+Prefer single components with conditional rendering over separate role-specific components:
+
+```typescript
+// ✅ Good: Single component with role logic
+function Dashboard() {
+  const { isAdmin, isPentester, isClient } = useUser();
+  
+  return (
+    <div>
+      {isAdmin() && <AdminMetrics />}
+      {isPentester() && <PentesterMetrics />}
+      {isClient() && <ClientMetrics />}
+      
+      {/* Shared components */}
+      <Activities />
+    </div>
+  );
+}
+
+// ❌ Avoid: Separate components for each role
+// AdminDashboard, PentesterDashboard, ClientDashboard
+```
+
+### Shared Components with Role Awareness
+Components used across roles should be role-aware:
+
+```typescript
+// Example: Activities component
+function Activities() {
+  const { isPentester, isClient } = useUser();
+  
+  const endpoint = isClient() 
+    ? '/client/latest-activities'
+    : isPentester() 
+      ? '/pentester/latest-activities'
+      : '/admin/latest-activities';
+  
+  const { data } = useQuery(['activities', role], () => 
+    axiosInstance.get(endpoint)
+  );
+}
+```
+
+### Permission-Based Action Buttons
+Action buttons should be conditionally rendered based on permissions:
+
+```typescript
+// Example from vulnerability view
+{isReporter() && isPentester() && (
+  <Button onClick={() => navigate(`/edit`)}>
+    <Edit /> Edit
+  </Button>
+)}
+
+{!isPentester() && !isClient() && (
+  <Button onClick={() => deleteVulnerability()}>
+    <Trash2 /> Delete
+  </Button>
+)}
+```
+
+## Key Component Files
+- **Main Dashboard**: [Dashboard.tsx](mdc:src/components/dashboard/Dashboard.tsx)
+- **Sidebar Navigation**: [Sidebar.tsx](mdc:src/components/sidebar/Sidebar.tsx)
+- **Vulnerability View**: [FormPreview.tsx](mdc:src/components/vulenerabilityReports/subcomponents/FormPreview.tsx)
+- **User Hook**: [useUser.ts](mdc:src/hooks/useUser.ts)

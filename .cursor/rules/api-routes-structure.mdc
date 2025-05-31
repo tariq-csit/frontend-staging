@@ -1,0 +1,63 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# API Routes Structure
+
+## Route Organization
+
+The application uses role-based API endpoints defined in [routes.ts](mdc:src/lib/routes.ts).
+
+### Route Structure Pattern
+```typescript
+export const apiRoutes = {
+  // Admin routes - full access
+  pentests: { /* admin endpoints */ },
+  
+  // Pentester routes - limited access
+  pentester: { 
+    dashboard: '/pentester/dashboard',
+    pentests: { /* assigned pentests only */ },
+    vulnerabilities: { /* CRUD operations */ }
+  },
+  
+  // Client routes - view-only access  
+  client: {
+    pentests: { /* client's pentests only */ },
+    vulnerabilities: { /* read-only access */ }
+  }
+};
+```
+
+### Usage Pattern in Components
+Always use conditional endpoint selection based on user role:
+
+```typescript
+// In React Query hooks
+const { data } = useQuery({
+  queryKey: ["pentest", id],
+  queryFn: () => {
+    if (isClient()) {
+      return axiosInstance.get(apiRoutes.client.pentests.details(id));
+    } else if (isPentester()) {
+      return axiosInstance.get(apiRoutes.pentester.pentestDetails(id));
+    } else {
+      return axiosInstance.get(apiRoutes.pentests.details(id));
+    }
+  },
+  enabled: !loading && !!id
+});
+```
+
+### Key Endpoint Categories
+- **Dashboard**: Role-specific metrics and activities
+- **Pentests**: CRUD operations with role-based permissions
+- **Vulnerabilities**: Full CRUD for pentesters, read-only for clients
+- **Reports**: Generation and submission endpoints
+- **Users**: Profile management and role-specific data
+
+### AxiosInstance Usage
+- Import from [AxiosInstance](mdc:src/lib/AxiosInstance.ts)
+- All API calls should use the configured axios instance
+- Automatic authentication header handling

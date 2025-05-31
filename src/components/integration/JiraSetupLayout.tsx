@@ -1,0 +1,129 @@
+import React from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Link, FileText, Settings, Target } from 'lucide-react';
+
+interface JiraSetupLayoutProps {
+  children: React.ReactNode;
+  currentStep: number;
+  isLoading?: boolean;
+}
+
+const JiraSetupLayout: React.FC<JiraSetupLayoutProps> = ({ children, currentStep, isLoading = false }) => {
+  const steps = [
+    {
+      number: 1,
+      title: "Connect Jira",
+      status: currentStep === 1 ? "in-progress" : currentStep > 1 ? "complete" : "incomplete",
+      icon: Link,
+    },
+    {
+      number: 2,
+      title: "General Field Mapping",
+      status: currentStep === 2 ? "in-progress" : currentStep > 2 ? "complete" : "incomplete",
+      icon: FileText,
+    },
+    {
+      number: 3,
+      title: "Custom Field Mapping",
+      status: currentStep === 3 ? "in-progress" : currentStep > 3 ? "complete" : "incomplete",
+      icon: Settings,
+    },
+    {
+      number: 4,
+      title: "Link Pentest",
+      status: currentStep === 4 ? "in-progress" : currentStep > 4 ? "complete" : "incomplete",
+      icon: Target,
+    },
+  ];
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "complete":
+        return "bg-green-100 text-green-600";
+      case "in-progress":
+        return "bg-yellow-100 text-yellow-600";
+      default:
+        return "bg-gray-100 text-gray-400";
+    }
+  };
+
+  const getBadgeStyles = (status: string) => {
+    switch (status) {
+      case "complete":
+        return "bg-green-100 text-green-800 hover:bg-green-100";
+      case "in-progress":
+        return "bg-yellow-100 text-yellow-800 hover:bg-yellow-100";
+      default:
+        return "bg-gray-100 text-gray-600 hover:bg-gray-100";
+    }
+  };
+
+  const getBadgeText = (status: string) => {
+    switch (status) {
+      case "complete":
+        return "Complete";
+      case "in-progress":
+        return "In Progress";
+      default:
+        return "Incomplete";
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+      <div className="mx-auto max-w-6xl">
+        {/* Progress Steps */}
+        <div className="mb-8 grid grid-cols-4 gap-4">
+          {isLoading ? (
+            // Skeleton loading state for steps
+            Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="flex flex-col items-center">
+                <div className="mb-2 flex items-center">
+                  <Skeleton className="h-12 w-12 rounded-full" />
+                  {index < 3 && <div className="ml-4 h-px w-20 bg-gray-200 dark:bg-gray-700" />}
+                </div>
+                <div className="text-center space-y-2">
+                  <Skeleton className="h-3 w-12 mx-auto" />
+                  <Skeleton className="h-4 w-20 mx-auto" />
+                  <Skeleton className="h-5 w-16 mx-auto" />
+                </div>
+              </div>
+            ))
+          ) : (
+            steps.map((step, index) => {
+              const Icon = step.icon;
+              return (
+                <div key={step.number} className="flex flex-col items-center">
+                  <div className="mb-2 flex items-center">
+                    <div className={`flex h-12 w-12 items-center justify-center rounded-full ${getStatusColor(step.status)}`}>
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    {index < steps.length - 1 && <div className="ml-4 h-px w-20 bg-gray-200 dark:bg-gray-700" />}
+                  </div>
+                  <div className="text-center">
+                    <div className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                      STEP {step.number}
+                    </div>
+                    <div className="text-sm font-medium text-gray-900 dark:text-white">{step.title}</div>
+                    <Badge
+                      variant={step.status === "in-progress" ? "default" : "secondary"}
+                      className={`mt-1 text-xs ${getBadgeStyles(step.status)}`}
+                    >
+                      {getBadgeText(step.status)}
+                    </Badge>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Main Content */}
+        {children}
+      </div>
+    </div>
+  );
+};
+
+export default JiraSetupLayout; 

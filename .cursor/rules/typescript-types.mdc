@@ -1,0 +1,119 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# TypeScript Types Guide
+
+## Core User Types
+
+### User Role Enumeration
+```typescript
+type UserRole = 'admin' | 'pentester' | 'client';
+```
+
+### User Interface
+The main user interface should include:
+```typescript
+interface User {
+  _id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  // Additional user properties
+}
+```
+
+## Entity Types
+
+### Vulnerability Interface
+Key vulnerability properties from [FormPreview component](mdc:src/components/vulenerabilityReports/subcomponents/FormPreview.tsx):
+```typescript
+interface Vulnerability {
+  _id: string;
+  title: string;
+  severity: string;
+  status: string;
+  description: string;
+  affected_host: string;
+  steps_to_reproduce: string;
+  recommended_solution: string;
+  impact: string;
+  likelihood: string;
+  cvss: number;
+  cvssVector: string;
+  attachments: Attachment[];
+  comments: Comment[];
+  reporter: User;
+  hasJiraIntegration: boolean;
+}
+```
+
+### Pentest Interface
+```typescript
+interface Pentest {
+  _id: string;
+  title: string;
+  status: string;
+  clients: Client[];
+  // Additional pentest properties
+}
+```
+
+### Client Interface
+```typescript
+interface Client {
+  _id: string;
+  name: string;
+  logoUrl?: string;
+  // Additional client properties
+}
+```
+
+## Component Props Types
+
+### Navigation Types
+```typescript
+type NavItem = {
+  title: string;
+  href: string;
+  icon: string | React.ReactNode;
+  subItems?: NavItem[];
+};
+```
+
+### Status Types
+```typescript
+interface StatusOption {
+  value: string;
+  label: string;
+  color: string;
+  textColor: string;
+}
+```
+
+## Hook Return Types
+
+### useUser Hook Return Type
+```typescript
+interface UseUserReturn {
+  user: User | null;
+  role: UserRole | null;
+  loading: boolean;
+  isAdmin: () => boolean;
+  isPentester: () => boolean;
+  isClient: () => boolean;
+}
+```
+
+## Type Import Patterns
+- Import types from [types.ts](mdc:src/types/types.ts)
+- Use consistent interface naming (PascalCase)
+- Export types that are used across multiple components
+- Use generic types for API responses when appropriate
+
+## Type Safety Best Practices
+- Always type API responses
+- Use optional chaining for nested properties
+- Implement proper loading state handling
+- Use type guards for role checking

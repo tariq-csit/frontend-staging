@@ -1,0 +1,52 @@
+---
+description: when the role of the user is mentioned.
+globs: 
+alwaysApply: false
+---
+# Role-Based Architecture Guide
+
+## User Roles System
+
+This application implements a three-tier role-based access control system:
+
+### Core User Roles
+- **admin**: Full system access, can manage all pentests, clients, and pentesters
+- **pentester**: Limited to assigned pentests and vulnerability reporting
+- **client**: View-only access to their own pentests and vulnerabilities
+
+### Authentication Hook
+Use [useUser hook](mdc:src/hooks/useUser.ts) for role-based logic:
+```typescript
+const { user, role, isAdmin, isPentester, isClient, loading } = useUser();
+
+// Role checking methods
+if (isAdmin()) { /* admin-only logic */ }
+if (isPentester()) { /* pentester-only logic */ }
+if (isClient()) { /* client-only logic */ }
+```
+
+### Conditional Rendering Pattern
+Components should render different content based on user role:
+```typescript
+// Conditional API endpoints
+const endpoint = isClient() 
+  ? apiRoutes.client.pentests.details(id)
+  : isPentester() 
+    ? apiRoutes.pentester.pentestDetails(id)
+    : apiRoutes.pentests.details(id);
+
+// Conditional UI elements
+{isAdmin() && <AdminOnlyComponent />}
+{isPentester() && <PentesterFeatures />}
+{isClient() && <ClientView />}
+```
+
+### Route Protection
+- Use [RouteGuard component](mdc:src/components/auth/RouteGuard.tsx) for protecting routes
+- All role-specific pages should be wrapped with appropriate guards
+- Redirect unauthorized users to appropriate landing pages
+
+### Key Components
+- **Dashboard**: [Single dashboard](mdc:src/components/dashboard/Dashboard.tsx) with role-based content
+- **Sidebar**: [Role-specific navigation](mdc:src/components/sidebar/Sidebar.tsx) 
+- **Activities**: [Shared component](mdc:src/components/activePentests/subComponenets/Activities.tsx) with role-based API calls

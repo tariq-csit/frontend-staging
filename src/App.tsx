@@ -30,6 +30,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useUser } from './hooks/useUser';
 import { ReactNode } from 'react';
 import { toast } from './hooks/use-toast';
+import IntegrationsPage from '@/components/integration/IntegrationsPage';
+import JiraCallback from '@/components/integration/JiraCallback';
+import JiraSetup from '@/components/integration/JiraSetup';
 
 // Component that only allows admin users to access a route
 const AdminProtectedRoute = ({ children }: { children: ReactNode }) => {
@@ -44,6 +47,28 @@ const AdminProtectedRoute = ({ children }: { children: ReactNode }) => {
     toast({
       title: "You are not authorized to access this page",
       description: "Please contact your administrator",
+      variant: "destructive",
+    })
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  // Otherwise render the children (the protected component)
+  return <>{children}</>;
+};
+
+// Component that only allows client users to access a route
+const ClientProtectedRoute = ({ children }: { children: ReactNode }) => {
+  const { user, loading, isClient } = useUser();
+  
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+  
+  // If user is not a client, redirect back and show a toast
+  if (!isClient()) {
+    toast({
+      title: "You are not authorized to access this page",
+      description: "This page is only available for client users",
       variant: "destructive",
     })
     return <Navigate to="/dashboard" replace />;
@@ -95,6 +120,20 @@ function App() {
               <Route path='/pentesters' element={<PentestersList />} />
 
               <Route path='/settings' element={<Settings />} />
+
+              <Route path='/integration' element={
+                <ClientProtectedRoute>
+                  <IntegrationsPage />
+                </ClientProtectedRoute>
+              } />
+
+              <Route path='/integration/jira/setup' element={
+                <ClientProtectedRoute>
+                  <JiraSetup />
+                </ClientProtectedRoute>
+              } />
+
+              <Route path='/clients/integrations/jira/callback' element={<JiraCallback />} />
             </Route>
           </Routes>
           <Toaster />

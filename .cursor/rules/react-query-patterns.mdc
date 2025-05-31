@@ -1,0 +1,85 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# React Query Patterns
+
+## Role-Based Data Fetching
+
+Use React Query with role-aware query keys and conditional endpoints.
+
+### Query Key Patterns
+Include role information in query keys to prevent cache conflicts:
+
+```typescript
+// Role-specific cache keys
+const { data } = useQuery({
+  queryKey: ["activities", role], // Include role in key
+  queryFn: () => fetchActivities(role),
+  enabled: !loading
+});
+
+// Entity-specific with role context
+const { data } = useQuery({
+  queryKey: ["pentest", pentestId, role],
+  queryFn: () => fetchPentest(pentestId, role),
+  enabled: !!pentestId && !loading
+});
+```
+
+### Conditional Endpoint Selection
+Always use role-based endpoint selection:
+
+```typescript
+const { data: vulnerability } = useQuery({
+  queryKey: ["pentest", pentestId, "vulnerability", vulnerabilityId],
+  queryFn: () => {
+    if (isClient()) {
+      return axiosInstance.get(apiRoutes.client.pentests.vulnerabilities.details(pentestId!, vulnerabilityId!));
+    } else if (isPentester()) {
+      return axiosInstance.get(apiRoutes.pentester.vulnerabilities.details(pentestId!, vulnerabilityId!));
+    } else {
+      return axiosInstance.get(apiRoutes.pentests.vulnerabilities.details(pentestId!, vulnerabilityId!));
+    }
+  },
+  enabled: !loading && !!pentestId && !!vulnerabilityId
+});
+```
+
+### Mutation Patterns
+Use role-based mutations with appropriate error handling:
+
+```typescript
+const { mutate: updateStatus, isPending } = useMutation({
+  mutationFn: (status: string) => {
+    if (isClient()) {
+      return axiosInstance.patch(apiRoutes.client.pentests.vulnerabilities.status(pentestId!, vulnerabilityId!), { status });
+    } else if (isPentester()) {
+      return axiosInstance.patch(apiRoutes.pentester.vulnerabilities.updateStatus(pentestId!, vulnerabilityId!), { status });
+    } else {
+      return axiosInstance.patch(apiRoutes.pentests.vulnerabilities.status(pentestId!, vulnerabilityId!), { status });
+    }
+  },
+  onSuccess: () => {
+    refetchVulnerability();
+    toast({ title: "Status updated", description: "Vulnerability status has been updated successfully" });
+  }
+});
+```
+
+### Loading State Management
+Always check for user loading state before enabling queries:
+
+```typescript
+const { data } = useQuery({
+  queryKey: ["data", id],
+  queryFn: () => fetchData(id),
+  enabled: !loading && !!id // Wait for user to load
+});
+```
+
+### Query Dependencies
+- Import [useUser hook](mdc:src/hooks/useUser.ts) for role checking
+- Import [toast hook](mdc:src/hooks/use-toast.ts) for notifications
+- Use [AxiosInstance](mdc:src/lib/AxiosInstance.ts) for all API calls

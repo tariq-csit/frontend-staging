@@ -1,0 +1,7 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+## Loading skeletons
+All the UI changes where there are API calls must use [skeleton.tsx](mdc:src/components/ui/skeleton.tsx) for nicer user interface.

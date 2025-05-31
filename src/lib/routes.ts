@@ -157,6 +157,26 @@ export const apiRoutes = {
       details: (userId: string) => `/clients/users/${userId}`,
       add: `/clients/users`,
       remove: (userId: string) => `/clients/users/${userId}`,
+      reset2FA: (userId: string) => `/clients/users/${userId}/reset-2fa`,
+      deactivate: (userId: string) => `/clients/users/${userId}/deactivate`,
+    },
+    
+    // Integrations
+    integrations: {
+      jira: {
+        // Initiate Jira integration
+        initiate: (clientId: string) => `/clients/${clientId}/integrations/jira`,
+        // Callback after OAuth authorization
+        callback: `/clients/integrations/jira/callback`,
+        // Get available Jira projects
+        projects: (clientId: string) => `/clients/${clientId}/integrations/jira/projects`,
+        // Get issue types for a specific project
+        issueTypes: (clientId: string, projectKey: string) => `/clients/${clientId}/integrations/jira/projects/${projectKey}/issuetypes`,
+        // Get integration status
+        status: (clientId: string) => `/clients/${clientId}/integrations/jira/status`,
+        // Disconnect integration
+        disconnect: (clientId: string) => `/clients/${clientId}/integrations/jira`,
+      },
     },
   },
 

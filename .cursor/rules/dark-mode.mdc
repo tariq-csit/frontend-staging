@@ -1,0 +1,9 @@
+---
+description: Whenever UI modifications are involved
+globs: 
+alwaysApply: false
+---
+## Dark Mode
+This application have dark mode support. Whenever working on UI related tasks, please make sure to also add the dark mode equivalent color with `dark:` tailwind rule.
+
+the theme colors (both light and dark) are defined in [index.css](mdc:src/index.css)
