@@ -103,7 +103,8 @@ function VulnerabilityView() {
 
   const { mutate: sendToJira, isPending: isSendingToJira } = useMutation({
     mutationFn: () => {
-      return axiosInstance.post(apiRoutes.client.pentests.vulnerabilities.status(pentestId!, vulnerabilityId!) + '/jira');
+      return axiosInstance.post(apiRoutes.client.pentests.vulnerabilities.sendToJira(pentest
+        ?.clients.at(0)?._id!, pentestId!, vulnerabilityId!));
     },
     onSuccess: () => {
       toast({

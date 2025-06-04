@@ -16,7 +16,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 import { MultiSelect } from '@/components/ui/multi-select';
-import { Loader2, Target, Settings, Calendar, Zap, CheckCircle2, Square, ArrowRight, FileText, Shield, AlertTriangle, AlertCircle, AlertOctagon, Info } from 'lucide-react';
+import { Loader2, Target, Settings, Calendar, Zap, CheckCircle2, Square, ArrowRight, FileText, Shield, AlertTriangle, AlertCircle, AlertOctagon, Info, X, Search } from 'lucide-react';
 import { Client } from '@/types/types';
 import JiraSetupLayout from './JiraSetupLayout';
 
@@ -57,7 +57,10 @@ interface SeverityMapping {
 }
 
 interface CustomFieldMapping {
-  [fieldId: string]: any;
+  [fieldId: string]: {
+    type: 'static' | 'vulnerability_mapping';
+    value: any;
+  };
 }
 
 interface Pentest {
@@ -69,6 +72,13 @@ interface Pentest {
   description?: string;
   status: string;
   createdAt: string;
+}
+
+interface JiraUser {
+  accountId: string;
+  displayName: string;
+  emailAddress?: string;
+  avatarUrl?: string;
 }
 
 interface JiraSetupState {
@@ -94,7 +104,25 @@ const JiraSetup: React.FC = () => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        return JSON.parse(saved);
+        const parsedState = JSON.parse(saved);
+        // Migrate old custom field mapping format to new format if needed
+        if (parsedState.customFieldMapping) {
+          const migratedMapping: CustomFieldMapping = {};
+          Object.entries(parsedState.customFieldMapping).forEach(([key, value]: [string, any]) => {
+            if (value && typeof value === 'object' && 'type' in value && 'value' in value) {
+              // Already in new format
+              migratedMapping[key] = value;
+            } else {
+              // Old format - migrate to new format with static type
+              migratedMapping[key] = {
+                type: 'static',
+                value: value
+              };
+            }
+          });
+          parsedState.customFieldMapping = migratedMapping;
+        }
+        return parsedState;
       }
     } catch (error) {
       console.warn('Failed to load saved Jira setup state:', error);
@@ -279,45 +307,43 @@ const JiraSetup: React.FC = () => {
       customFields: CustomFieldMapping; 
       selectedPentests: string[];
       autoSyncPentests: string[];
-      autoSendToJira: boolean 
     }) => {
       const clientId = clientOrganization?._id;
       if (!clientId) throw new Error('Client ID not found');
       
-      // Clean severity mapping - only include Jira Priority ID → Slash Severity mappings
+      // Clean severity mapping - handle multiple Jira priorities mapping to same Slash severity
       const cleanSeverityMapping: { [key: string]: string } = {};
-      Object.entries(config.severityMapping).forEach(([key, value]) => {
-        // Only include mappings where key looks like a Jira priority ID (numeric or UUID-like)
-        // and value is a valid Slash severity
-        if (key && value && ['Critical', 'High', 'Medium', 'Low'].includes(value)) {
-          // Skip if key looks like a Slash severity (to avoid the duplicate mappings)
-          if (!['Critical', 'High', 'Medium', 'Low', 'Highest', 'Lowest'].includes(key)) {
-            cleanSeverityMapping[key] = value;
-          }
+      Object.entries(config.severityMapping).forEach(([slashSeverity, jiraPriorityId]) => {
+        if (slashSeverity && jiraPriorityId && ['Critical', 'High', 'Medium', 'Low'].includes(slashSeverity)) {
+          cleanSeverityMapping[slashSeverity] = jiraPriorityId;
         }
       });
       
       // Transform custom field mapping into the expected API format
       const customFieldsArray = Object.entries(config.customFields)
-        .filter(([, value]) => value !== undefined && value !== null && value !== '')
-        .map(([fieldId, value]) => {
+        .filter(([, mapping]) => mapping.value !== undefined && mapping.value !== null && mapping.value !== '')
+        .map(([fieldId, mapping]) => {
           // Find the field info to determine field type
           const field = requiredCustomFields.find((f: JiraField) => f.id === fieldId);
           let fieldType = 'text'; // default
-          let valueType = 'static'; // default to static value
-          let processedValue = value;
+          let valueType = 'static'; // default
+          let processedValue = mapping.value;
           
           if (field) {
             if (field.schema.custom?.includes('textarea')) {
               fieldType = 'textarea';
+            } else if ((field.schema.type === 'array' && field.schema.items === 'string' && field.id === 'labels') || 
+                       (field.schema.type === 'array' && field.schema.items === 'string' && field.schema.custom?.includes('labels'))) {
+              fieldType = 'labels';
             } else if (field.schema.type === 'option') {
-              fieldType = 'select';
+              // Check if it's radio buttons or select dropdown
+              if (field.schema.custom?.includes('radiobuttons')) {
+                fieldType = 'radio';
+              } else {
+                fieldType = 'select';
+              }
             } else if (field.schema.type === 'array') {
               fieldType = 'multiselect';
-              // For arrays, ensure it's an array
-              if (!Array.isArray(processedValue)) {
-                processedValue = [processedValue];
-              }
             } else if (field.schema.type === 'user') {
               fieldType = 'user';
             } else if (field.schema.type === 'date') {
@@ -326,7 +352,27 @@ const JiraSetup: React.FC = () => {
               fieldType = 'datetime';
             } else if (field.schema.type === 'number') {
               fieldType = 'number';
-              processedValue = Number(processedValue);
+            }
+          }
+          
+          // Handle different mapping types
+          if (mapping.type === 'vulnerability_mapping') {
+            valueType = 'template';
+            processedValue = `\${vulnerability.${mapping.value}}`;
+          } else if (mapping.type === 'static') {
+            valueType = 'static';
+            // Handle user fields - extract account IDs if it's a JiraUser array
+            if (fieldType === 'user' && Array.isArray(mapping.value)) {
+              if (mapping.value.length > 0 && typeof mapping.value[0] === 'object' && 'accountId' in mapping.value[0]) {
+                // It's an array of JiraUser objects, extract accountIds
+                processedValue = mapping.value.map((user: JiraUser) => user.accountId);
+              }
+              // If it's a single user field, use just the first user's accountId
+              if (fieldType === 'user' && processedValue.length === 1) {
+                processedValue = processedValue[0];
+              }
+            } else if (fieldType === 'number') {
+              processedValue = Number(mapping.value);
             }
           }
           
@@ -342,29 +388,46 @@ const JiraSetup: React.FC = () => {
         projectKey: config.projectKey,
         issueType: config.issueType,
         severityMapping: Object.keys(cleanSeverityMapping).length > 0 ? cleanSeverityMapping : null,
-        customFields: customFieldsArray,
-        selectedPentests: config.selectedPentests,
-        autoSyncPentests: config.autoSyncPentests,
-        autoSendToJira: config.autoSendToJira
+        customFields: customFieldsArray
       };
 
       console.log('Sending Jira configuration:', requestBody);
-      console.log('Clean severity mapping:', cleanSeverityMapping);
-      console.log('Custom fields array:', customFieldsArray);
       
-      // First, save the main configuration
+      // Step 1: Save the main configuration
       const configResponse = await axiosInstance.post(apiRoutes.client.integrations.jira.configure(clientId), requestBody);
       
-      // Then, enable auto-sync for selected pentests
+      // Step 2: Enable Jira integration for selected pentests
+      if (config.selectedPentests.length > 0) {
+        console.log('Enabling Jira integration for pentests:', config.selectedPentests);
+        
+        const enablePromises = config.selectedPentests.map(pentestId => 
+          axiosInstance.post(apiRoutes.client.pentests.jira.enable(clientId, pentestId))
+            .then(response => ({ success: true, pentestId, response }))
+            .catch(error => {
+              console.error(`Failed to enable Jira integration for pentest ${pentestId}:`, error);
+              return { success: false, pentestId, error: error.message };
+            })
+        );
+        
+        const enableResults = await Promise.all(enablePromises);
+        const failedEnable = enableResults.filter(result => !result.success);
+        
+        if (failedEnable.length > 0) {
+          console.warn('Some pentest enable requests failed:', failedEnable);
+        }
+      }
+      
+      // Step 3: Enable auto-sync for selected pentests
       if (config.autoSyncPentests.length > 0) {
         console.log('Enabling auto-sync for pentests:', config.autoSyncPentests);
         
         const autoSyncPromises = config.autoSyncPentests.map(pentestId => 
-          axiosInstance.post(apiRoutes.client.integrations.jira.autoSync(clientId, pentestId))
+          axiosInstance.post(apiRoutes.client.integrations.jira.autoSync(clientId, pentestId), {
+            enabled: true
+          })
             .then(response => ({ success: true, pentestId, response }))
             .catch(error => {
               console.error(`Failed to enable auto-sync for pentest ${pentestId}:`, error);
-              // Don't throw here, let the main configuration succeed even if some auto-sync requests fail
               return { success: false, pentestId, error: error.message };
             })
         );
@@ -384,18 +447,18 @@ const JiraSetup: React.FC = () => {
       localStorage.removeItem(STORAGE_KEY);
       
       toast({
-        title: "Configuration Saved",
+        title: "Configuration Completed",
         description: (autoSyncPentests || []).length > 0 
-          ? `Your Jira integration has been configured successfully with auto-sync enabled for ${(autoSyncPentests || []).length} pentest${(autoSyncPentests || []).length !== 1 ? 's' : ''}.`
-          : "Your Jira integration has been configured successfully.",
+          ? `Jira integration configured successfully for ${selectedPentests.length} pentest${selectedPentests.length !== 1 ? 's' : ''} with auto-sync enabled for ${(autoSyncPentests || []).length}.`
+          : `Jira integration configured successfully for ${selectedPentests.length} pentest${selectedPentests.length !== 1 ? 's' : ''}.`,
       });
       navigate('/integration');
     },
     onError: (error) => {
-      console.error('Error saving configuration:', error);
+      console.error('Error configuring Jira integration:', error);
       toast({
         title: "Configuration Failed",
-        description: "Failed to save Jira configuration. Please try again.",
+        description: "Failed to configure Jira integration. Please try again.",
         variant: "destructive",
       });
     }
@@ -421,42 +484,156 @@ const JiraSetup: React.FC = () => {
     return 'bg-gray-500'; // Default color
   };
 
+  // Helper function to get available vulnerability model fields for mapping
+  const getVulnerabilityMappingOptions = () => [
+    { value: 'title', label: 'Title' },
+    { value: 'description', label: 'Description' },
+    { value: 'severity', label: 'Severity' },
+    { value: 'status', label: 'Status' },
+    { value: 'cvss', label: 'CVSS Score' },
+    { value: 'cvssVector', label: 'CVSS Vector' },
+    { value: 'affected_host', label: 'Affected Host' },
+    { value: 'likelihood', label: 'Likelihood' },
+    { value: 'recommended_solution', label: 'Recommended Solution' },
+    { value: 'steps_to_reproduce', label: 'Steps to Reproduce' },
+    { value: 'impact', label: 'Impact' },
+    { value: 'createdAt', label: 'Created Date' }
+  ];
+
   // Helper function to render field input based on type
   const renderFieldInput = (field: JiraField) => {
-    const fieldValue = customFieldMapping[field.id];
+    const fieldMapping = customFieldMapping[field.id] || { type: 'static', value: '' };
+    const isTextOrTextarea = field.schema.type === 'string' && (
+      !field.schema.custom || 
+      field.schema.custom.includes('textfield') || 
+      field.schema.custom.includes('textarea')
+    );
+
+    // For text and textarea fields, show mapping options
+    if (isTextOrTextarea) {
+      return (
+        <div className="space-y-4">
+          {/* Mapping Type Selection */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Mapping Type
+            </Label>
+            <RadioGroup
+              value={fieldMapping.type}
+              onValueChange={(value: 'static' | 'vulnerability_mapping') => {
+                updateState({ 
+                  customFieldMapping: { 
+                    ...customFieldMapping, 
+                    [field.id]: { 
+                      type: value, 
+                      value: value === 'static' ? '' : 'title' // Default to title for vulnerability mapping
+                    }
+                  }
+                });
+              }}
+              className="flex space-x-6"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="static" id={`${field.id}-static`} />
+                <Label htmlFor={`${field.id}-static`} className="text-sm">Static Value</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="vulnerability_mapping" id={`${field.id}-mapping`} />
+                <Label htmlFor={`${field.id}-mapping`} className="text-sm">Map to Vulnerability Model</Label>
+              </div>
+            </RadioGroup>
+          </div>
+
+          {/* Input based on mapping type */}
+          {fieldMapping.type === 'static' ? (
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Static Value
+              </Label>
+              {field.schema.custom?.includes('textarea') ? (
+                <Textarea
+                  placeholder={`Enter static value for ${field.name.toLowerCase()}`}
+                  value={fieldMapping.value || ''}
+                  onChange={(e) => updateState({ 
+                    customFieldMapping: { 
+                      ...customFieldMapping, 
+                      [field.id]: { 
+                        type: 'static', 
+                        value: e.target.value 
+                      }
+                    }
+                  })}
+                  className="w-full"
+                  rows={4}
+                />
+              ) : (
+                <Input
+                  placeholder={`Enter static value for ${field.name.toLowerCase()}`}
+                  value={fieldMapping.value || ''}
+                  onChange={(e) => updateState({ 
+                    customFieldMapping: { 
+                      ...customFieldMapping, 
+                      [field.id]: { 
+                        type: 'static', 
+                        value: e.target.value 
+                      }
+                    }
+                  })}
+                  className="w-full"
+                />
+              )}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Vulnerability Field
+              </Label>
+              <Select
+                value={fieldMapping.value || 'title'}
+                onValueChange={(value) => updateState({ 
+                  customFieldMapping: { 
+                    ...customFieldMapping, 
+                    [field.id]: { 
+                      type: 'vulnerability_mapping', 
+                      value: value 
+                    }
+                  }
+                })}
+              >
+                <SelectTrigger className='w-full'>
+                  <SelectValue placeholder="Select vulnerability field to map" />
+                </SelectTrigger>
+                <SelectContent>
+                  {getVulnerabilityMappingOptions().map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                This field will automatically be populated with the selected vulnerability data
+              </p>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // For non-text fields, keep the original logic
+    const fieldValue = fieldMapping.value;
 
     switch (field.schema.type) {
-      case 'string':
-        if (field.schema.custom?.includes('textarea')) {
-          return (
-            <Textarea
-              placeholder={`Enter ${field.name.toLowerCase()}`}
-              value={fieldValue || ''}
-              onChange={(e) => updateState({ 
-                customFieldMapping: { ...customFieldMapping, [field.id]: e.target.value }
-              })}
-              className="w-full"
-            />
-          );
-        }
-        return (
-          <Input
-            placeholder={`Enter ${field.name.toLowerCase()}`}
-            value={fieldValue || ''}
-            onChange={(e) => updateState({ 
-              customFieldMapping: { ...customFieldMapping, [field.id]: e.target.value }
-            })}
-            className="w-full"
-          />
-        );
-
       case 'option':
         if (field.schema.custom?.includes('radiobuttons')) {
           return (
             <RadioGroup
               value={fieldValue || ''}
               onValueChange={(value) => updateState({ 
-                customFieldMapping: { ...customFieldMapping, [field.id]: value }
+                customFieldMapping: { 
+                  ...customFieldMapping, 
+                  [field.id]: { type: 'static', value: value }
+                }
               })}
               className="space-y-2"
             >
@@ -474,7 +651,10 @@ const JiraSetup: React.FC = () => {
           <Select
             value={fieldValue || ''}
             onValueChange={(value) => updateState({ 
-              customFieldMapping: { ...customFieldMapping, [field.id]: value }
+              customFieldMapping: { 
+                ...customFieldMapping, 
+                [field.id]: { type: 'static', value: value }
+              }
             })}
           >
             <SelectTrigger>
@@ -499,21 +679,27 @@ const JiraSetup: React.FC = () => {
                 <div key={option.id} className="flex items-center space-x-2">
                   <Checkbox
                     id={`${field.id}-${option.id}`}
-                    checked={fieldValue?.includes(option.id) || false}
+                    checked={Array.isArray(fieldValue) ? fieldValue.includes(option.id) : false}
                     onCheckedChange={(checked) => {
-                      const currentValues = fieldValue || [];
+                      const currentValues = Array.isArray(fieldValue) ? fieldValue : [];
                       if (checked) {
                         updateState({ 
                           customFieldMapping: { 
                             ...customFieldMapping, 
-                            [field.id]: [...currentValues, option.id] 
+                            [field.id]: { 
+                              type: 'static', 
+                              value: [...currentValues, option.id] 
+                            }
                           }
                         });
                       } else {
                         updateState({ 
                           customFieldMapping: { 
                             ...customFieldMapping, 
-                            [field.id]: currentValues.filter((val: string) => val !== option.id) 
+                            [field.id]: { 
+                              type: 'static', 
+                              value: currentValues.filter((val: string) => val !== option.id) 
+                            }
                           }
                         });
                       }
@@ -529,11 +715,14 @@ const JiraSetup: React.FC = () => {
         return (
           <Input
             placeholder={`Enter ${field.name.toLowerCase()} (comma-separated)`}
-            value={fieldValue?.join(', ') || ''}
+            value={Array.isArray(fieldValue) ? fieldValue.join(', ') : (fieldValue || '')}
             onChange={(e) => {
               const values = e.target.value.split(',').map(v => v.trim()).filter(v => v);
               updateState({ 
-                customFieldMapping: { ...customFieldMapping, [field.id]: values }
+                customFieldMapping: { 
+                  ...customFieldMapping, 
+                  [field.id]: { type: 'static', value: values }
+                }
               });
             }}
             className="w-full"
@@ -542,13 +731,19 @@ const JiraSetup: React.FC = () => {
 
       case 'user':
         return (
-          <Input
-            placeholder="Enter username"
-            value={fieldValue || ''}
-            onChange={(e) => updateState({ 
-              customFieldMapping: { ...customFieldMapping, [field.id]: e.target.value }
+          <UserSearch
+            value={Array.isArray(fieldValue) && fieldValue.length > 0 && typeof fieldValue[0] === 'object' 
+              ? fieldValue 
+              : (Array.isArray(fieldValue) 
+                ? fieldValue.map(id => ({ accountId: id, displayName: `User ${id.slice(-6)}`, emailAddress: undefined, avatarUrl: undefined }))
+                : fieldValue ? [{ accountId: fieldValue, displayName: `User ${fieldValue.slice(-6)}`, emailAddress: undefined, avatarUrl: undefined }] : [])}
+            onChange={(users) => updateState({ 
+              customFieldMapping: { 
+                ...customFieldMapping, 
+                [field.id]: { type: 'static', value: users }
+              }
             })}
-            className="w-full"
+            placeholder="Search and select users"
           />
         );
 
@@ -558,7 +753,10 @@ const JiraSetup: React.FC = () => {
             type="date"
             value={fieldValue || ''}
             onChange={(e) => updateState({ 
-              customFieldMapping: { ...customFieldMapping, [field.id]: e.target.value }
+              customFieldMapping: { 
+                ...customFieldMapping, 
+                [field.id]: { type: 'static', value: e.target.value }
+              }
             })}
             className="w-full"
           />
@@ -570,7 +768,10 @@ const JiraSetup: React.FC = () => {
             type="datetime-local"
             value={fieldValue || ''}
             onChange={(e) => updateState({ 
-              customFieldMapping: { ...customFieldMapping, [field.id]: e.target.value }
+              customFieldMapping: { 
+                ...customFieldMapping, 
+                [field.id]: { type: 'static', value: e.target.value }
+              }
             })}
             className="w-full"
           />
@@ -583,7 +784,10 @@ const JiraSetup: React.FC = () => {
             placeholder={`Enter ${field.name.toLowerCase()}`}
             value={fieldValue || ''}
             onChange={(e) => updateState({ 
-              customFieldMapping: { ...customFieldMapping, [field.id]: e.target.value }
+              customFieldMapping: { 
+                ...customFieldMapping, 
+                [field.id]: { type: 'static', value: e.target.value }
+              }
             })}
             className="w-full"
           />
@@ -595,7 +799,10 @@ const JiraSetup: React.FC = () => {
             placeholder={`Enter ${field.name.toLowerCase()}`}
             value={fieldValue || ''}
             onChange={(e) => updateState({ 
-              customFieldMapping: { ...customFieldMapping, [field.id]: e.target.value }
+              customFieldMapping: { 
+                ...customFieldMapping, 
+                [field.id]: { type: 'static', value: e.target.value }
+              }
             })}
             className="w-full"
           />
@@ -633,10 +840,12 @@ const JiraSetup: React.FC = () => {
     } else if (currentStep === 4) {
       // Validate required custom fields if mapAllRequiredFields is enabled
       if (mapAllRequiredFields) {
-        const unfilledRequiredFields = requiredCustomFields.filter((field: JiraField) => 
-          !customFieldMapping[field.id] || 
-          (Array.isArray(customFieldMapping[field.id]) && customFieldMapping[field.id].length === 0)
-        );
+        const unfilledRequiredFields = requiredCustomFields.filter((field: JiraField) => {
+          const mapping = customFieldMapping[field.id];
+          return !mapping || 
+                 !mapping.value || 
+                 (Array.isArray(mapping.value) && mapping.value.length === 0);
+        });
         
         if (unfilledRequiredFields.length > 0) {
           toast({
@@ -696,8 +905,7 @@ const JiraSetup: React.FC = () => {
         severityMapping: severityMapping,
         customFields: customFieldMapping,
         selectedPentests: selectedPentests,
-        autoSyncPentests: autoSyncPentests || [],
-        autoSendToJira: true
+        autoSyncPentests: autoSyncPentests || []
       });
     }
   };
@@ -718,6 +926,170 @@ const JiraSetup: React.FC = () => {
       updateState({ selectedIssueType: '' }); // Clear issue type when project changes
     }
   }, [selectedProject]);
+
+  // UserSearch component for user picker fields
+  const UserSearch: React.FC<{
+    value: JiraUser[];
+    onChange: (users: JiraUser[]) => void;
+    placeholder?: string;
+  }> = ({ value, onChange, placeholder = "Search and select users" }) => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isOpen, setIsOpen] = useState(false);
+
+    // Search users query
+    const { data: searchResults, isLoading: isSearching, error: searchError } = useQuery({
+      queryKey: ['jira-users-search', searchTerm],
+      queryFn: async () => {
+        const clientId = clientOrganization?._id;
+        if (!clientId || !searchTerm || searchTerm.length < 2) return [];
+        
+        try {
+          const response = await axiosInstance.get(apiRoutes.client.integrations.jira.searchUsers(clientId), {
+            params: { query: searchTerm }
+          });
+          return Array.isArray(response.data) ? response.data : [];
+        } catch (error) {
+          console.error('Error searching Jira users:', error);
+          throw error;
+        }
+      },
+      enabled: !!clientOrganization?._id && !!searchTerm && searchTerm.length >= 2,
+      retry: 1,
+      staleTime: 1000 * 30, // Cache results for 30 seconds
+    });
+
+    const users = searchResults || [];
+
+    const handleUserSelect = (user: JiraUser) => {
+      if (!value.find(u => u.accountId === user.accountId)) {
+        // Add complete user object to the array
+        onChange([...value, user]);
+      }
+      setSearchTerm('');
+      setIsOpen(false);
+    };
+
+    const handleUserRemove = (accountId: string) => {
+      // Remove user from the array
+      onChange(value.filter(user => user.accountId !== accountId));
+    };
+
+    // Get current selected users (use the value directly since it now contains full user objects)
+    const currentSelectedUsers = value || [];
+
+    return (
+      <div className="space-y-2">
+        {/* Selected Users */}
+        {currentSelectedUsers.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {currentSelectedUsers.map((user: JiraUser) => (
+              <div
+                key={user.accountId}
+                className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full text-sm"
+              >
+                {user.avatarUrl && (
+                  <img
+                    src={user.avatarUrl}
+                    alt={user.displayName}
+                    className="w-4 h-4 rounded-full"
+                  />
+                )}
+                <span>{user.displayName}</span>
+                <button
+                  type="button"
+                  onClick={() => handleUserRemove(user.accountId)}
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-200"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Search Input */}
+        <div className="relative">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              type="text"
+              placeholder={placeholder}
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setIsOpen(e.target.value.length >= 2);
+              }}
+              onFocus={() => setIsOpen(searchTerm.length >= 2)}
+              className="pl-9"
+            />
+          </div>
+
+          {/* Search Results Dropdown */}
+          {isOpen && (
+            <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-auto">
+              {isSearching ? (
+                <div className="p-3 text-center">
+                  <Loader2 className="w-4 h-4 animate-spin mx-auto" />
+                  <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">Searching users...</span>
+                </div>
+              ) : searchError ? (
+                <div className="p-3 text-center text-red-600 dark:text-red-400">
+                  <span className="text-sm">Error searching users. Please try again.</span>
+                </div>
+              ) : users.length > 0 ? (
+                users.map((user: JiraUser) => (
+                  <button
+                    key={user.accountId}
+                    type="button"
+                    onClick={() => handleUserSelect(user)}
+                    disabled={value.some(u => u.accountId === user.accountId)}
+                    className={`w-full p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 transition-colors ${
+                      value.some(u => u.accountId === user.accountId) ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-700' : ''
+                    }`}
+                  >
+                    {user.avatarUrl && (
+                      <img
+                        src={user.avatarUrl}
+                        alt={user.displayName}
+                        className="w-6 h-6 rounded-full flex-shrink-0"
+                        onError={(e) => {
+                          // Hide image if it fails to load
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-gray-900 dark:text-white truncate">
+                        {user.displayName}
+                      </div>
+                      {user.emailAddress && (
+                        <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
+                          {user.emailAddress}
+                        </div>
+                      )}
+                    </div>
+                    {value.some(u => u.accountId === user.accountId) && (
+                      <span className="ml-2 text-green-600 dark:text-green-400 flex-shrink-0">
+                        <CheckCircle2 className="w-4 h-4" />
+                      </span>
+                    )}
+                  </button>
+                ))
+              ) : searchTerm.length >= 2 ? (
+                <div className="p-3 text-center text-gray-500 dark:text-gray-400">
+                  <span className="text-sm">No users found for "{searchTerm}"</span>
+                </div>
+              ) : (
+                <div className="p-3 text-center text-gray-500 dark:text-gray-400">
+                  <span className="text-sm">Type at least 2 characters to search</span>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
 
   // Helper function to toggle auto-sync for a pentest
   const toggleAutoSync = (pentestId: string) => {
@@ -997,17 +1369,12 @@ const JiraSetup: React.FC = () => {
             <p className="text-sm text-gray-600 dark:text-gray-300">this is the story summary</p>
           </div>
 
-          {/* Overview Field */}
+          {/* Description Field */}
           <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Overview</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300">a brief overview of the main themes</p>
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Description</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300">this is the description of the vulnerability</p>
           </div>
 
-          {/* Analysis Field */}
-          <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Analysis</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300">an in-depth look at character development</p>
-          </div>
         </CardContent>
       </Card>
 
@@ -1033,8 +1400,8 @@ const JiraSetup: React.FC = () => {
               <ArrowRight className="h-5 w-5 text-gray-400" />
             </div>
             <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Summary</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">this is the story summary</p>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Title</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">this is the title of the vulnerability</p>
             </div>
           </div>
 
@@ -1044,21 +1411,11 @@ const JiraSetup: React.FC = () => {
               <ArrowRight className="h-5 w-5 text-gray-400" />
             </div>
             <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Context</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">background information relevant to the narrative</p>
+              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Description</h3>
+              <p className="text-sm text-gray-600 dark:text-gray-300">this is the description of the vulnerability</p>
             </div>
           </div>
 
-          {/* Themes Field */}
-          <div className="relative">
-            <div className="absolute -left-8 top-1/2 transform -translate-y-1/2 -translate-x-4 lg:block hidden">
-              <ArrowRight className="h-5 w-5 text-gray-400" />
-            </div>
-            <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Themes</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">exploration of key motifs and messages</p>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>
@@ -1066,83 +1423,7 @@ const JiraSetup: React.FC = () => {
 
   const renderStep3 = () => (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-      {/* Jira Priority Levels Card */}
-      <Card className="border-0 shadow-sm bg-white dark:bg-gray-800">
-        <CardHeader className="text-center pb-4">
-          <div className="flex justify-center mb-4">
-            <div className="h-16 w-16 rounded-lg bg-blue-500 flex items-center justify-center">
-              <AlertTriangle className="h-8 w-8 text-white" />
-            </div>
-          </div>
-          <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white">
-            Jira Priority Levels
-          </CardTitle>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-            these are priority levels available in your Jira project
-          </p>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {fieldsLoading ? (
-            // Loading state for priorities
-            Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="relative">
-                <div className="absolute -right-8 top-1/2 transform -translate-y-1/2 translate-x-4 lg:block hidden">
-                  <ArrowRight className="h-5 w-5 text-gray-400" />
-                </div>
-                <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-                  <div className="flex items-center space-x-3">
-                    <Skeleton className="h-8 w-8 rounded" />
-                    <div className="flex-1">
-                      <Skeleton className="h-4 w-20 mb-1" />
-                      <Skeleton className="h-3 w-32" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : jiraPriorities.length > 0 ? (
-            jiraPriorities.map((priority: { id: string; name: string; iconUrl?: string }) => (
-              <div key={priority.id} className="relative">
-                <div className="absolute -right-8 top-1/2 transform -translate-y-1/2 translate-x-4 lg:block hidden">
-                  <ArrowRight className="h-5 w-5 text-gray-400" />
-                </div>
-                <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-                  <div className="flex items-center space-x-3">
-                    <div className="h-8 w-8 rounded bg-blue-500 flex items-center justify-center">
-                      {priority.iconUrl ? (
-                        <img 
-                          src={priority.iconUrl} 
-                          alt={priority.name}
-                          className="w-6 h-6"
-                        />
-                      ) : (
-                        <AlertTriangle className="h-5 w-5 text-white" />
-                      )}
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white">{priority.name}</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
-                        Jira priority level
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-              <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                {!selectedProject || !selectedIssueType ? 
-                  'Please select a project and issue type first to see available priorities.' :
-                  'No priorities found for the selected issue type. Please check your project configuration in Jira.'
-                }
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Map to Slash Severity Card */}
+      {/* Slash Severity Levels Card */}
       <Card className="border-0 shadow-sm bg-white dark:bg-gray-800">
         <CardHeader className="text-center pb-4">
           <div className="flex justify-center mb-4">
@@ -1151,10 +1432,88 @@ const JiraSetup: React.FC = () => {
             </div>
           </div>
           <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white">
-            Map to Slash Severity
+            Slash Severity Levels
           </CardTitle>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-            map each Jira priority to a corresponding Slash severity level
+            these are severity levels in your Slash vulnerability reports
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Critical Severity */}
+          <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+            <div className="flex items-center space-x-3">
+              <div className="h-8 w-8 rounded bg-red-600 flex items-center justify-center">
+                <AlertOctagon className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white">Critical</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Highest severity vulnerabilities
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* High Severity */}
+          <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+            <div className="flex items-center space-x-3">
+              <div className="h-8 w-8 rounded bg-orange-500 flex items-center justify-center">
+                <AlertTriangle className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white">High</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  High priority vulnerabilities
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Medium Severity */}
+          <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+            <div className="flex items-center space-x-3">
+              <div className="h-8 w-8 rounded bg-yellow-500 flex items-center justify-center">
+                <AlertCircle className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white">Medium</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Medium priority vulnerabilities
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Low Severity */}
+          <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+            <div className="flex items-center space-x-3">
+              <div className="h-8 w-8 rounded bg-blue-500 flex items-center justify-center">
+                <Info className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900 dark:text-white">Low</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300">
+                  Low priority vulnerabilities
+                </p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Map to Jira Priorities Card */}
+      <Card className="border-0 shadow-sm bg-white dark:bg-gray-800">
+        <CardHeader className="text-center pb-4">
+          <div className="flex justify-center mb-4">
+            <div className="h-16 w-16 rounded-lg bg-blue-500 flex items-center justify-center">
+              <ArrowRight className="h-8 w-8 text-white" />
+            </div>
+          </div>
+          <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white">
+            Map to Jira Priorities
+          </CardTitle>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
+            map each Slash severity to a corresponding Jira priority level
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -1170,66 +1529,52 @@ const JiraSetup: React.FC = () => {
               </div>
             ))
           ) : jiraPriorities.length > 0 ? (
-            jiraPriorities.map((priority: { id: string; name: string; iconUrl?: string }) => {
-              const selectedSeverity = severityMapping[priority.id] || '';
+            ['Critical', 'High', 'Medium', 'Low'].map((slashSeverity) => {
+              const selectedJiraPriority = severityMapping[slashSeverity] || '';
+              const severityConfig = {
+                'Critical': { icon: AlertOctagon, color: 'bg-red-600' },
+                'High': { icon: AlertTriangle, color: 'bg-orange-500' },
+                'Medium': { icon: AlertCircle, color: 'bg-yellow-500' },
+                'Low': { icon: Info, color: 'bg-blue-500' }
+              };
+              const { icon: SeverityIcon, color } = severityConfig[slashSeverity as keyof typeof severityConfig];
+              
               return (
-                <div key={priority.id} className="space-y-2">
+                <div key={slashSeverity} className="space-y-2">
                   <div className="flex items-center space-x-3">
-                    <div className="h-6 w-6 rounded bg-blue-500 flex items-center justify-center">
-                      {priority.iconUrl ? (
-                        <img 
-                          src={priority.iconUrl} 
-                          alt={priority.name}
-                          className="w-4 h-4"
-                        />
-                      ) : (
-                        <AlertTriangle className="h-4 w-4 text-white" />
-                      )}
+                    <div className={`h-6 w-6 rounded ${color} flex items-center justify-center`}>
+                      <SeverityIcon className="h-4 w-4 text-white" />
                     </div>
-                    <span className="font-medium text-gray-900 dark:text-white">{priority.name}</span>
+                    <span className="font-medium text-gray-900 dark:text-white">{slashSeverity}</span>
                   </div>
                   <Select 
-                    value={selectedSeverity} 
+                    value={selectedJiraPriority} 
                     onValueChange={(value) => updateState({ 
-                      severityMapping: { ...severityMapping, [priority.id]: value }
+                      severityMapping: { ...severityMapping, [slashSeverity]: value }
                     })}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder={`Select Slash severity for ${priority.name}`} />
+                      <SelectValue placeholder={`Select Jira priority for ${slashSeverity}`} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Critical">
-                        <div className="flex items-center space-x-2">
-                          <div className="h-4 w-4 rounded bg-red-600 flex items-center justify-center">
-                            <AlertOctagon className="h-3 w-3 text-white" />
+                      {jiraPriorities.map((priority: { id: string; name: string; iconUrl?: string }) => (
+                        <SelectItem key={priority.id} value={priority.id}>
+                          <div className="flex items-center space-x-2">
+                            {priority.iconUrl ? (
+                              <img 
+                                src={priority.iconUrl} 
+                                alt={priority.name}
+                                className="w-4 h-4"
+                              />
+                            ) : (
+                              <div className="h-4 w-4 rounded bg-blue-500 flex items-center justify-center">
+                                <AlertTriangle className="h-3 w-3 text-white" />
+                              </div>
+                            )}
+                            <span>{priority.name}</span>
                           </div>
-                          <span>Critical</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="High">
-                        <div className="flex items-center space-x-2">
-                          <div className="h-4 w-4 rounded bg-orange-500 flex items-center justify-center">
-                            <AlertTriangle className="h-3 w-3 text-white" />
-                          </div>
-                          <span>High</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="Medium">
-                        <div className="flex items-center space-x-2">
-                          <div className="h-4 w-4 rounded bg-yellow-500 flex items-center justify-center">
-                            <AlertCircle className="h-3 w-3 text-white" />
-                          </div>
-                          <span>Medium</span>
-                        </div>
-                      </SelectItem>
-                      <SelectItem value="Low">
-                        <div className="flex items-center space-x-2">
-                          <div className="h-4 w-4 rounded bg-blue-500 flex items-center justify-center">
-                            <Info className="h-3 w-3 text-white" />
-                          </div>
-                          <span>Low</span>
-                        </div>
-                      </SelectItem>
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -1260,15 +1605,15 @@ const JiraSetup: React.FC = () => {
             </div>
           </div>
           <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white">
-            Jira Fields
+            Custom Field Mapping
           </CardTitle>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-            these are fields that are in your Jira story
+            Configure how vulnerability data maps to your Jira custom fields
           </p>
           
           {/* Map All Required Fields Toggle */}
-          <div className="flex items-center justify-end mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex items-center space-x-2">
+          <div className="flex items-center justify-end mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center space-x-3">
               <Label htmlFor="map-all" className="text-sm font-medium text-gray-900 dark:text-white">
                 Map All Required Fields
               </Label>
@@ -1280,46 +1625,95 @@ const JiraSetup: React.FC = () => {
             </div>
           </div>
         </CardHeader>
-        
-        <CardContent className="space-y-6">
-          {fieldsLoading ? (
-            <div className="space-y-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="space-y-2">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-10 w-full" />
-                </div>
-              ))}
-            </div>
-          ) : requiredCustomFields.length > 0 ? (
-            requiredCustomFields.map((field: JiraField) => (
-              <div key={field.id} className="space-y-2">
-                <Label htmlFor={field.id} className="text-sm font-medium text-gray-900 dark:text-white">
-                  {field.name}
-                  {field.required && <span className="text-red-500 ml-1">*</span>}
-                </Label>
-                {renderFieldInput(field)}
-                {field.schema.type && (
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    Type: {field.schema.type}
-                    {field.schema.custom && ` (${field.schema.custom})`}
-                  </p>
-                )}
-              </div>
-            ))
-          ) : (
-            <div className="text-center py-8">
-              <Settings className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                No Required Custom Fields
-              </h3>
-              <p className="text-gray-600 dark:text-gray-300">
-                This issue type doesn't have any required custom fields to configure.
-              </p>
-            </div>
-          )}
-        </CardContent>
       </Card>
+      
+      {fieldsLoading ? (
+        <div className="space-y-6 mt-6">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i} className="border-0 shadow-sm bg-white dark:bg-gray-800">
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-3">
+                    <Skeleton className="h-6 w-6 rounded" />
+                    <Skeleton className="h-5 w-32" />
+                  </div>
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-20 w-full" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : requiredCustomFields.length > 0 ? (
+        <div className="space-y-6 mt-6">
+          {requiredCustomFields.map((field: JiraField, index: number) => (
+            <Card key={field.id} className="border-0 shadow-sm bg-white dark:bg-gray-800 hover:shadow-md transition-shadow duration-200">
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  {/* Field Header */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
+                        {index + 1}
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                          {field.name}
+                          {field.required && <span className="text-red-500 ml-1">*</span>}
+                        </h3>
+                        <div className="flex items-center space-x-2 mt-1">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                            {field.schema.type}
+                          </span>
+                          {field.schema.custom && (
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                              {field.schema.custom.split(':').pop()}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Field Configuration */}
+                  <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                    {renderFieldInput(field)}
+                  </div>
+                  
+                  {/* Field Description */}
+                  <div className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/30 rounded p-3">
+                    <div className="flex items-center space-x-2">
+                      <Info className="h-4 w-4" />
+                      <span>
+                        <strong>Field ID:</strong> {field.id} | 
+                        <strong> Type:</strong> {field.schema.type}
+                        {field.schema.custom && (
+                          <>
+                            {' | '}
+                            <strong>Custom Type:</strong> {field.schema.custom}
+                          </>
+                        )}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card className="border-0 shadow-sm bg-white dark:bg-gray-800 mt-6">
+          <CardContent className="text-center py-12">
+            <Settings className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+              No Required Custom Fields
+            </h3>
+            <p className="text-gray-600 dark:text-gray-300 max-w-md mx-auto">
+              This issue type doesn't have any required custom fields to configure. You can proceed to the next step.
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 
@@ -1498,7 +1892,7 @@ const JiraSetup: React.FC = () => {
       case 4:
         return 'Continue';
       case 5:
-        return saveConfiguration.isPending ? 'Saving...' : 'Complete Setup';
+        return saveConfiguration.isPending ? 'Configuring Integration...' : 'Complete Setup';
       default:
         return 'Continue';
     }
@@ -1514,10 +1908,14 @@ const JiraSetup: React.FC = () => {
     }
     if (currentStep === 4) {
       if (mapAllRequiredFields) {
-        return requiredCustomFields.some((field: JiraField) => 
-          !customFieldMapping[field.id] || 
-          (Array.isArray(customFieldMapping[field.id]) && customFieldMapping[field.id].length === 0)
-        );
+        const unfilledRequiredFields = requiredCustomFields.filter((field: JiraField) => {
+          const mapping = customFieldMapping[field.id];
+          return !mapping || 
+                 !mapping.value || 
+                 (Array.isArray(mapping.value) && mapping.value.length === 0);
+        });
+        
+        return unfilledRequiredFields.length > 0;
       }
       return false;
     }
