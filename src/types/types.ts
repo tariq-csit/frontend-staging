@@ -62,13 +62,14 @@ export interface Client {
   poc_email: string;
   logoUrl: string;
   integrations: {
-    jira: {
-      isIntegrated: boolean;
-      autoSendToJira: boolean;
-    };
+    jira: boolean;
   };
   RequestedPentestsNo: number;
-  pentests: Pentest[];
+  pentests: {
+    _id: string;
+    name: string;
+    status: string;
+  }[];
   users: {
     _id: string;
     email: string;

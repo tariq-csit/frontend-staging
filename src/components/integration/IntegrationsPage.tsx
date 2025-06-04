@@ -10,7 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Client } from '@/types/types';
 
 const IntegrationsPage: React.FC = () => {
-  const { user, isClient, loading: userLoading } = useUser();
+  const { isClient, loading: userLoading } = useUser();
 
   // Fetch client organization information for client users
   const { data: clientOrganization, refetch: refetchOrganization, isLoading: organizationLoading } = useQuery({
@@ -18,7 +18,7 @@ const IntegrationsPage: React.FC = () => {
     queryFn: () => axiosInstance.get(apiRoutes.client.organization).then((res) => res.data as Client),
     enabled: isClient() && !userLoading, // Only fetch if user is loaded and is a client
   });
-
+  console.log(clientOrganization);
   // Calculate unified loading state
   const isLoading = userLoading || (isClient() && organizationLoading);
 
@@ -115,9 +115,6 @@ const IntegrationsPage: React.FC = () => {
     }
   };
 
-  // Check if Jira is already integrated
-  const isJiraConnected = clientOrganization?.integrations?.jira?.isIntegrated ?? false;
-
   // Skeleton component for loading state
   const IntegrationCardSkeleton = () => (
     <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
@@ -185,7 +182,7 @@ const IntegrationsPage: React.FC = () => {
                 </p>
                 
                 {/* Connection Status */}
-                {isJiraConnected && (
+                {clientOrganization?.integrations?.jira && (
                   <div className="flex items-center gap-2 px-3 py-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     <span className="text-sm text-green-700 dark:text-green-300 font-medium">
@@ -195,7 +192,8 @@ const IntegrationsPage: React.FC = () => {
                 )}
                 
                 {/* Connect/Disconnect Button */}
-                {isJiraConnected ? (
+                {clientOrganization?.integrations?.jira ? (
+                  <div className='grid grid-cols-2 gap-2'>
                   <Button 
                     onClick={handleDisconnectJira}
                     variant="outline"
@@ -203,6 +201,12 @@ const IntegrationsPage: React.FC = () => {
                   >
                     Disconnect Jira
                   </Button>
+                  <Button 
+                    onClick={handleConnectToJira}
+                  >
+                    Edit Jira Configuration
+                  </Button>
+                  </div>
                 ) : (
                   <Button 
                     onClick={handleConnectToJira}
