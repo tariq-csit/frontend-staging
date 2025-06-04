@@ -7,10 +7,12 @@ import axiosInstance from '@/lib/AxiosInstance';
 import { useUser } from '@/hooks/useUser';
 import { toast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { Client } from '@/types/types';
 
 const IntegrationsPage: React.FC = () => {
   const { isClient, loading: userLoading } = useUser();
+  const navigate = useNavigate();
 
   // Fetch client organization information for client users
   const { data: clientOrganization, refetch: refetchOrganization, isLoading: organizationLoading } = useQuery({
@@ -81,6 +83,11 @@ const IntegrationsPage: React.FC = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleEditJiraConfiguration = () => {
+    // Navigate to setup wizard in edit mode
+    navigate('/integration/jira/setup', { state: { editMode: true } });
   };
 
   const handleDisconnectJira = async () => {
@@ -202,7 +209,7 @@ const IntegrationsPage: React.FC = () => {
                     Disconnect Jira
                   </Button>
                   <Button 
-                    onClick={handleConnectToJira}
+                    onClick={handleEditJiraConfiguration}
                   >
                     Edit Jira Configuration
                   </Button>

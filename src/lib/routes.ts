@@ -187,6 +187,8 @@ export const apiRoutes = {
         disconnect: (clientId: string) => `/clients/${clientId}/integrations/jira`,
         // Configure Jira integration settings
         configure: (clientId: string) => `/clients/${clientId}/integrations/jira/configure`,
+        // Get current Jira configuration
+        getConfiguration: (clientId: string) => `/clients/${clientId}/integrations/jira/configuration`,
         // Search Jira users
         searchUsers: (clientId: string) => `/clients/${clientId}/integrations/jira/users/search`,
         // Auto sync

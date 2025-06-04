@@ -81,6 +81,37 @@ interface JiraUser {
   avatarUrl?: string;
 }
 
+interface JiraConfigurationResponse {
+  isIntegrated: boolean;
+  cloudId: string;
+  defaultProjectKey: string;
+  defaultIssueType: string;
+  fieldMappings: {
+    severityMapping: {
+      [key: string]: string;
+    };
+    customFields: Array<{
+      jiraField: string;
+      fieldType: string;
+      valueType: string;
+      value: any;
+    }>;
+  };
+  pentests: {
+    linked: Array<{
+      id: string;
+      name: string;
+      status: string;
+      autoSync: boolean;
+    }>;
+    unlinked: Array<{
+      id: string;
+      name: string;
+      status: string;
+    }>;
+  };
+}
+
 interface JiraSetupState {
   currentStep: number;
   selectedProject: string;
@@ -141,6 +172,7 @@ const JiraSetup: React.FC = () => {
   };
 
   const [state, setState] = useState<JiraSetupState>(loadSavedState);
+  const [previousProject, setPreviousProject] = useState<string>(loadSavedState().selectedProject);
 
   // Destructure state for easier access
   const {
@@ -171,6 +203,7 @@ const JiraSetup: React.FC = () => {
   // Check if we came from the callback
   const fromCallback = location.state?.fromCallback;
   const justConnected = location.state?.justConnected;
+  const editMode = location.state?.editMode;
 
   // Fetch client organization information
   const { data: clientOrganization, isLoading: organizationLoading } = useQuery({
@@ -183,7 +216,21 @@ const JiraSetup: React.FC = () => {
   const isMainLoading = userLoading || (isClient() && organizationLoading);
 
   // If we just connected but the integration status hasn't updated yet, proceed anyway
-  const isIntegratedOrJustConnected = clientOrganization?.integrations?.jira?.isIntegrated || justConnected;
+  const isIntegratedOrJustConnected = clientOrganization?.integrations?.jira || justConnected;
+
+  // Fetch current configuration if in edit mode
+  const { data: currentConfig, isLoading: configLoading } = useQuery({
+    queryKey: ['jira-configuration'],
+    queryFn: () => {
+      const clientId = clientOrganization?._id;
+      if (!clientId) throw new Error('Client ID not found');
+      return axiosInstance.get(apiRoutes.client.integrations.jira.getConfiguration(clientId)).then((res) => res.data as JiraConfigurationResponse);
+    },
+    enabled: !!clientOrganization?._id && editMode && isIntegratedOrJustConnected,
+  });
+
+  // Update main loading state to include config loading
+  const isMainLoadingWithConfig = isMainLoading || (editMode && configLoading);
 
   // Fetch Jira projects
   const { data: jiraProjectsResponse, isLoading: projectsLoading } = useQuery({
@@ -298,6 +345,33 @@ const JiraSetup: React.FC = () => {
     queryFn: () => axiosInstance.get(apiRoutes.client.pentests.all).then((res) => res.data as Pentest[]),
     enabled: !!clientOrganization?._id && isIntegratedOrJustConnected && currentStep >= 5,
   });
+
+  // Combine pentests data in edit mode
+  const allAvailablePentests = React.useMemo(() => {
+    if (editMode && currentConfig && !configLoading) {
+      // In edit mode, combine linked and unlinked pentests from config
+      const linkedPentests = currentConfig.pentests.linked.map(p => ({
+        _id: p.id,
+        title: p.name,
+        name: p.name,
+        status: p.status,
+        createdAt: new Date().toISOString()
+      }));
+      
+      const unlinkedPentests = currentConfig.pentests.unlinked.map(p => ({
+        _id: p.id,
+        title: p.name,
+        name: p.name,
+        status: p.status,
+        createdAt: new Date().toISOString()
+      }));
+      
+      return [...linkedPentests, ...unlinkedPentests];
+    }
+    
+    // In normal mode, use the regular pentests query
+    return clientPentests || [];
+  }, [editMode, currentConfig, configLoading, clientPentests]);
 
   const saveConfiguration = useMutation({
     mutationFn: async (config: { 
@@ -920,12 +994,13 @@ const JiraSetup: React.FC = () => {
     }
   };
 
-  // Clear issue type when project changes
+  // Clear issue type only when project actually changes to a different value
   React.useEffect(() => {
-    if (selectedProject) {
-      updateState({ selectedIssueType: '' }); // Clear issue type when project changes
+    if (selectedProject && previousProject && selectedProject !== previousProject) {
+      updateState({ selectedIssueType: '' });
     }
-  }, [selectedProject]);
+    setPreviousProject(selectedProject);
+  }, [selectedProject, previousProject]);
 
   // UserSearch component for user picker fields
   const UserSearch: React.FC<{
@@ -1114,7 +1189,42 @@ const JiraSetup: React.FC = () => {
     return pentest.title || pentest.name || pentest.pentestName || pentest.projectName || `Pentest ${pentestId.slice(-6)}`;
   };
 
-  if (isMainLoading && fromCallback) {
+  // Pre-populate state from current configuration when in edit mode
+  useEffect(() => {
+    if (editMode && currentConfig && !configLoading) {
+      console.log('Pre-populating state from current config:', currentConfig);
+      
+      // Convert custom fields back to our internal format
+      const customFieldMapping: CustomFieldMapping = {};
+      currentConfig.fieldMappings.customFields.forEach(field => {
+        customFieldMapping[field.jiraField] = {
+          type: field.valueType === 'template' ? 'vulnerability_mapping' : 'static',
+          value: field.valueType === 'template' 
+            ? field.value.replace('${vulnerability.', '').replace('}', '') // Extract field name from template
+            : field.value
+        };
+      });
+
+      // Get linked pentest IDs and auto-sync pentest IDs
+      const linkedPentestIds = currentConfig.pentests.linked.map(p => p.id);
+      const autoSyncPentestIds = currentConfig.pentests.linked.filter(p => p.autoSync).map(p => p.id);
+
+      updateState({
+        selectedProject: currentConfig.defaultProjectKey,
+        selectedIssueType: currentConfig.defaultIssueType,
+        severityMapping: currentConfig.fieldMappings.severityMapping,
+        customFieldMapping: customFieldMapping,
+        selectedPentests: linkedPentestIds,
+        autoSyncPentests: autoSyncPentestIds,
+        // Don't change currentStep - let user navigate through wizard
+      });
+      
+      // Also set the previous project to prevent clearing
+      setPreviousProject(currentConfig.defaultProjectKey);
+    }
+  }, [editMode, currentConfig, configLoading]);
+
+  if (isMainLoadingWithConfig && fromCallback) {
     // Show loading state when coming from callback and data is still loading
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
@@ -1133,7 +1243,7 @@ const JiraSetup: React.FC = () => {
     );
   }
 
-  if (!isMainLoading && !isIntegratedOrJustConnected) {
+  if (!isMainLoadingWithConfig && !isIntegratedOrJustConnected) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
         <div className="max-w-md w-full bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8">
@@ -1156,7 +1266,7 @@ const JiraSetup: React.FC = () => {
 
   const renderStep1 = () => (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-      {isMainLoading ? (
+      {isMainLoadingWithConfig ? (
         <>
           <Card className="border-0 shadow-sm bg-white dark:bg-gray-800">
             <CardHeader className="text-center pb-4">
@@ -1926,13 +2036,13 @@ const JiraSetup: React.FC = () => {
   };
 
   return (
-    <JiraSetupLayout currentStep={currentStep} isLoading={isMainLoading}>
+    <JiraSetupLayout currentStep={currentStep} isLoading={isMainLoadingWithConfig}>
       {/* Main Content */}
       {getStepContent()}
 
       {/* Navigation Buttons */}
       <div className="flex justify-between">
-        {isMainLoading ? (
+        {isMainLoadingWithConfig ? (
           <>
             <Skeleton className="h-10 w-20" />
             <Skeleton className="h-10 w-32" />
