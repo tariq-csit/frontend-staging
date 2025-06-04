@@ -130,6 +130,8 @@ export const apiRoutes = {
         details: (pentestId: string, vulnerabilityId: string) => `/clients/pentests/${pentestId}/vulnerabilities/${vulnerabilityId}`,
         status: (pentestId: string, vulnerabilityId: string) => `/clients/pentests/${pentestId}/vulnerability/${vulnerabilityId}/status`,
         comment: (pentestId: string, vulnerabilityId: string) => `/clients/pentests/${pentestId}/vulnerability/${vulnerabilityId}/comment`,
+        // Jira integration for vulnerabilities
+        sendToJira: (clientId: string, pentestId: string, vulnerabilityId: string) => `/clients/${clientId}/pentests/${pentestId}/vulnerabilities/${vulnerabilityId}/send-to-jira`,
       },
       // Reports
       reports: {
@@ -142,6 +144,11 @@ export const apiRoutes = {
         getPentestReportComments: (pentestId: string) => `/clients/pentests/${pentestId}/pentest-report/comments`,
         addRetestReportComment: (pentestId: string) => `/clients/pentests/${pentestId}/retest-report/comments`,
         getRetestReportComments: (pentestId: string) => `/clients/pentests/${pentestId}/retest-report/comments`,
+      },
+      // Jira integration for pentests
+      jira: {
+        enable: (clientId: string, pentestId: string) => `/clients/${clientId}/pentests/${pentestId}/jira/enable`,
+        disable: (clientId: string, pentestId: string) => `/clients/${clientId}/pentests/${pentestId}/jira/disable`,
       },
     },
     
@@ -172,10 +179,18 @@ export const apiRoutes = {
         projects: (clientId: string) => `/clients/${clientId}/integrations/jira/projects`,
         // Get issue types for a specific project
         issueTypes: (clientId: string, projectKey: string) => `/clients/${clientId}/integrations/jira/projects/${projectKey}/issuetypes`,
+        // Get fields for a specific issue type
+        issueTypeFields: (clientId: string, projectKey: string, issueTypeId: string) => `/clients/${clientId}/integrations/jira/projects/${projectKey}/issuetypes/${issueTypeId}/fields`,
         // Get integration status
         status: (clientId: string) => `/clients/${clientId}/integrations/jira/status`,
         // Disconnect integration
         disconnect: (clientId: string) => `/clients/${clientId}/integrations/jira`,
+        // Configure Jira integration settings
+        configure: (clientId: string) => `/clients/${clientId}/integrations/jira/configure`,
+        // Search Jira users
+        searchUsers: (clientId: string) => `/clients/${clientId}/integrations/jira/users/search`,
+        // Auto sync
+        autoSync: (clientId: string, pentestId: string) => `/clients/${clientId}/pentests/${pentestId}/jira/auto-sync`,
       },
     },
   },

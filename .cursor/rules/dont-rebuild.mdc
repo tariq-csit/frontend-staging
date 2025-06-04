@@ -4,3 +4,5 @@ globs:
 alwaysApply: true
 ---
 don't make the build to test out the modifications made. DO NOT RUN `npm run build`.
+
+Also don't run lint for testing changes.
