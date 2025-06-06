@@ -785,22 +785,95 @@ const JiraSetup: React.FC = () => {
             </div>
           );
         }
-        // Array of strings (labels)
+        // Array of strings (labels) - fallthrough to label case
+        // This handles fields like "labels" and any array field with string items
+        /* falls through */
+      
+      case 'labels': // Handle native Jira "labels" field type
+        // Array of strings (labels/tags)
+        const currentArrayValues = Array.isArray(fieldValue) ? fieldValue : [];
+        
+        const addArrayValue = () => {
+          const newValueInput = document.getElementById(`${field.id}-new-value`) as HTMLInputElement;
+          const newValue = newValueInput?.value?.trim();
+          
+          if (newValue && !currentArrayValues.includes(newValue)) {
+            updateState({ 
+              customFieldMapping: { 
+                ...customFieldMapping, 
+                [field.id]: { type: 'static', value: [...currentArrayValues, newValue] }
+              }
+            });
+            newValueInput.value = '';
+          }
+        };
+
+        const removeArrayValue = (valueToRemove: string) => {
+          updateState({ 
+            customFieldMapping: { 
+              ...customFieldMapping, 
+              [field.id]: { type: 'static', value: currentArrayValues.filter(v => v !== valueToRemove) }
+            }
+          });
+        };
+
+        const handleKeyPress = (e: React.KeyboardEvent) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            addArrayValue();
+          }
+        };
+
         return (
-          <Input
-            placeholder={`Enter ${field.name.toLowerCase()} (comma-separated)`}
-            value={Array.isArray(fieldValue) ? fieldValue.join(', ') : (fieldValue || '')}
-            onChange={(e) => {
-              const values = e.target.value.split(',').map(v => v.trim()).filter(v => v);
-              updateState({ 
-                customFieldMapping: { 
-                  ...customFieldMapping, 
-                  [field.id]: { type: 'static', value: values }
-                }
-              });
-            }}
-            className="w-full"
-          />
+          <div className="space-y-3">
+            {/* Display current values */}
+            {currentArrayValues.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {currentArrayValues.map((value, index) => (
+                  <div 
+                    key={index}
+                    className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full text-sm"
+                  >
+                    <span>{value}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeArrayValue(value)}
+                      className="ml-1 hover:bg-blue-200 dark:hover:bg-blue-800/50 rounded-full p-0.5 transition-colors"
+                      aria-label={`Remove ${value}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {/* Add new value input */}
+            <div className="flex gap-2">
+              <Input
+                id={`${field.id}-new-value`}
+                placeholder={`Enter new ${field.name.toLowerCase()}`}
+                onKeyPress={handleKeyPress}
+                className="flex-1"
+              />
+              <Button
+                type="button"
+                onClick={addArrayValue}
+                size="sm"
+                variant="outline"
+                className="shrink-0"
+              >
+                Add
+              </Button>
+            </div>
+            
+            {/* Empty state message */}
+            {currentArrayValues.length === 0 && (
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                No values added yet. Enter a value above and click "Add".
+              </p>
+            )}
+          </div>
         );
 
       case 'user':
@@ -1271,11 +1344,7 @@ const JiraSetup: React.FC = () => {
           <Card className="border-0 shadow-sm bg-white dark:bg-gray-800">
             <CardHeader className="text-center pb-4">
               <div className="flex justify-center mb-4">
-                <div className="flex space-x-2">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <Skeleton key={i} className="h-12 w-12 rounded-lg" />
-                  ))}
-                </div>
+                <Skeleton className="h-16 w-16 rounded-lg" />
               </div>
               <Skeleton className="h-6 w-48 mx-auto mb-2" />
               <div className="space-y-1">
@@ -1291,11 +1360,7 @@ const JiraSetup: React.FC = () => {
           <Card className="border-0 shadow-sm bg-white dark:bg-gray-800">
             <CardHeader className="text-center pb-4">
               <div className="flex justify-center mb-4">
-                <div className="flex space-x-2">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <Skeleton key={i} className="h-12 w-12 rounded-lg" />
-                  ))}
-                </div>
+                <Skeleton className="h-16 w-16 rounded-lg" />
               </div>
               <Skeleton className="h-6 w-40 mx-auto mb-2" />
               <div className="space-y-1">
@@ -1324,19 +1389,12 @@ const JiraSetup: React.FC = () => {
           <Card className="border-0 shadow-sm bg-white dark:bg-gray-800">
             <CardHeader className="text-center pb-4">
               <div className="flex justify-center mb-4">
-                <div className="flex space-x-2">
-                  <div className="h-12 w-12 rounded-lg bg-blue-500 flex items-center justify-center">
-                    <Target className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="h-12 w-12 rounded-lg bg-purple-500 flex items-center justify-center">
-                    <Settings className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="h-12 w-12 rounded-lg bg-yellow-500 flex items-center justify-center">
-                    <Calendar className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="h-12 w-12 rounded-lg bg-green-500 flex items-center justify-center">
-                    <Zap className="h-6 w-6 text-white" />
-                  </div>
+                <div className="h-16 w-16 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 flex items-center justify-center">
+                  <img 
+                    src="/Jira Icon.svg" 
+                    alt="Jira" 
+                    className="h-10 w-10"
+                  />
                 </div>
               </div>
               <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -1376,19 +1434,12 @@ const JiraSetup: React.FC = () => {
           <Card className="border-0 shadow-sm bg-white dark:bg-gray-800">
             <CardHeader className="text-center pb-4">
               <div className="flex justify-center mb-4">
-                <div className="flex space-x-2">
-                  <div className="h-12 w-12 rounded-lg bg-red-500 flex items-center justify-center">
-                    <CheckCircle2 className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="h-12 w-12 rounded-lg bg-purple-500 flex items-center justify-center">
-                    <Zap className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="h-12 w-12 rounded-lg bg-blue-500 flex items-center justify-center">
-                    <CheckCircle2 className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="h-12 w-12 rounded-lg bg-green-500 flex items-center justify-center">
-                    <Square className="h-6 w-6 text-white" />
-                  </div>
+                <div className="h-16 w-16 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 flex items-center justify-center">
+                  <img 
+                    src="/Jira Icon.svg" 
+                    alt="Jira" 
+                    className="h-10 w-10"
+                  />
                 </div>
               </div>
               <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -1456,33 +1507,38 @@ const JiraSetup: React.FC = () => {
   );
 
   const renderStep2 = () => (
+    <>
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
       {/* Jira Fields Card */}
       <Card className="border-0 shadow-sm bg-white dark:bg-gray-800">
         <CardHeader className="text-center pb-4">
           <div className="flex justify-center mb-4">
-            <div className="h-16 w-16 rounded-lg bg-blue-500 flex items-center justify-center">
-              <FileText className="h-8 w-8 text-white" />
+            <div className="h-16 w-16 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 flex items-center justify-center">
+              <img 
+                src="/Jira Icon.svg" 
+                alt="Jira" 
+                className="h-10 w-10"
+              />
             </div>
           </div>
           <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white">
             Jira Fields
           </CardTitle>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-            these are fields that are in your Jira story
+            These are fields that are in your Jira story
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Summary Field */}
           <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
             <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Summary</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300">this is the story summary</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">This is the story summary</p>
           </div>
 
           {/* Description Field */}
           <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
             <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Description</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-300">this is the description of the vulnerability</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">This is the description of the vulnerability</p>
           </div>
 
         </CardContent>
@@ -1491,16 +1547,18 @@ const JiraSetup: React.FC = () => {
       {/* Slash Fields Card */}
       <Card className="border-0 shadow-sm bg-white dark:bg-gray-800">
         <CardHeader className="text-center pb-4">
-          <div className="flex justify-center mb-4">
-            <div className="h-16 w-16 rounded-lg bg-gray-800 dark:bg-gray-600 flex items-center justify-center">
-              <Shield className="h-8 w-8 text-white" />
-            </div>
+          <div className="flex justify-center">
+            <img 
+              src="/logo-small.png" 
+              alt="Slash" 
+              className="w-24 object-contain"
+            />
           </div>
           <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white">
             Slash Fields
           </CardTitle>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-            these are fields that will be in your Slash vulnerability reports
+            These are fields that will be in your Slash vulnerability reports
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -1511,7 +1569,7 @@ const JiraSetup: React.FC = () => {
             </div>
             <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
               <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Title</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">this is the title of the vulnerability</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">This is the title of the vulnerability</p>
             </div>
           </div>
 
@@ -1522,13 +1580,15 @@ const JiraSetup: React.FC = () => {
             </div>
             <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
               <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Description</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300">this is the description of the vulnerability</p>
+              <p className="text-sm text-gray-600 dark:text-gray-300">This is the description of the vulnerability</p>
             </div>
           </div>
 
         </CardContent>
       </Card>
     </div>
+    <p className="text-sm text-gray-500 text-center dark:text-gray-400 my-2">These fields are automatically mapped with Jira</p>
+    </>
   );
 
   const renderStep3 = () => (
@@ -1537,15 +1597,17 @@ const JiraSetup: React.FC = () => {
       <Card className="border-0 shadow-sm bg-white dark:bg-gray-800">
         <CardHeader className="text-center pb-4">
           <div className="flex justify-center mb-4">
-            <div className="h-16 w-16 rounded-lg bg-gray-800 dark:bg-gray-600 flex items-center justify-center">
-              <Shield className="h-8 w-8 text-white" />
-            </div>
+            <img 
+              src="/logo-small.png" 
+              alt="Slash" 
+              className="h-16 w-16 object-contain"
+            />
           </div>
           <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white">
             Slash Severity Levels
           </CardTitle>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-            these are severity levels in your Slash vulnerability reports
+            These are severity levels in your Slash vulnerability reports
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -1615,15 +1677,19 @@ const JiraSetup: React.FC = () => {
       <Card className="border-0 shadow-sm bg-white dark:bg-gray-800">
         <CardHeader className="text-center pb-4">
           <div className="flex justify-center mb-4">
-            <div className="h-16 w-16 rounded-lg bg-blue-500 flex items-center justify-center">
-              <ArrowRight className="h-8 w-8 text-white" />
+            <div className="h-16 w-16 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 flex items-center justify-center">
+              <img 
+                src="/Jira Icon.svg" 
+                alt="Jira" 
+                className="h-10 w-10"
+              />
             </div>
           </div>
           <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white">
             Map to Jira Priorities
           </CardTitle>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-            map each Slash severity to a corresponding Jira priority level
+            Map each Slash severity to a corresponding Jira priority level
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -1710,8 +1776,12 @@ const JiraSetup: React.FC = () => {
       <Card className="border-0 shadow-sm bg-white dark:bg-gray-800">
         <CardHeader className="text-center pb-6">
           <div className="flex justify-center mb-4">
-            <div className="h-16 w-16 rounded-lg bg-blue-500 flex items-center justify-center">
-              <FileText className="h-8 w-8 text-white" />
+            <div className="h-16 w-16 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 flex items-center justify-center">
+              <img 
+                src="/Jira Icon.svg" 
+                alt="Jira" 
+                className="h-10 w-10"
+              />
             </div>
           </div>
           <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -1721,19 +1791,6 @@ const JiraSetup: React.FC = () => {
             Configure how vulnerability data maps to your Jira custom fields
           </p>
           
-          {/* Map All Required Fields Toggle */}
-          <div className="flex items-center justify-end mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <div className="flex items-center space-x-3">
-              <Label htmlFor="map-all" className="text-sm font-medium text-gray-900 dark:text-white">
-                Map All Required Fields
-              </Label>
-              <Switch
-                id="map-all"
-                checked={mapAllRequiredFields}
-                onCheckedChange={(checked) => updateState({ mapAllRequiredFields: checked })}
-              />
-            </div>
-          </div>
         </CardHeader>
       </Card>
       
@@ -1772,9 +1829,6 @@ const JiraSetup: React.FC = () => {
                           {field.required && <span className="text-red-500 ml-1">*</span>}
                         </h3>
                         <div className="flex items-center space-x-2 mt-1">
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                            {field.schema.type}
-                          </span>
                           {field.schema.custom && (
                             <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
                               {field.schema.custom.split(':').pop()}
@@ -1790,22 +1844,6 @@ const JiraSetup: React.FC = () => {
                     {renderFieldInput(field)}
                   </div>
                   
-                  {/* Field Description */}
-                  <div className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/30 rounded p-3">
-                    <div className="flex items-center space-x-2">
-                      <Info className="h-4 w-4" />
-                      <span>
-                        <strong>Field ID:</strong> {field.id} | 
-                        <strong> Type:</strong> {field.schema.type}
-                        {field.schema.custom && (
-                          <>
-                            {' | '}
-                            <strong>Custom Type:</strong> {field.schema.custom}
-                          </>
-                        )}
-                      </span>
-                    </div>
-                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -1832,9 +1870,11 @@ const JiraSetup: React.FC = () => {
       <Card className="border-0 shadow-sm bg-white dark:bg-gray-800">
         <CardHeader className="text-center pb-6">
           <div className="flex justify-center mb-4">
-            <div className="h-16 w-16 rounded-lg bg-purple-500 flex items-center justify-center">
-              <Target className="h-8 w-8 text-white" />
-            </div>
+            <img 
+              src="/logo-small.png" 
+              alt="Slash" 
+              className="w-24 object-contain"
+            />
           </div>
           <CardTitle className="text-xl font-semibold text-gray-900 dark:text-white">
             Link Pentests

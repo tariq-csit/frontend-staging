@@ -128,13 +128,6 @@ const JiraCallback: React.FC = () => {
             <p className="text-gray-600 dark:text-gray-300 text-center">
               Your Jira integration has been set up. You'll be redirected to the integrations page shortly.
             </p>
-            {result && (
-              <div className="mt-4 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Connection Result: {JSON.stringify(result, null, 2)}
-                </p>
-              </div>
-            )}
             <Button onClick={() => navigate('/integration/jira/setup', { 
               state: { fromCallback: true, justConnected: true } 
             })}>
