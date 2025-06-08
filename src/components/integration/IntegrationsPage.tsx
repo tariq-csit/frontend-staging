@@ -92,7 +92,7 @@ const IntegrationsPage: React.FC = () => {
 
   const handleEditJiraConfiguration = () => {
     // Navigate to setup wizard in edit mode
-    navigate('/integration/jira/setup', { state: { editMode: true } });
+    navigate('/integrations/jira/setup', { state: { editMode: true } });
   };
 
   const handleDisconnectJira = async () => {

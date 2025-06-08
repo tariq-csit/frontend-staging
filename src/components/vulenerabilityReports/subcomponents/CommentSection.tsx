@@ -108,7 +108,7 @@ export default function CommentBox({
   return (
     <div className="w-full">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="relative rounded-md text-foreground border border-gray-200 dark:border-gray-700">
+        <div className="relative rounded-md text-foreground bg-white dark:bg-transparent border border-gray-200 dark:border-gray-700">
           <div className="mt-2">
             {files.length > 0 && (
               <div className="flex flex-nowrap px-4 py-2 space-x-2">

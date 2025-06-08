@@ -63,7 +63,7 @@ Jira configuration page that allows users to configure their integration after s
 5. **Callback**: Jira redirects back to callback component with `code` and `state`
 6. **Token Exchange**: Callback component sends code to backend (only once using React ref)
 7. **Cache Invalidation**: Query cache is invalidated to refresh organization data
-8. **Setup Navigation**: User is redirected to `/integration/jira/setup` with state
+8. **Setup Navigation**: User is redirected to `/integrations/jira/setup` with state
 9. **State Handling**: Setup page handles navigation state to prevent timing issues
 10. **Configuration**: User selects Jira project and saves configuration
 11. **Completion**: Returns to main integrations page with updated status
@@ -87,7 +87,7 @@ Jira configuration page that allows users to configure their integration after s
 The integration pages are protected by the `ClientProtectedRoute` component and are only accessible to users with the "client" role. This is configured in:
 
 - **Route Protection**: `src/App.tsx` - `/integration` route wrapped with `ClientProtectedRoute`
-- **Setup Route**: `src/App.tsx` - `/integration/jira/setup` wrapped with `ClientProtectedRoute`
+- **Setup Route**: `src/App.tsx` - `/integrations/jira/setup` wrapped with `ClientProtectedRoute`
 - **Callback Route**: `src/App.tsx` - `/clients/integrations/jira/callback` (public for OAuth)
 - **Sidebar Navigation**: `src/components/sidebar/Sidebar.tsx` - Integration link only shown to client users
 

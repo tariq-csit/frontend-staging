@@ -1061,7 +1061,7 @@ const JiraSetup: React.FC = () => {
     if (currentStep === 1) {
       // Clear saved state when going back to integrations
       localStorage.removeItem(STORAGE_KEY);
-      navigate('/integration');
+      navigate('/integrations');
     } else {
       updateState({ currentStep: currentStep - 1 });
     }

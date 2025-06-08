@@ -82,7 +82,7 @@ const JiraCallback: React.FC = () => {
 
         // Redirect to Jira setup page after 3 seconds
         setTimeout(() => {
-          navigate('/integration/jira/setup', { 
+          navigate('/integrations/jira/setup', { 
             state: { fromCallback: true, justConnected: true } 
           });
         }, 3000);
@@ -128,7 +128,7 @@ const JiraCallback: React.FC = () => {
             <p className="text-gray-600 dark:text-gray-300 text-center">
               Your Jira integration has been set up. You'll be redirected to the integrations page shortly.
             </p>
-            <Button onClick={() => navigate('/integration/jira/setup', { 
+            <Button onClick={() => navigate('/integrations/jira/setup', { 
               state: { fromCallback: true, justConnected: true } 
             })}>
               Go to Jira Setup
