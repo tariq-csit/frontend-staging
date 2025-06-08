@@ -129,6 +129,7 @@ export interface Pentest {
   report: Report;
   retestReport: Report;
   attachments: Attachment[];
+  hasJiraIntegration: boolean;
 }
 
 // export interface Pentest {

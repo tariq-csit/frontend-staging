@@ -1,7 +1,7 @@
 import React from "react";
 import { useSpring, animated } from "@react-spring/web";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronRight, Clock, BarChart4 } from "lucide-react";
+import { Clock, BarChart4 } from "lucide-react";
 import Bugs from "../../activePentests/subComponenets/Bugs";
 
 interface PentesterMetrics {
@@ -138,7 +138,6 @@ const MetricsCards: React.FC<MetricsCardsProps> = ({
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">Upcoming Pentests</div>
           </div>
-          <ChevronRight className="text-gray-400 dark:text-gray-500" />
         </div>
         
         <div className="bg-white dark:bg-gray-800 p-4 rounded-component shadow-6 dark:shadow-gray-900 flex items-center">
@@ -153,7 +152,6 @@ const MetricsCards: React.FC<MetricsCardsProps> = ({
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">Assigned Pentest</div>
           </div>
-          <ChevronRight className="text-gray-400 dark:text-gray-500" />
         </div>
         
         <div className="bg-white dark:bg-gray-800 p-4 rounded-component shadow-6 dark:shadow-gray-900 flex items-center">
@@ -171,7 +169,6 @@ const MetricsCards: React.FC<MetricsCardsProps> = ({
             </div>
             <div className="text-sm text-gray-600 dark:text-gray-400">Average CVSS Score</div>
           </div>
-          <ChevronRight className="text-gray-400 dark:text-gray-500" />
         </div>
       </>
     );

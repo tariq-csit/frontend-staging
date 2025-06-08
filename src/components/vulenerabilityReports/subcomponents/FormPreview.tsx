@@ -29,7 +29,7 @@ interface StatusOption {
 function VulnerabilityView() {
   const { pentestId, vulnerabilityId } = useParams<{ pentestId: string; vulnerabilityId: string }>()
   const navigate = useNavigate()
-  const { isPentester, isClient, loading, user } = useUser();
+  const { isPentester, isClient, isAdmin, loading, user } = useUser();
 
   const { data: vulnerability, refetch: refetchVulnerability, isLoading: isLoadingVulnerability } = useQuery({
     queryKey: ["pentest", pentestId, "vulnerability", vulnerabilityId],
@@ -508,8 +508,8 @@ function VulnerabilityView() {
                 </Button>
               )}
               
-              {/* Only show Edit button for pentester who is the reporter */}
-              {(isReporter() && isPentester()) && (
+              {/* Show Edit button for admin (all vulnerabilities) or pentester who is the reporter */}
+              {(isAdmin() || (isReporter() && isPentester())) && (
                 <Button
                   variant="outline"
                   className="border-[#4a3a9c] text-[#4a3a9c] hover:bg-[#f0eeff] flex items-center justify-center gap-2 text-sm lg:text-base"

@@ -78,6 +78,50 @@ const ClientProtectedRoute = ({ children }: { children: ReactNode }) => {
   return <>{children}</>;
 };
 
+// Component that blocks client users from accessing a route
+const NonClientProtectedRoute = ({ children }: { children: ReactNode }) => {
+  const { user, loading, isClient } = useUser();
+  
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+  
+  // If user is a client, redirect back and show a toast
+  if (isClient()) {
+    toast({
+      title: "You are not authorized to access this page",
+      description: "Please contact your administrator",
+      variant: "destructive",
+    })
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  // Otherwise render the children (the protected component)
+  return <>{children}</>;
+};
+
+// Component that blocks both pentester and client users from accessing a route (admin only)
+const AdminOnlyRoute = ({ children }: { children: ReactNode }) => {
+  const { user, loading, isAdmin } = useUser();
+  
+  if (loading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+  }
+  
+  // If user is not an admin, redirect back and show a toast
+  if (!isAdmin()) {
+    toast({
+      title: "You are not authorized to access this page",
+      description: "Please contact your administrator",
+      variant: "destructive",
+    })
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  // Otherwise render the children (the protected component)
+  return <>{children}</>;
+};
+
 function App() {
   usePageTitle('Slash - Security Dashboard');
   const queryClient = new QueryClient();
@@ -97,37 +141,73 @@ function App() {
               <Route path='/pentests' element={<PentestsList />} />
               <Route path='/pentests/:pentestId/' element={<PentestDetails />} />
               <Route path='/pentests/:pentestId/edit' element={
+                <AdminOnlyRoute>
+                  <NewPentestsForm />
+                </AdminOnlyRoute>
+              } />
+              <Route path='/pentests/:pentestId/vulnerabilities' element={<VulnerabilitiesInPentest />} />
+              <Route path='/pentests/create' element={
                 <AdminProtectedRoute>
                   <NewPentestsForm />
                 </AdminProtectedRoute>
               } />
-              <Route path='/pentests/:pentestId/vulnerabilities' element={<VulnerabilitiesInPentest />} />
-              <Route path='/pentests/create' element={<NewPentestsForm />} />
 
-              <Route path='/pentests/:pentestId/manage-report' element={<ManagePentestReport />} />
-              <Route path='/pentests/:pentestId/pentest-report' element={<PentestReport />} />
-              <Route path='/pentests/:pentestId/retest-report' element={<RetestReport />} />
+              <Route path='/pentests/:pentestId/manage-report' element={
+                <AdminProtectedRoute>
+                  <ManagePentestReport />
+                </AdminProtectedRoute>
+              } />
+              <Route path='/pentests/:pentestId/pentest-report' element={
+                <AdminProtectedRoute>
+                  <PentestReport />
+                </AdminProtectedRoute>
+              } />
+              <Route path='/pentests/:pentestId/retest-report' element={
+                <AdminProtectedRoute>
+                  <RetestReport />
+                </AdminProtectedRoute>
+              } />
 
               <Route path='/vulnerability-reports/:pentestId/vulnerabilities/:vulnerabilityId' element={<FormPreview />} />
-              <Route path='/vulnerability-reports/:pentestId/vulnerabilities/:vulnerabilityId/edit' element={<VulnerabilityReportForm />} />
+              <Route path='/vulnerability-reports/:pentestId/vulnerabilities/:vulnerabilityId/edit' element={
+                <NonClientProtectedRoute>
+                  <VulnerabilityReportForm />
+                </NonClientProtectedRoute>
+              } />
               <Route path='/vulnerability-reports/:pentestId' element={<VulnerabilityReports />} />
               <Route path='/vulnerability-reports/' element={<VulnerabilityReports />} />
-              <Route path='/vulnerability-reports/:pentestId/create' element={<ReportsForm />} />
+              <Route path='/vulnerability-reports/:pentestId/create' element={
+                <NonClientProtectedRoute>
+                  <ReportsForm />
+                </NonClientProtectedRoute>
+              } />
 
-              <Route path='/clients' element={<ClientLists />} />
-              <Route path='/clients/users' element={<ClientUsers />} />
+              <Route path='/clients' element={
+                <AdminOnlyRoute>
+                  <ClientLists />
+                </AdminOnlyRoute>
+              } />
+              <Route path='/clients/users' element={
+                <AdminProtectedRoute>
+                  <ClientUsers />
+                </AdminProtectedRoute>
+              } />
 
-              <Route path='/pentesters' element={<PentestersList />} />
+              <Route path='/pentesters' element={
+                <AdminOnlyRoute>
+                  <PentestersList />
+                </AdminOnlyRoute>
+              } />
 
               <Route path='/settings' element={<Settings />} />
 
-              <Route path='/integration' element={
+              <Route path='/integrations' element={
                 <ClientProtectedRoute>
                   <IntegrationsPage />
                 </ClientProtectedRoute>
               } />
 
-              <Route path='/integration/jira/setup' element={
+              <Route path='/integrations/jira/setup' element={
                 <ClientProtectedRoute>
                   <JiraSetup />
                 </ClientProtectedRoute>

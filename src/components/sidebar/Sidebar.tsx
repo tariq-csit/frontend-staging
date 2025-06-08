@@ -99,8 +99,8 @@ function Sidebar(props: {
       icon: <Users className="w-6 h-6 text-gray-500 dark:text-gray-400" />,
     },
     {
-      link: "/integration",
-      text: "Integration",
+      link: "/integrations",
+      text: "Integrations",
       icon: <Network className="w-6 h-6 text-gray-500 dark:text-gray-400" />,
     },
   ];
