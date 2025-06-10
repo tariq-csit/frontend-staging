@@ -94,7 +94,7 @@ function InitialForm(props:{
   return (
     <div className="min-h-screen bg-black flex">
       {/* Left side - Abstract ellipses background */}
-      <div className="hidden md:flex border-r border-white/10 dark:border-gray-800 md:w-1/2 bg-black p-8 flex-col justify-between relative overflow-hidden">
+      <div className="hidden md:flex md:w-1/2 bg-black p-8 flex-col justify-between relative overflow-hidden">
         {/* Blurred ellipses background */}
         <div className="absolute inset-0">
           <div className="absolute top-20 left-20 w-96 h-96 bg-primary rounded-full blur-3xl opacity-30"></div>
