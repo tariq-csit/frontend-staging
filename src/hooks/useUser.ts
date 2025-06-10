@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import axiosInstance from '@/lib/AxiosInstance';
 import { apiRoutes } from '@/lib/routes';
 
@@ -13,39 +13,25 @@ interface User {
 }
 
 export function useUser() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchUser = async () => {
-    try {
-      setLoading(true);
+  const { data: user, isLoading: loading, error, refetch } = useQuery<User>({
+    queryKey: ['user'],
+    queryFn: async () => {
       const response = await axiosInstance.get(apiRoutes.user);
-      setUser(response.data);
-      setError(null);
-    } catch (err) {
-      setError('Failed to fetch user data');
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchUser();
-  }, []);
+      return response.data;
+    },
+  });
 
   const isAdmin = (): boolean => user?.role === 'admin';
   const isPentester = (): boolean => user?.role === 'pentester';
   const isClient = (): boolean => user?.role === 'client';
 
   return { 
-    user,
+    user: user || null,
     loading,
-    error,
+    error: error ? 'Failed to fetch user data' : null,
     isAdmin,
     isPentester,
     isClient,
-    refetch: fetchUser
+    refetch
   };
-} 
+}

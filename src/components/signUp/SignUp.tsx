@@ -5,7 +5,6 @@ import Credentials from "./CompanyCredentials";
 import SignUpForm from "./SignUpForm";
 import { SignUpData } from "@/types/types";
 
-
 function SignUp() {
   const [signUpData, setSignUpData] = useState<SignUpData>({
     name: "",
@@ -24,23 +23,13 @@ function SignUp() {
     }
   }, [navigate]);
 
-
-  return (
-    <div className="flex flex-col sm:flex-row h-screen">
-      <div className="bg-[url('/login-image.png')] bg-cover bg-center h-[20vh] sm:h-auto sm:w-1/2"></div>
-      <div className="flex flex-col overflow-y-scroll sm:w-1/2 py-12 px-6 sm:px-16 self-stretch bg-[#F5F5F5] dark:bg-gray-900">
-      <div className="">
-        {signUpData.code === "" && signUpData.name === "" ? (
-          <Code setSignUpData={setSignUpData as (data: Partial<SignUpData>) => void} signUpData={signUpData} />
-        ) : signUpData.code != "" && signUpData.companyName === "" ? (
-          <Credentials setSignUpData={setSignUpData as (data: Partial<SignUpData>) => void} signUpData={signUpData} />
-        ) : (
-          <SignUpForm setSignUpData={setSignUpData as (data: Partial<SignUpData>) => void} signUpData={signUpData} />
-        )}
-        </div>
-      </div>
-    </div>
-  );
+  if (signUpData.code === "" && signUpData.name === "") {
+    return <Code setSignUpData={setSignUpData as (data: Partial<SignUpData>) => void} signUpData={signUpData} />;
+  } else if (signUpData.code != "" && signUpData.companyName === "") {
+    return <Credentials setSignUpData={setSignUpData as (data: Partial<SignUpData>) => void} signUpData={signUpData} />;
+  } else {
+    return <SignUpForm setSignUpData={setSignUpData as (data: Partial<SignUpData>) => void} signUpData={signUpData} />;
+  }
 }
 
 export default SignUp;

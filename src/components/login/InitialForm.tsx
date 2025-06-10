@@ -92,49 +92,49 @@ function InitialForm(props:{
   }
 
   return (
-    <div className="min-h-screen bg-black flex">
+    <div className="min-h-screen bg-white dark:bg-black flex">
       {/* Left side - Abstract ellipses background */}
-      <div className="hidden md:flex border-r border-white/10 dark:border-gray-800 md:w-1/2 bg-black p-8 flex-col justify-between relative overflow-hidden">
+      <div className="hidden md:flex border-r border-gray-200 dark:border-white/10 md:w-1/2 bg-gray-50 dark:bg-black p-8 flex-col justify-between relative overflow-hidden">
         {/* Blurred ellipses background */}
         <div className="absolute inset-0">
-          <div className="absolute top-20 left-20 w-96 h-96 bg-primary rounded-full blur-3xl opacity-30"></div>
-          <div className="absolute top-40 right-10 w-80 h-80 bg-primary rounded-full blur-3xl opacity-20"></div>
-          <div className="absolute bottom-32 left-10 w-72 h-72 bg-primary rounded-full blur-3xl opacity-25"></div>
-          <div className="absolute bottom-10 right-32 w-64 h-64 bg-primary rounded-full blur-3xl opacity-15"></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-primary rounded-full blur-3xl opacity-10"></div>
+          <div className="absolute top-20 left-20 w-96 h-96 bg-primary rounded-full blur-3xl opacity-10 dark:opacity-30"></div>
+          <div className="absolute top-40 right-10 w-80 h-80 bg-primary rounded-full blur-3xl opacity-50 dark:opacity-20"></div>
+          <div className="absolute bottom-32 left-10 w-72 h-72 bg-primary rounded-full blur-3xl opacity-50 dark:opacity-25"></div>
+          <div className="absolute bottom-10 right-32 w-64 h-64 bg-primary rounded-full blur-3xl opacity-50 dark:opacity-15"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 bg-primary rounded-full blur-3xl opacity-50 dark:opacity-10"></div>
         </div>
         
         {/* Content */}
-        <div className="relative z-10 flex items-center gap-2 text-white">
+        <div className="relative z-10 flex items-center gap-2 text-gray-800 dark:text-white">
         </div>
-        <div className="relative z-10 text-white max-w-md mx-auto flex flex-col items-center text-center">
+        <div className="relative z-10 text-gray-800 dark:text-white max-w-md mx-auto flex flex-col items-center text-center">
           <h1 className="text-3xl font-bold mb-2">
-            <img src="/logo-large.png" alt="Slash Logo" className="h-20 invert" />
+            <img src="/logo-large.png" alt="Slash Logo" className="h-20 dark:invert" />
           </h1>
-          <p className="text-sm text-white/80 mb-8">
+          <p className="text-sm text-gray-600 dark:text-white/80 mb-8">
             Please sign in to streamline the management and monitoring of penetration tests.
           </p>
         </div>
-        <div className="relative z-10 text-center text-white/60 text-sm">
+        <div className="relative z-10 text-center text-gray-500 dark:text-white/60 text-sm">
           Copyright © 2024 Slash
         </div>
       </div>
 
       {/* Right side - Sign In Form */}
-      <div className="w-full md:w-1/2 p-6 md:p-12 flex items-center justify-center">
+      <div className="w-full md:w-1/2 p-6 md:p-12 flex items-center justify-center bg-white dark:bg-black">
         <div className="w-full max-w-md">
-          <div className="bg-gray-900/50 backdrop-blur-sm border border-gray-800 rounded-2xl p-8 space-y-6">
+          <div className="bg-white/80 dark:bg-gray-900/50 backdrop-blur-sm border border-gray-200 dark:border-gray-800 rounded-2xl p-8 space-y-6 shadow-lg dark:shadow-none">
             {/* User Icon */}
             <div className="flex justify-center">
-              <div className="bg-gray-800 rounded-full p-4">
-                <User className="w-8 h-8 text-gray-400" />
+              <div className="bg-gray-100 dark:bg-gray-800 rounded-full p-4">
+                <User className="w-8 h-8 text-gray-600 dark:text-gray-400" />
               </div>
             </div>
 
             {/* Header */}
             <div className="text-center">
-              <h2 className="text-2xl font-semibold text-white mb-2">Welcome back</h2>
-              <p className="text-gray-400 text-sm">Please enter your information to sign in</p>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">Welcome back</h2>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">Please enter your information to sign in</p>
             </div>
 
             {/* Form */}
@@ -146,18 +146,18 @@ function InitialForm(props:{
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm text-gray-300 font-medium">
+                      <FormLabel className="text-sm text-gray-700 dark:text-gray-300 font-medium">
                         Email Address
                       </FormLabel>
                       <FormControl>
                         <Input
                           type="email"
                           placeholder="Enter your email..."
-                          className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus:border-gray-600"
+                          className="bg-gray-50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary dark:focus:border-gray-600"
                           {...field}
                         />
                       </FormControl>
-                      <FormMessage className="text-red-400" />
+                      <FormMessage className="text-red-500 dark:text-red-400" />
                     </FormItem>
                   )}
                 />
@@ -168,7 +168,7 @@ function InitialForm(props:{
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm text-gray-300 font-medium">
+                      <FormLabel className="text-sm text-gray-700 dark:text-gray-300 font-medium">
                         Password
                       </FormLabel>
                       <FormControl>
@@ -176,14 +176,14 @@ function InitialForm(props:{
                           <Input
                             type={showPassword ? "text" : "password"}
                             placeholder="••••••••••"
-                            className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus:border-gray-600 pr-10"
+                            className="bg-gray-50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary dark:focus:border-gray-600 pr-10"
                             {...field}
                           />
                           <Button
                             type="button"
                             variant="ghost"
                             size="icon"
-                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent text-gray-400"
+                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent text-gray-500 dark:text-gray-400"
                             onClick={() => setShowPassword(!showPassword)}
                             aria-label={showPassword ? "Hide password" : "Show password"}
                           >
@@ -195,11 +195,11 @@ function InitialForm(props:{
                           </Button>
                         </div>
                       </FormControl>
-                      <FormMessage className="text-red-400" />
+                      <FormMessage className="text-red-500 dark:text-red-400" />
                       <div className="text-right">
                         <Link
                           to="/forgot-password"
-                          className="text-sm text-gray-400 hover:text-white underline"
+                          className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white underline"
                         >
                           Forgot Password?
                         </Link>
@@ -217,7 +217,7 @@ function InitialForm(props:{
 
                 {/* Sign In Button */}
                 <Button 
-                  className="w-full bg-white text-black hover:bg-gray-200 font-medium py-4" 
+                  className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-4" 
                   type="submit"
                   disabled={loginMutation.isPending || !turnstileToken}
                 >
@@ -232,9 +232,9 @@ function InitialForm(props:{
                 </Button>
 
                 {/* Sign Up Link */}
-                <div className="text-center text-sm text-gray-400">
+                <div className="text-center text-sm text-gray-600 dark:text-gray-400">
                   Don't have an account yet?{" "}
-                  <Link to="/signup" className="text-white hover:underline font-medium">
+                  <Link to="/signup" className="text-primary hover:text-primary/80 hover:underline font-medium">
                     Sign up
                   </Link>
                 </div>
