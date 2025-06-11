@@ -126,7 +126,7 @@ function App() {
   usePageTitle('Slash - Security Dashboard');
   const queryClient = new QueryClient();
   return (
-    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <QueryClientProvider client={queryClient}>
         <SidebarProvider>
           <Routes>
