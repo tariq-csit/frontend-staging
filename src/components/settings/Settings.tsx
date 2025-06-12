@@ -18,6 +18,7 @@ import { apiRoutes } from "@/lib/routes"
 import { FileUpload } from "@/components/FileUpload"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useSetPageTitle } from "@/hooks/useSetPageTitle"
+import { useUser } from "@/hooks/useUser"
 
 // Form schemas
 const nameFormSchema = z.object({
@@ -49,6 +50,7 @@ const passwordFormSchema = z
 export default function SettingsPage() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
+  const { isPentester } = useUser()
 
   // Set page title for settings page
   useSetPageTitle("Settings");
@@ -495,17 +497,19 @@ export default function SettingsPage() {
                   disabled={isUpdatingPreference}
                 />
               </div>
-              <div className="flex items-center justify-between py-4 border-t dark:border-gray-700">
-                <span className="text-base font-medium dark:text-gray-200">Report comment notifications</span>
-                <Switch
-                  checked={reportCommentNotification}
-                  onCheckedChange={(checked) => 
-                    onNotificationPreferenceChange('reportCommentNotification', checked, setReportCommentNotification)
-                  }
-                  className="data-[state=checked]:bg-primary"
-                  disabled={isUpdatingPreference}
-                />
-              </div>
+              {!isPentester() && (
+                <div className="flex items-center justify-between py-4 border-t dark:border-gray-700">
+                  <span className="text-base font-medium dark:text-gray-200">Report comment notifications</span>
+                  <Switch
+                    checked={reportCommentNotification}
+                    onCheckedChange={(checked) => 
+                      onNotificationPreferenceChange('reportCommentNotification', checked, setReportCommentNotification)
+                    }
+                    className="data-[state=checked]:bg-primary"
+                    disabled={isUpdatingPreference}
+                  />
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
