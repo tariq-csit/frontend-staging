@@ -46,9 +46,11 @@ interface JiraField {
   key: string;
   schema: {
     type: string;
+    system?: string;
     custom?: string;
     customId?: number;
     items?: string;
+    configuration?: Record<string, boolean>;
   };
 }
 
@@ -318,14 +320,26 @@ const JiraSetup: React.FC = () => {
     enabled: !!clientOrganization?._id && !!selectedProject && !!selectedIssueType && isIntegratedOrJustConnected && currentStep >= 3,
   });
 
-  // Extract and filter fields - only required custom fields
-  const requiredCustomFields = React.useMemo(() => {
+  // Extract and filter fields - custom fields with exclusions
+  const customFields = React.useMemo(() => {
     if (!jiraFieldsResponse?.fields) return [];
     
-    return jiraFieldsResponse.fields.filter((field: JiraField) => 
-      field.required && 
-      field.id.startsWith('customfield_')
-    );
+    return jiraFieldsResponse.fields.filter((field: JiraField) => {
+      // Must be a custom field
+      if (!field.id.startsWith('customfield_')) return false;
+      
+      // Exclude development integration plugin fields
+      if (field.schema.custom?.includes('com.atlassian.jira.plugins.jira-development-integration-plugin')) {
+        return false;
+      }
+      
+      // Exclude specific field names
+      if (['Flagged', 'Team', 'Rank'].includes(field.name)) {
+        return false;
+      }
+      
+      return true;
+    });
   }, [jiraFieldsResponse]);
 
   // Extract Jira priorities from the fields response
@@ -398,7 +412,7 @@ const JiraSetup: React.FC = () => {
         .filter(([, mapping]) => mapping.value !== undefined && mapping.value !== null && mapping.value !== '')
         .map(([fieldId, mapping]) => {
           // Find the field info to determine field type
-          const field = requiredCustomFields.find((f: JiraField) => f.id === fieldId);
+          const field = customFields.find((f: JiraField) => f.id === fieldId);
           let fieldType = 'text'; // default
           let valueType = 'static'; // default
           let processedValue = mapping.value;
@@ -987,7 +1001,7 @@ const JiraSetup: React.FC = () => {
     } else if (currentStep === 4) {
       // Validate required custom fields if mapAllRequiredFields is enabled
       if (mapAllRequiredFields) {
-        const unfilledRequiredFields = requiredCustomFields.filter((field: JiraField) => {
+        const unfilledRequiredFields = customFields.filter((field: JiraField) => {
           const mapping = customFieldMapping[field.id];
           return !mapping || 
                  !mapping.value || 
@@ -1811,9 +1825,9 @@ const JiraSetup: React.FC = () => {
             </Card>
           ))}
         </div>
-      ) : requiredCustomFields.length > 0 ? (
+      ) : customFields.length > 0 ? (
         <div className="space-y-6 mt-6">
-          {requiredCustomFields.map((field: JiraField, index: number) => (
+          {customFields.map((field: JiraField, index: number) => (
             <Card key={field.id} className="border-0 shadow-sm bg-white dark:bg-gray-800 hover:shadow-md transition-shadow duration-200">
               <CardContent className="p-6">
                 <div className="space-y-4">
@@ -2058,7 +2072,7 @@ const JiraSetup: React.FC = () => {
     }
     if (currentStep === 4) {
       if (mapAllRequiredFields) {
-        const unfilledRequiredFields = requiredCustomFields.filter((field: JiraField) => {
+        const unfilledRequiredFields = customFields.filter((field: JiraField) => {
           const mapping = customFieldMapping[field.id];
           return !mapping || 
                  !mapping.value || 

@@ -76,11 +76,18 @@ axiosInstance.interceptors.request.use(
   }
 );
 
-// Response Interceptor - Handle token refresh
+// Response Interceptor - Handle token refresh and user deletion
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+
+    // Check if user has been deleted by admin
+    if (error.response?.data?.message === "User not found") {
+      localStorage.clear();
+      window.location.href = '/login';
+      return Promise.reject(error);
+    }
 
     // If error is 401 and we haven't tried to refresh yet
     if (error.response?.status === 401 && !originalRequest._retry) {
