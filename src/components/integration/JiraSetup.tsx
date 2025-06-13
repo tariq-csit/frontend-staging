@@ -540,7 +540,7 @@ const JiraSetup: React.FC = () => {
           ? `Jira integration configured successfully for ${selectedPentests.length} pentest${selectedPentests.length !== 1 ? 's' : ''} with auto-sync enabled for ${(autoSyncPentests || []).length}.`
           : `Jira integration configured successfully for ${selectedPentests.length} pentest${selectedPentests.length !== 1 ? 's' : ''}.`,
       });
-      navigate('/integration');
+      navigate('/integrations');
     },
     onError: (error) => {
       console.error('Error configuring Jira integration:', error);
