@@ -193,6 +193,8 @@ export const apiRoutes = {
         searchUsers: (clientId: string) => `/clients/${clientId}/integrations/jira/users/search`,
         // Auto sync
         autoSync: (clientId: string, pentestId: string) => `/clients/${clientId}/pentests/${pentestId}/jira/auto-sync`,
+        // Unlink pentest from Jira integration
+        unlink: (clientId: string, pentestId: string) => `/clients/${clientId}/pentests/${pentestId}/jira`,
       },
     },
   },

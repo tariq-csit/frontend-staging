@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRoutes } from '@/lib/routes';
@@ -387,6 +387,42 @@ const JiraSetup: React.FC = () => {
     return clientPentests || [];
   }, [editMode, currentConfig, configLoading, clientPentests]);
 
+  // Mutation to unlink a pentest from Jira integration
+  const unlinkPentest = useMutation({
+    mutationFn: async (pentestId: string) => {
+      const clientId = clientOrganization?._id;
+      if (!clientId) throw new Error('Client ID not found');
+      
+      return axiosInstance.delete(apiRoutes.client.integrations.jira.unlink(clientId, pentestId));
+    },
+    onSuccess: (_, pentestId) => {
+      toast({
+        title: "Pentest Unlinked",
+        description: "Pentest has been successfully unlinked from Jira integration.",
+      });
+      
+      // Remove from selected pentests and auto-sync pentests
+      updateState({
+        selectedPentests: selectedPentests.filter(id => id !== pentestId),
+        autoSyncPentests: (autoSyncPentests || []).filter(id => id !== pentestId)
+      });
+      
+      // Refresh the configuration data
+      if (editMode && clientOrganization?._id) {
+        // This will trigger a refetch of the current config
+        window.location.reload();
+      }
+    },
+    onError: (error) => {
+      console.error('Error unlinking pentest:', error);
+      toast({
+        title: "Unlink Failed",
+        description: "Failed to unlink pentest from Jira integration. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
   const saveConfiguration = useMutation({
     mutationFn: async (config: { 
       projectKey: string; 
@@ -505,20 +541,24 @@ const JiraSetup: React.FC = () => {
         }
       }
       
-      // Step 3: Enable auto-sync for selected pentests
-      if (config.autoSyncPentests.length > 0) {
-        console.log('Enabling auto-sync for pentests:', config.autoSyncPentests);
+      // Step 3: Handle auto-sync settings for all selected pentests
+      if (config.selectedPentests.length > 0) {
+        console.log('Configuring auto-sync for pentests:', {
+          enabled: config.autoSyncPentests,
+          disabled: config.selectedPentests.filter(id => !config.autoSyncPentests.includes(id))
+        });
         
-        const autoSyncPromises = config.autoSyncPentests.map(pentestId => 
-          axiosInstance.post(apiRoutes.client.integrations.jira.autoSync(clientId, pentestId), {
-            enabled: true
+        const autoSyncPromises = config.selectedPentests.map(pentestId => {
+          const shouldEnable = config.autoSyncPentests.includes(pentestId);
+          return axiosInstance.post(apiRoutes.client.integrations.jira.autoSync(clientId, pentestId), {
+            enabled: shouldEnable
           })
-            .then(response => ({ success: true, pentestId, response }))
+            .then(response => ({ success: true, pentestId, enabled: shouldEnable, response }))
             .catch(error => {
-              console.error(`Failed to enable auto-sync for pentest ${pentestId}:`, error);
-              return { success: false, pentestId, error: error.message };
-            })
-        );
+              console.error(`Failed to ${shouldEnable ? 'enable' : 'disable'} auto-sync for pentest ${pentestId}:`, error);
+              return { success: false, pentestId, enabled: shouldEnable, error: error.message };
+            });
+        });
         
         const autoSyncResults = await Promise.all(autoSyncPromises);
         const failedAutoSyncs = autoSyncResults.filter(result => !result.success);
@@ -799,95 +839,33 @@ const JiraSetup: React.FC = () => {
             </div>
           );
         }
-        // Array of strings (labels) - fallthrough to label case
-        // This handles fields like "labels" and any array field with string items
-        /* falls through */
-      
-      case 'labels': // Handle native Jira "labels" field type
-        // Array of strings (labels/tags)
-        const currentArrayValues = Array.isArray(fieldValue) ? fieldValue : [];
-        
-        const addArrayValue = () => {
-          const newValueInput = document.getElementById(`${field.id}-new-value`) as HTMLInputElement;
-          const newValue = newValueInput?.value?.trim();
-          
-          if (newValue && !currentArrayValues.includes(newValue)) {
-            updateState({ 
+        // Array of strings (labels) - use the enhanced labels component
+        return (
+          <LabelsWithVulnerabilityMapping
+            value={Array.isArray(fieldValue) ? fieldValue : []}
+            onChange={(values) => updateState({ 
               customFieldMapping: { 
                 ...customFieldMapping, 
-                [field.id]: { type: 'static', value: [...currentArrayValues, newValue] }
+                [field.id]: { type: 'static', value: values }
               }
-            });
-            newValueInput.value = '';
-          }
-        };
-
-        const removeArrayValue = (valueToRemove: string) => {
-          updateState({ 
-            customFieldMapping: { 
-              ...customFieldMapping, 
-              [field.id]: { type: 'static', value: currentArrayValues.filter(v => v !== valueToRemove) }
-            }
-          });
-        };
-
-        const handleKeyPress = (e: React.KeyboardEvent) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            addArrayValue();
-          }
-        };
-
+            })}
+            fieldName={field.name}
+          />
+        );
+      
+      case 'labels': // Handle native Jira "labels" field type
+        // Array of strings (labels/tags) with vulnerability model support
         return (
-          <div className="space-y-3">
-            {/* Display current values */}
-            {currentArrayValues.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {currentArrayValues.map((value, index) => (
-                  <div 
-                    key={index}
-                    className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded-full text-sm"
-                  >
-                    <span>{value}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeArrayValue(value)}
-                      className="ml-1 hover:bg-blue-200 dark:hover:bg-blue-800/50 rounded-full p-0.5 transition-colors"
-                      aria-label={`Remove ${value}`}
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-            
-            {/* Add new value input */}
-            <div className="flex gap-2">
-              <Input
-                id={`${field.id}-new-value`}
-                placeholder={`Enter new ${field.name.toLowerCase()}`}
-                onKeyPress={handleKeyPress}
-                className="flex-1"
-              />
-              <Button
-                type="button"
-                onClick={addArrayValue}
-                size="sm"
-                variant="outline"
-                className="shrink-0"
-              >
-                Add
-              </Button>
-            </div>
-            
-            {/* Empty state message */}
-            {currentArrayValues.length === 0 && (
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                No values added yet. Enter a value above and click "Add".
-              </p>
-            )}
-          </div>
+          <LabelsWithVulnerabilityMapping
+            value={Array.isArray(fieldValue) ? fieldValue : []}
+            onChange={(values) => updateState({ 
+              customFieldMapping: { 
+                ...customFieldMapping, 
+                [field.id]: { type: 'static', value: values }
+              }
+            })}
+            fieldName={field.name}
+          />
         );
 
       case 'user':
@@ -1088,6 +1066,233 @@ const JiraSetup: React.FC = () => {
     }
     setPreviousProject(selectedProject);
   }, [selectedProject, previousProject]);
+
+  // LabelsWithVulnerabilityMapping component for labels fields with vulnerability model support
+  const LabelsWithVulnerabilityMapping: React.FC<{
+    value: string[];
+    onChange: (values: string[]) => void;
+    fieldName: string;
+  }> = ({ value, onChange, fieldName }) => {
+    const [inputValue, setInputValue] = useState('');
+    const [showDropdown, setShowDropdown] = useState(false);
+    const [cursorPosition, setCursorPosition] = useState(0);
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    const vulnerabilityFields = [
+      { value: 'title', label: 'Title' },
+      { value: 'severity', label: 'Severity' },
+      { value: 'affected_host', label: 'Affected Host' },
+      { value: 'cvss', label: 'CVSS Score' },
+      { value: 'reporter', label: 'Reporter' }
+    ];
+
+    // Check if cursor is after "{{vulnerability." pattern
+    const shouldShowDropdown = () => {
+      const beforeCursor = inputValue.substring(0, cursorPosition);
+      const match = beforeCursor.match(/\{\{vulnerability\.([^}]*)$/);
+      return !!match;
+    };
+
+    // Get the current search term for filtering
+    const getCurrentSearchTerm = () => {
+      const beforeCursor = inputValue.substring(0, cursorPosition);
+      const match = beforeCursor.match(/\{\{vulnerability\.([^}]*)$/);
+      return match ? match[1] : '';
+    };
+
+    // Filter vulnerability fields based on search term
+    const filteredFields = vulnerabilityFields.filter(field =>
+      field.label.toLowerCase().includes(getCurrentSearchTerm().toLowerCase()) ||
+      field.value.toLowerCase().includes(getCurrentSearchTerm().toLowerCase())
+    );
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      const newValue = e.target.value;
+      const newCursorPos = e.target.selectionStart || 0;
+      
+      setInputValue(newValue);
+      setCursorPosition(newCursorPos);
+      
+      // Show dropdown if typing vulnerability template and cursor is in the right position
+      const beforeCursor = newValue.substring(0, newCursorPos);
+      const hasTemplate = beforeCursor.includes('{{vulnerability.');
+      const isInTemplate = beforeCursor.match(/\{\{vulnerability\.([^}]*)$/);
+      
+      setShowDropdown(hasTemplate && !!isInTemplate);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+      setCursorPosition(e.currentTarget.selectionStart || 0);
+      
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        addLabel();
+      } else if (e.key === 'Escape') {
+        setShowDropdown(false);
+      }
+    };
+
+    const handleInputClick = (e: React.MouseEvent<HTMLInputElement>) => {
+      const newCursorPos = e.currentTarget.selectionStart || 0;
+      setCursorPosition(newCursorPos);
+      
+      // Check if dropdown should be shown at the new cursor position
+      const beforeCursor = inputValue.substring(0, newCursorPos);
+      const hasTemplate = beforeCursor.includes('{{vulnerability.');
+      const isInTemplate = beforeCursor.match(/\{\{vulnerability\.([^}]*)$/);
+      
+      setShowDropdown(hasTemplate && !!isInTemplate);
+    };
+
+    const insertVulnerabilityField = (fieldValue: string) => {
+      const beforeCursor = inputValue.substring(0, cursorPosition);
+      const afterCursor = inputValue.substring(cursorPosition);
+      
+      // Find the last occurrence of {{vulnerability. pattern
+      const lastTemplateIndex = beforeCursor.lastIndexOf('{{vulnerability.');
+      if (lastTemplateIndex !== -1) {
+        // Replace from the template start to cursor position with the complete template
+        const beforeTemplate = beforeCursor.substring(0, lastTemplateIndex);
+        const completeTemplate = `{{vulnerability.${fieldValue}}}`;
+        const newValue = beforeTemplate + completeTemplate + afterCursor;
+        
+        setInputValue(newValue);
+        setShowDropdown(false);
+        
+        // Focus back to input and set cursor after the inserted template
+        setTimeout(() => {
+          if (inputRef.current) {
+            const newCursorPos = beforeTemplate.length + completeTemplate.length;
+            inputRef.current.focus();
+            inputRef.current.setSelectionRange(newCursorPos, newCursorPos);
+            setCursorPosition(newCursorPos);
+          }
+        }, 10);
+      }
+    };
+
+    const addLabel = () => {
+      const trimmedValue = inputValue.trim();
+      if (trimmedValue && !value.includes(trimmedValue)) {
+        onChange([...value, trimmedValue]);
+        setInputValue('');
+        setShowDropdown(false);
+      }
+    };
+
+    const removeLabel = (labelToRemove: string) => {
+      onChange(value.filter(label => label !== labelToRemove));
+    };
+
+    const isVulnerabilityTemplate = (label: string) => {
+      return label.includes('{{vulnerability.');
+    };
+
+    const formatLabelDisplay = (label: string) => {
+      if (isVulnerabilityTemplate(label)) {
+        return label; // Show the full template
+      }
+      return label;
+    };
+
+    const getLabelColor = (label: string) => {
+      if (isVulnerabilityTemplate(label)) {
+        return 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 border-purple-200 dark:border-purple-800';
+      }
+      return 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800';
+    };
+
+    return (
+      <div className="space-y-3">
+        {/* Display current labels */}
+        {value.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {value.map((label, index) => (
+              <div 
+                key={index}
+                className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm border ${getLabelColor(label)}`}
+              >
+                <span className="font-mono text-xs">{formatLabelDisplay(label)}</span>
+                <button
+                  type="button"
+                  onClick={() => removeLabel(label)}
+                  className="ml-1 hover:bg-black/10 dark:hover:bg-white/10 rounded-full p-0.5 transition-colors"
+                  aria-label={`Remove ${label}`}
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {/* Add new label input with autocomplete */}
+        <div className="relative">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+                             <Input
+                 ref={inputRef}
+                 value={inputValue}
+                 onChange={handleInputChange}
+                 onKeyDown={handleKeyDown}
+                 onClick={handleInputClick}
+                 placeholder={`Enter ${fieldName.toLowerCase()} (use {{vulnerability.fieldName}} for dynamic values)`}
+                 className="w-full"
+               />
+              
+              {/* Vulnerability field dropdown */}
+              {showDropdown && filteredFields.length > 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-48 overflow-auto">
+                  {filteredFields.map((field) => (
+                    <button
+                      key={field.value}
+                      type="button"
+                      onClick={() => insertVulnerabilityField(field.value)}
+                      className="w-full p-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 transition-colors"
+                    >
+                      <div className="h-2 w-2 rounded-full bg-primary"></div>
+                      <div className="flex-1 flex flex-row gap-2">
+                        <div className="font-medium text-sm text-gray-900 dark:text-white">
+                          {field.label}
+                        </div>
+                        <div className="text-xs text-gray-500 bg-primary/30 flex items-center justify-center rounded-lg px-2 py-1 dark:text-gray-400 font-mono">
+                          {`{{vulnerability.${field.value}}}`}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            <Button
+              type="button"
+              onClick={addLabel}
+              size="sm"
+              variant="outline"
+              className="shrink-0"
+              disabled={!inputValue.trim()}
+            >
+              Add
+            </Button>
+          </div>
+        </div>
+        
+                 {/* Help text */}
+         <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+           <p>• Type static values or use dynamic templates like <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">{'{{vulnerability.title}}'}</code></p>
+           <p>• Start typing <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">{'{{vulnerability.'}</code> to see available fields</p>
+         </div>
+        
+        {/* Empty state message */}
+        {value.length === 0 && (
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            No labels added yet. Enter a value above and click "Add".
+          </p>
+        )}
+      </div>
+    );
+  };
 
   // UserSearch component for user picker fields
   const UserSearch: React.FC<{
@@ -1967,15 +2172,33 @@ const JiraSetup: React.FC = () => {
                               }
                             </p>
                           </div>
-                          <div className="flex items-center space-x-2">
-                            <Label htmlFor={`auto-sync-${pentestId}`} className="text-xs text-gray-600 dark:text-gray-300">
-                              Auto-sync
-                            </Label>
-                            <Switch
-                              id={`auto-sync-${pentestId}`}
-                              checked={isAutoSyncEnabled}
-                              onCheckedChange={() => toggleAutoSync(pentestId)}
-                            />
+                          <div className="flex items-center space-x-3">
+                            {editMode && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => unlinkPentest.mutate(pentestId)}
+                                disabled={unlinkPentest.isPending}
+                                className="text-red-600 border-red-200 hover:bg-red-50 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-900/20"
+                              >
+                                {unlinkPentest.isPending ? (
+                                  <Loader2 className="h-3 w-3 animate-spin" />
+                                ) : (
+                                  <X className="h-3 w-3" />
+                                )}
+                                <span className="ml-1">Unlink</span>
+                              </Button>
+                            )}
+                            <div className="flex items-center space-x-2">
+                              <Label htmlFor={`auto-sync-${pentestId}`} className="text-xs text-gray-600 dark:text-gray-300">
+                                Auto-sync
+                              </Label>
+                              <Switch
+                                id={`auto-sync-${pentestId}`}
+                                checked={isAutoSyncEnabled}
+                                onCheckedChange={() => toggleAutoSync(pentestId)}
+                              />
+                            </div>
                           </div>
                         </div>
                       );
