@@ -127,6 +127,170 @@ interface JiraSetupState {
 
 const STORAGE_KEY = 'jira-setup-state';
 
+// TextWithVulnerabilityMapping component for text fields with vulnerability model support
+const TextWithVulnerabilityMapping: React.FC<{
+  value: string;
+  onChange: (value: string) => void;
+  fieldName: string;
+  isTextarea?: boolean;
+}> = React.memo(({ value, onChange, fieldName, isTextarea = false }) => {
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [cursorPosition, setCursorPosition] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const vulnerabilityFields = [
+    { value: 'title', label: 'Title' },
+    { value: 'severity', label: 'Severity' },
+    { value: 'affected_host', label: 'Affected Host' },
+    { value: 'cvss', label: 'CVSS Score' },
+    { value: 'reporter', label: 'Reporter' }
+  ];
+
+  // Get the current search term for filtering
+  const getCurrentSearchTerm = () => {
+    const beforeCursor = value.substring(0, cursorPosition);
+    const match = beforeCursor.match(/\{\{vulnerability\.([^}]*)$/);
+    return match ? match[1] : '';
+  };
+
+  // Filter vulnerability fields based on search term
+  const filteredFields = vulnerabilityFields.filter(field =>
+    field.label.toLowerCase().includes(getCurrentSearchTerm().toLowerCase()) ||
+    field.value.toLowerCase().includes(getCurrentSearchTerm().toLowerCase())
+  );
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const newValue = e.target.value;
+    const newCursorPos = e.target.selectionStart || 0;
+    
+    onChange(newValue);
+    setCursorPosition(newCursorPos);
+    
+    // Show dropdown if typing vulnerability template and cursor is in the right position
+    const beforeCursor = newValue.substring(0, newCursorPos);
+    const hasTemplate = beforeCursor.includes('{{vulnerability.');
+    const isInTemplate = beforeCursor.match(/\{\{vulnerability\.([^}]*)$/);
+    
+    setShowDropdown(hasTemplate && !!isInTemplate);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setCursorPosition(e.currentTarget.selectionStart || 0);
+    
+    if (e.key === 'Escape') {
+      setShowDropdown(false);
+    }
+  };
+
+  const handleInputClick = (e: React.MouseEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const newCursorPos = e.currentTarget.selectionStart || 0;
+    setCursorPosition(newCursorPos);
+    
+    // Check if dropdown should be shown at the new cursor position
+    const beforeCursor = value.substring(0, newCursorPos);
+    const hasTemplate = beforeCursor.includes('{{vulnerability.');
+    const isInTemplate = beforeCursor.match(/\{\{vulnerability\.([^}]*)$/);
+    
+    setShowDropdown(hasTemplate && !!isInTemplate);
+  };
+
+  const insertVulnerabilityField = (fieldValue: string) => {
+    const beforeCursor = value.substring(0, cursorPosition);
+    const afterCursor = value.substring(cursorPosition);
+    
+    // Find the last occurrence of {{vulnerability. pattern
+    const lastTemplateIndex = beforeCursor.lastIndexOf('{{vulnerability.');
+    if (lastTemplateIndex !== -1) {
+      // Replace from the template start to cursor position with the complete template
+      const beforeTemplate = beforeCursor.substring(0, lastTemplateIndex);
+      const completeTemplate = `{{vulnerability.${fieldValue}}}`;
+      const newValue = beforeTemplate + completeTemplate + afterCursor;
+      
+      onChange(newValue);
+      setShowDropdown(false);
+      
+      // Focus back to input and set cursor after the inserted template
+      setTimeout(() => {
+        const ref = isTextarea ? textareaRef.current : inputRef.current;
+        if (ref) {
+          const newCursorPos = beforeTemplate.length + completeTemplate.length;
+          ref.focus();
+          ref.setSelectionRange(newCursorPos, newCursorPos);
+          setCursorPosition(newCursorPos);
+        }
+      }, 10);
+    }
+  };
+
+  const hasVulnerabilityTemplate = value.includes('{{vulnerability.');
+
+  return (
+    <div className="space-y-3">
+      {/* Input/Textarea with autocomplete */}
+      <div className="relative">
+        {isTextarea ? (
+          <Textarea
+            ref={textareaRef}
+            value={value}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            onClick={handleInputClick}
+            placeholder={`Enter ${fieldName.toLowerCase()} (use {{vulnerability.fieldName}} for dynamic values)`}
+            className="w-full"
+            rows={4}
+          />
+        ) : (
+          <Input
+            ref={inputRef}
+            value={value}
+            onChange={handleInputChange}
+            onKeyDown={handleKeyDown}
+            onClick={handleInputClick}
+            placeholder={`Enter ${fieldName.toLowerCase()} (use {{vulnerability.fieldName}} for dynamic values)`}
+            className="w-full"
+          />
+        )}
+        
+        {/* Vulnerability field dropdown */}
+        {showDropdown && filteredFields.length > 0 && (
+          <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-48 overflow-auto">
+            {filteredFields.map((field) => (
+              <button
+                key={field.value}
+                type="button"
+                onClick={() => insertVulnerabilityField(field.value)}
+                className="w-full p-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2 transition-colors"
+              >
+                <div className="h-2 w-2 rounded-full bg-primary"></div>
+                <div className="flex-1 flex flex-row gap-2">
+                  <div className="font-medium text-sm text-gray-900 dark:text-white">
+                    {field.label}
+                  </div>
+                  <div className="text-xs text-gray-500 bg-primary/30 flex items-center justify-center rounded-lg px-2 py-1 dark:text-gray-400 font-mono">
+                    {`{{vulnerability.${field.value}}}`}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+      
+      {/* Help text */}
+      <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+        <p>• Type static text and use dynamic templates like <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">{'{{vulnerability.title}}'}</code></p>
+        <p>• Start typing <code className="bg-gray-100 dark:bg-gray-800 px-1 rounded">{'{{vulnerability.'}</code> to see available fields</p>
+        {hasVulnerabilityTemplate && (
+          <p className="text-purple-600 dark:text-purple-400">
+            • Contains dynamic template - will be populated with vulnerability data
+          </p>
+        )}
+      </div>
+    </div>
+  );
+});
+
 const JiraSetup: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -484,19 +648,55 @@ const JiraSetup: React.FC = () => {
             valueType = 'template';
             processedValue = `\${vulnerability.${mapping.value}}`;
           } else if (mapping.type === 'static') {
-            valueType = 'static';
-            // Handle user fields - extract account IDs if it's a JiraUser array
-            if (fieldType === 'user' && Array.isArray(mapping.value)) {
-              if (mapping.value.length > 0 && typeof mapping.value[0] === 'object' && 'accountId' in mapping.value[0]) {
-                // It's an array of JiraUser objects, extract accountIds
-                processedValue = mapping.value.map((user: JiraUser) => user.accountId);
+            // Check if text/textarea fields contain vulnerability templates
+            if ((fieldType === 'text' || fieldType === 'textarea') && typeof mapping.value === 'string') {
+              const hasTemplates = mapping.value.includes('{{vulnerability.');
+              
+              if (hasTemplates) {
+                valueType = 'template';
+                // Transform {{vulnerability.field}} to ${vulnerability.field} format
+                processedValue = mapping.value.replace(/\{\{vulnerability\.([^}]+)\}\}/g, '${vulnerability.$1}');
+              } else {
+                valueType = 'static';
+                processedValue = mapping.value;
               }
-              // If it's a single user field, use just the first user's accountId
-              if (fieldType === 'user' && processedValue.length === 1) {
-                processedValue = processedValue[0];
+            }
+            // Check if labels field contains vulnerability templates
+            else if (fieldType === 'labels' && Array.isArray(mapping.value)) {
+              const hasTemplates = mapping.value.some((label: string) => 
+                typeof label === 'string' && label.includes('{{vulnerability.')
+              );
+              
+              if (hasTemplates) {
+                valueType = 'template';
+                // Transform {{vulnerability.field}} to ${vulnerability.field} format
+                processedValue = mapping.value.map((label: string) => {
+                  if (typeof label === 'string' && label.includes('{{vulnerability.')) {
+                    return label.replace(/\{\{vulnerability\.([^}]+)\}\}/g, '${vulnerability.$1}');
+                  }
+                  return label;
+                });
+              } else {
+                valueType = 'static';
+                processedValue = mapping.value;
               }
-            } else if (fieldType === 'number') {
-              processedValue = Number(mapping.value);
+            } else {
+              valueType = 'static';
+              // Handle user fields - extract account IDs if it's a JiraUser array
+              if (fieldType === 'user' && Array.isArray(mapping.value)) {
+                if (mapping.value.length > 0 && typeof mapping.value[0] === 'object' && 'accountId' in mapping.value[0]) {
+                  // It's an array of JiraUser objects, extract accountIds
+                  processedValue = mapping.value.map((user: JiraUser) => user.accountId);
+                }
+                // If it's a single user field, use just the first user's accountId
+                if (fieldType === 'user' && processedValue.length === 1) {
+                  processedValue = processedValue[0];
+                }
+              } else if (fieldType === 'number') {
+                processedValue = Number(mapping.value);
+              } else {
+                processedValue = mapping.value;
+              }
             }
           }
           
@@ -637,114 +837,23 @@ const JiraSetup: React.FC = () => {
       field.schema.custom.includes('textarea')
     );
 
-    // For text and textarea fields, show mapping options
+    // For text and textarea fields, show enhanced input with vulnerability mapping
     if (isTextOrTextarea) {
       return (
-        <div className="space-y-4">
-          {/* Mapping Type Selection */}
-          <div className="space-y-2">
-            <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              Mapping Type
-            </Label>
-            <RadioGroup
-              value={fieldMapping.type}
-              onValueChange={(value: 'static' | 'vulnerability_mapping') => {
-                updateState({ 
-                  customFieldMapping: { 
-                    ...customFieldMapping, 
-                    [field.id]: { 
-                      type: value, 
-                      value: value === 'static' ? '' : 'title' // Default to title for vulnerability mapping
-                    }
-                  }
-                });
-              }}
-              className="flex space-x-6"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="static" id={`${field.id}-static`} />
-                <Label htmlFor={`${field.id}-static`} className="text-sm">Static Value</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="vulnerability_mapping" id={`${field.id}-mapping`} />
-                <Label htmlFor={`${field.id}-mapping`} className="text-sm">Map to Vulnerability Model</Label>
-              </div>
-            </RadioGroup>
-          </div>
-
-          {/* Input based on mapping type */}
-          {fieldMapping.type === 'static' ? (
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Static Value
-              </Label>
-              {field.schema.custom?.includes('textarea') ? (
-                <Textarea
-                  placeholder={`Enter static value for ${field.name.toLowerCase()}`}
-                  value={fieldMapping.value || ''}
-                  onChange={(e) => updateState({ 
-                    customFieldMapping: { 
-                      ...customFieldMapping, 
-                      [field.id]: { 
-                        type: 'static', 
-                        value: e.target.value 
-                      }
-                    }
-                  })}
-                  className="w-full"
-                  rows={4}
-                />
-              ) : (
-                <Input
-                  placeholder={`Enter static value for ${field.name.toLowerCase()}`}
-                  value={fieldMapping.value || ''}
-                  onChange={(e) => updateState({ 
-                    customFieldMapping: { 
-                      ...customFieldMapping, 
-                      [field.id]: { 
-                        type: 'static', 
-                        value: e.target.value 
-                      }
-                    }
-                  })}
-                  className="w-full"
-                />
-              )}
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                Vulnerability Field
-              </Label>
-              <Select
-                value={fieldMapping.value || 'title'}
-                onValueChange={(value) => updateState({ 
-                  customFieldMapping: { 
-                    ...customFieldMapping, 
-                    [field.id]: { 
-                      type: 'vulnerability_mapping', 
-                      value: value 
-                    }
-                  }
-                })}
-              >
-                <SelectTrigger className='w-full'>
-                  <SelectValue placeholder="Select vulnerability field to map" />
-                </SelectTrigger>
-                <SelectContent>
-                  {getVulnerabilityMappingOptions().map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                This field will automatically be populated with the selected vulnerability data
-              </p>
-            </div>
-          )}
-        </div>
+        <TextWithVulnerabilityMapping
+          value={fieldMapping.value || ''}
+          onChange={(value) => updateState({ 
+            customFieldMapping: { 
+              ...customFieldMapping, 
+              [field.id]: { 
+                type: 'static', 
+                value: value 
+              }
+            }
+          })}
+          fieldName={field.name}
+          isTextarea={field.schema.custom?.includes('textarea')}
+        />
       );
     }
 
@@ -1066,6 +1175,8 @@ const JiraSetup: React.FC = () => {
     }
     setPreviousProject(selectedProject);
   }, [selectedProject, previousProject]);
+
+
 
   // LabelsWithVulnerabilityMapping component for labels fields with vulnerability model support
   const LabelsWithVulnerabilityMapping: React.FC<{
@@ -1489,11 +1600,26 @@ const JiraSetup: React.FC = () => {
       // Convert custom fields back to our internal format
       const customFieldMapping: CustomFieldMapping = {};
       currentConfig.fieldMappings.customFields.forEach(field => {
+        let processedValue = field.value;
+        
+        if (field.valueType === 'template') {
+          if (typeof field.value === 'string') {
+            // For text/textarea fields: ${vulnerability.title} -> {{vulnerability.title}}
+            processedValue = field.value.replace(/\$\{vulnerability\.([^}]+)\}/g, '{{vulnerability.$1}}');
+          } else if (Array.isArray(field.value)) {
+            // For labels fields: ["${vulnerability.title}", "static"] -> ["{{vulnerability.title}}", "static"]
+            processedValue = field.value.map((item: any) => {
+              if (typeof item === 'string' && item.includes('${vulnerability.')) {
+                return item.replace(/\$\{vulnerability\.([^}]+)\}/g, '{{vulnerability.$1}}');
+              }
+              return item;
+            });
+          }
+        }
+        
         customFieldMapping[field.jiraField] = {
-          type: field.valueType === 'template' ? 'vulnerability_mapping' : 'static',
-          value: field.valueType === 'template' 
-            ? field.value.replace('${vulnerability.', '').replace('}', '') // Extract field name from template
-            : field.value
+          type: 'static', // Always store as static in our internal format, detection happens on save
+          value: processedValue
         };
       });
 
