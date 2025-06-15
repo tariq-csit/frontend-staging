@@ -46,7 +46,7 @@ export default function ClientDeleteDialog({ client, refetch, open, onOpenChange
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Client</AlertDialogTitle>
           <AlertDialogDescription>
-            Are you sure you want to delete {client.name}? This action cannot be undone.
+            Are you sure you want to delete {client.name}? This action cannot be undone. Deleting a client will also delete all the users and pentests associated with them.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
