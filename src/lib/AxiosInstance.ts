@@ -89,6 +89,13 @@ axiosInstance.interceptors.response.use(
       return Promise.reject(error);
     }
 
+    // Check if token has been invalidated
+    if (error.response?.data?.message === "Token has been invalidated") {
+      localStorage.clear();
+      window.location.href = '/login';
+      return Promise.reject(error);
+    }
+
     // If error is 401 and we haven't tried to refresh yet
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;

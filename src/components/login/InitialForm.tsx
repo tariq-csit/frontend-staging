@@ -24,10 +24,17 @@ import Turnstile, { useTurnstile } from "react-turnstile";
 const formSchema = z.object({
   email: z
     .string()
+    .trim()
     .email({
       message: "Please enter a valid email",
     })
-    .min(2),
+    .refine((email) => {
+      // RFC 5322 compliant email regex that properly handles special characters
+      const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+      return emailRegex.test(email);
+    }, {
+      message: "Please enter a valid email"
+    }),
   password: z.string().min(8, {
     message: "Password should be atleast 8 characters long",
   }),
@@ -151,7 +158,7 @@ function InitialForm(props:{
                       </FormLabel>
                       <FormControl>
                         <Input
-                          type="email"
+                          type="text"
                           placeholder="Enter your email..."
                           className="bg-gray-50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary dark:focus:border-gray-600"
                           {...field}

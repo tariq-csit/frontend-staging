@@ -8,6 +8,7 @@ import axiosInstance from "@/lib/AxiosInstance";
 function TwoFaAuth(props: {
   tempToken: string;
   setqrCode: Function;
+  setsetupKey: Function;
 }) {
   const setup2FaMutation = useMutation({
     mutationFn: async () => {
@@ -24,6 +25,7 @@ function TwoFaAuth(props: {
     },
     onSuccess: (data) => {
       props.setqrCode(data.qrCodeUrl);
+      props.setsetupKey(data.secret);
       toast({
         title: "2FA Setup Ready",
         description: "Please scan the QR code with your authenticator app",

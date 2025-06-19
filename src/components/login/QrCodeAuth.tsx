@@ -16,10 +16,11 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import { Loader2, QrCode, Shield } from "lucide-react";
+import { Loader2, QrCode, Shield, Copy, Key, Eye, EyeOff } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import axiosInstance from "@/lib/AxiosInstance";
+import { useState } from "react";
 
 const pinSchema = z.object({
   pin: z.string().length(6, {
@@ -29,15 +30,35 @@ const pinSchema = z.object({
 
 function QrCodeAuth(props: {
   qrCode: string;
+  setupKey: string;
   tempToken: string;
   settoken: (token: string) => void;
 }) {
+  const [showManualSetup, setShowManualSetup] = useState(false);
+  const [showKey, setShowKey] = useState(false);
+
   const pinForm = useForm<z.infer<typeof pinSchema>>({
     resolver: zodResolver(pinSchema),
     defaultValues: {
       pin: "",
     },
   });
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({
+        title: "Copied to clipboard",
+        description: "Setup key has been copied to your clipboard",
+      });
+    } catch (err) {
+      toast({
+        title: "Failed to copy",
+        description: "Could not copy to clipboard. Please select and copy manually.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const verify2FaMutation = useMutation({
     mutationFn: async (data: z.infer<typeof pinSchema>) => {
@@ -126,8 +147,55 @@ function QrCodeAuth(props: {
                   className="w-48 h-48 object-contain"
                 />
               </div>
+              
+              {/* Manual Setup Option */}
+              <div className="w-full">
+                <button
+                  type="button"
+                  onClick={() => setShowManualSetup(!showManualSetup)}
+                  className="text-sm text-primary hover:text-primary/80 underline font-medium"
+                >
+                  Can't scan? Enter key manually instead
+                </button>
+                
+                {showManualSetup && (
+                  <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Key className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Manual Setup Key</span>
+                    </div>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="flex-1 max-w-52 overflow-x-hidden bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md p-3 font-mono text-sm">
+                        {showKey ? props.setupKey : "•".repeat(32)}
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setShowKey(!showKey)}
+                        className="px-3"
+                      >
+                        {showKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => copyToClipboard(props.setupKey)}
+                        className="px-3"
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">
+                      Enter this key in your authenticator app to set up 2FA manually
+                    </p>
+                  </div>
+                )}
+              </div>
+              
               <p className="text-sm text-gray-600 dark:text-gray-400 text-center">
-                After scanning, enter the 6-digit code from your authenticator app below
+                After setting up, enter the 6-digit code from your authenticator app below
               </p>
             </div>
 

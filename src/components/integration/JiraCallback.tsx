@@ -65,7 +65,7 @@ const JiraCallback: React.FC = () => {
         
         console.log('Making callback request to:', callbackUrl);
         
-        const response = await axiosInstance.get(callbackUrl);
+        const response = await axiosInstance.post(callbackUrl);
         
         console.log('Callback response:', response.data);
         

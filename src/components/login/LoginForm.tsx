@@ -11,7 +11,15 @@ function LoginForm() {
   const [qrCode, setqrCode] = useState("");
   const [token, settoken] = useState("");
   const [email, setEmail] = useState('');
+  const [setupKey, setsetupKey] = useState("");
   
+  useEffect(() => {
+    // Monitor setupKey changes for debugging/logging purposes
+    if (setupKey) {
+      console.log('2FA setup key generated:', setupKey.substring(0, 8) + '...');
+    }
+  }, [setupKey]);
+
   useEffect(() => {
     // Clear any stale authentication state on component mount
     const token = localStorage.getItem('token');
@@ -35,11 +43,11 @@ function LoginForm() {
     );
   } else if (tempToken !== "" && qrCode === "") {
     return (
-      <TwoFaAuth tempToken={tempToken} setqrCode={setqrCode}/>
+      <TwoFaAuth tempToken={tempToken} setqrCode={setqrCode} setsetupKey={setsetupKey}/>
     );
   } else if (token === "" && qrCode !== "") {
     return (
-      <QrCodeAuth tempToken={tempToken} qrCode={qrCode} settoken={settoken} />
+      <QrCodeAuth tempToken={tempToken} qrCode={qrCode} settoken={settoken} setupKey={setupKey} />
     );
   } else {
     return(
