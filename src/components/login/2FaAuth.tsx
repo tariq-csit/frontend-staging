@@ -66,7 +66,7 @@ function TwoFaAuth(props: {
           </p>
         </div>
         <div className="relative z-10 text-center text-gray-500 dark:text-white/60 text-sm">
-          Copyright © 2024 Slash
+          Copyright © 2025 Slash
         </div>
       </div>
 
