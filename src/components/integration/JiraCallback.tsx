@@ -60,12 +60,11 @@ const JiraCallback: React.FC = () => {
         console.log('Received OAuth callback with code:', code);
         console.log('State parameter:', state);
 
-        // Make callback request to exchange code for tokens
-        const callbackUrl = `${apiRoutes.client.integrations.jira.callback}?code=${encodeURIComponent(code)}&state=${encodeURIComponent(state)}`;
         
-        console.log('Making callback request to:', callbackUrl);
-        
-        const response = await axiosInstance.post(callbackUrl);
+        const response = await axiosInstance.post(apiRoutes.client.integrations.jira.callback, {
+          code,
+          state,
+        });
         
         console.log('Callback response:', response.data);
         

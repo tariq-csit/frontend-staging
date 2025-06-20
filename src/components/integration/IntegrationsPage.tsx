@@ -56,7 +56,7 @@ const IntegrationsPage: React.FC = () => {
       console.log('Initiating Jira integration for client:', clientId);
       
       // Call the initiate Jira integration API
-      // The backend should set redirect_uri to: http://lhe-slash.securitywall.co/clients/integrations/jira/callback
+      
       const response = await axiosInstance.post(apiRoutes.client.integrations.jira.initiate(clientId));
       
       console.log('Initiate Jira integration response:', response.data);
@@ -65,7 +65,7 @@ const IntegrationsPage: React.FC = () => {
         console.log('Redirecting to Jira OAuth URL:', response.data.url);
         // replace the redirect_uri to the /clients/integrations/jira/callback
         const url = new URL(response.data.url);
-        url.searchParams.set('redirect_uri', 'https://lhe-slash.securitywall.co/clients/integrations/jira/callback');
+        url.searchParams.set('redirect_uri', `${import.meta.env.VITE_SLASH_URL}/clients/integrations/jira/callback`);
         response.data.url = url.toString();
         
         // Redirect to Jira OAuth authorization URL

@@ -24,9 +24,10 @@ import Turnstile, { useTurnstile } from "react-turnstile";
 const formSchema = z.object({
   email: z
     .string()
-    .trim()
-    .email({
-      message: "Please enter a valid email",
+    .min(1, "Email is required")
+    .transform((email) => {
+      // Remove all Unicode whitespace and invisible characters, then trim
+      return email.replace(/[\u200B-\u200D\uFEFF\u00A0\u2000-\u200A\u2028\u2029]/g, '').trim();
     })
     .refine((email) => {
       // RFC 5322 compliant email regex that properly handles special characters

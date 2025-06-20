@@ -78,7 +78,7 @@ export default function ClientUserEditDialog({ user, refetch, open, onOpenChange
     enabled: !isClient() && !loading, // Only fetch if user is not a client
   })
 
-  const { mutate: uploadProfilePicture } = useMutation({
+  const { mutate: uploadProfilePicture, isPending: isUploadingProfilePicture } = useMutation({
     mutationFn: async (file: File) => {
       const formData = new FormData()
       formData.append("profilePicture", file)
@@ -247,15 +247,9 @@ export default function ClientUserEditDialog({ user, refetch, open, onOpenChange
           >
             Cancel
           </Button>
-          <Button type="button" onClick={form.handleSubmit(onSubmit)} disabled={isPending}>
-            {isPending ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              "Save Changes"
-            )}
+          <Button type="button" onClick={form.handleSubmit(onSubmit)} disabled={isPending || isUploadingProfilePicture}>
+            {(isPending || isUploadingProfilePicture) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isUploadingProfilePicture ? "Uploading..." : isPending ? "Saving..." : "Save Changes"}
           </Button>
         </DialogFooter>
       </DialogContent>
