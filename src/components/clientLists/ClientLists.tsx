@@ -114,7 +114,6 @@ export default function ClientDashboard() {
     queryKey: ["clients"],
     queryFn: () => axiosInstance.get(apiRoutes.clients.all).then((res) => res.data),
   })
-  console.log(clients)
 
   const { data: signupCodesSent } = useQuery({
     queryKey: ["signupCodes"],

@@ -7,15 +7,14 @@ import type { Client } from "@/types/types"
 import { toast } from "@/hooks/use-toast"
 import type { Dispatch, SetStateAction } from "react"
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
 
 interface ClientDeleteDialogProps {
@@ -28,7 +27,10 @@ interface ClientDeleteDialogProps {
 export default function ClientDeleteDialog({ client, refetch, open, onOpenChange }: ClientDeleteDialogProps) {
   const { mutate: deleteClient, isPending } = useMutation({
     mutationFn: async () => {
-      await axiosInstance.delete(apiRoutes.clients.detail(client._id))
+      const res = await axiosInstance.delete(apiRoutes.clients.detail(client._id))
+      // delay for 250ms after successful action
+      await new Promise(resolve => setTimeout(resolve, 250))
+      return res.data
     },
     onSuccess: () => {
       toast({
@@ -41,27 +43,29 @@ export default function ClientDeleteDialog({ client, refetch, open, onOpenChange
   })
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Delete Client</AlertDialogTitle>
-          <AlertDialogDescription>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete Client</DialogTitle>
+          <DialogDescription>
             Are you sure you want to delete {client.name}? This action cannot be undone. Deleting a client will also delete all the users and pentests associated with them.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
+          </DialogDescription>
+        </DialogHeader>
 
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
             onClick={() => deleteClient()}
             disabled={isPending}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            variant="destructive"
           >
             {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
             {isPending ? "Deleting..." : "Delete"}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }
