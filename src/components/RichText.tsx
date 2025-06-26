@@ -567,10 +567,7 @@ export default function RichText({
           <Button
             variant="outline"
             size="icon"
-            onClick={(e) => {
-              e.preventDefault()
-              setShowPreview(!showPreview)
-            }}
+            onClick={() => setShowPreview(!showPreview)}
             className="flex items-center gap-2"
           >
             {showPreview ? (
