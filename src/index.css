@@ -74,25 +74,4 @@
   body {
     @apply bg-background text-foreground;
   }
-  p {
-    @apply text-foreground;
-  }
-  h1 {
-    @apply text-foreground;
-  }
-  h2 {
-    @apply text-foreground;
-  }
-  h3 {
-    @apply text-foreground;
-  }
-  h4 {
-    @apply text-foreground;
-  }
-  h5 {
-    @apply text-foreground;
-  }
-  h6 {
-    @apply text-foreground;
-  }
 }

@@ -604,28 +604,14 @@ export default function RichText({
             {debouncedText ? (
               <div
                 className="prose prose-slate dark:prose-invert max-w-none 
-                           prose-headings:text-foreground dark:prose-headings:text-foreground 
-                           prose-p:text-foreground dark:prose-p:text-foreground
-                           prose-strong:text-foreground dark:prose-strong:text-foreground 
-                           prose-em:text-foreground dark:prose-em:text-foreground
-                           prose-code:text-foreground dark:prose-code:text-foreground 
-                           prose-code:bg-muted dark:prose-code:bg-muted 
-                           prose-code:px-1 prose-code:rounded
-                           prose-pre:bg-muted dark:prose-pre:bg-muted 
-                           prose-pre:text-foreground dark:prose-pre:text-foreground
-                           prose-blockquote:text-muted-foreground dark:prose-blockquote:text-muted-foreground 
-                           prose-blockquote:border-border dark:prose-blockquote:border-border
-                           prose-hr:border-border dark:prose-hr:border-border 
-                           prose-th:text-foreground dark:prose-th:text-foreground 
-                           prose-td:text-foreground dark:prose-td:text-foreground
-                           prose-table:border-collapse prose-table:border-border dark:prose-table:border-border
-                           prose-th:border prose-th:border-border dark:prose-th:border-border prose-th:px-3 prose-th:py-2
-                           prose-td:border prose-td:border-border dark:prose-td:border-border prose-td:px-3 prose-td:py-2
-                           prose-ol:text-foreground dark:prose-ol:text-foreground 
-                           prose-ul:text-foreground dark:prose-ul:text-foreground 
-                           prose-li:text-foreground dark:prose-li:text-foreground
-                           prose-a:text-primary dark:prose-a:text-primary 
-                           hover:prose-a:text-primary/80 dark:hover:prose-a:text-primary/80
+                           prose-headings:text-foreground prose-p:text-foreground 
+                           prose-strong:text-foreground prose-em:text-foreground
+                           prose-code:text-foreground prose-code:bg-muted prose-code:px-1 prose-code:rounded
+                           prose-pre:bg-muted prose-pre:text-foreground
+                           prose-blockquote:text-muted-foreground prose-blockquote:border-border
+                           prose-hr:border-border prose-th:text-foreground prose-td:text-foreground
+                           prose-ol:text-foreground prose-ul:text-foreground prose-li:text-foreground
+                           prose-a:text-primary hover:prose-a:text-primary/80
                            prose-img:rounded-lg prose-img:shadow-md"
                 dangerouslySetInnerHTML={{ __html: md.render(debouncedText) }}
               />
