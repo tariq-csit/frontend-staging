@@ -40,12 +40,17 @@ async function refreshToken() {
 
         throw new Error('No token in refresh response');
       } catch (error: any) {
-        // Check if the error is a 401 (Unauthorized) or refresh token related
-        if (error.response?.status === 401 || 
-            error.response?.data?.message?.toLowerCase().includes('refresh token') ||
-            error.response?.data?.message?.toLowerCase().includes('invalid token')) {
-          localStorage.clear(); // Clear all auth tokens
-          window.location.href = '/login';
+        // More specific error handling for refresh token failures
+        if (error.response?.status === 401) {
+          // Only clear auth if it's specifically a refresh token issue
+          const errorMessage = (error.response?.data?.message || error.response?.data?.error || '').toLowerCase();
+          if (errorMessage.includes('refresh token') || 
+              errorMessage.includes('token expired') ||
+              errorMessage.includes('invalid refresh') ||
+              errorMessage.includes('unauthorized')) {
+            localStorage.clear();
+            window.location.href = '/login';
+          }
         }
         throw error;
       } finally {
@@ -82,22 +87,26 @@ axiosInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Check if user has been deleted by admin
-    if (error.response?.data?.message === "User not found") {
-      localStorage.clear();
-      window.location.href = '/login';
-      return Promise.reject(error);
-    }
-
-    // Check if token has been invalidated
-    if (error.response?.data?.message === "Token has been invalidated") {
-      localStorage.clear();
-      window.location.href = '/login';
-      return Promise.reject(error);
-    }
-
-    // If error is 401 and we haven't tried to refresh yet
+    // Handle 401 errors first (token expiration/invalid)
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // Check both possible error message fields
+      const errorMessage = (error.response?.data?.message || error.response?.data?.error || '').toLowerCase();
+      
+      // Check for specific non-refreshable auth errors first
+      if (errorMessage === "user not found") {
+        localStorage.clear();
+        window.location.href = '/login';
+        return Promise.reject(error);
+      }
+
+      // Check for explicit token invalidation (admin action)
+      if (errorMessage === "token has been invalidated") {
+        localStorage.clear();
+        window.location.href = '/login';
+        return Promise.reject(error);
+      }
+
+      // For other 401 errors (including "unauthorized"), attempt token refresh
       originalRequest._retry = true;
 
       try {
