@@ -6,7 +6,13 @@ import { useToast } from "@/hooks/use-toast"
 import axiosInstance from "@/lib/AxiosInstance"
 import { apiRoutes } from "@/lib/routes"
 
-const md = new Remarkable()
+const md = new Remarkable({
+  html: true,
+  xhtmlOut: true,
+  breaks: true,
+  linkify: true,
+  typographer: true
+})
 
 // Custom debounce hook
 function useDebounce<T>(value: T, delay: number): T {
@@ -538,7 +544,7 @@ export default function RichText({
   }
 
   return (
-    <main className="bg-background flex flex-col gap-4 text-foreground p-2 border border-border rounded-lg md:max-w-4xl md:mx-auto">
+    <main className="bg-background dark:bg-gray-900 flex flex-col gap-4 text-foreground p-2 border border-border rounded-lg w-full">
       {/* Header with controls */}
       <div className="flex items-center justify-end">   
         <div className="flex items-center gap-2">
@@ -600,33 +606,21 @@ export default function RichText({
       <div className="w-full relative">
         {showPreview ? (
           /* Preview section */
-          <div className="w-full h-[300px] bg-card text-card-foreground border border-border rounded-lg shadow-sm p-6 overflow-auto">
+          <div className="w-full h-[300px] bg-card dark:bg-gray-900 text-card-foreground border border-border rounded-lg shadow-sm p-6 overflow-auto">
             {debouncedText ? (
               <div
-                className="prose prose-slate dark:prose-invert max-w-none 
-                           prose-headings:text-foreground dark:prose-headings:text-foreground 
-                           prose-p:text-foreground dark:prose-p:text-foreground
-                           prose-strong:text-foreground dark:prose-strong:text-foreground 
-                           prose-em:text-foreground dark:prose-em:text-foreground
-                           prose-code:text-foreground dark:prose-code:text-foreground 
+                className="prose prose-slate dark:prose-invert max-w-none
                            prose-code:bg-muted dark:prose-code:bg-muted 
-                           prose-code:px-1 prose-code:rounded
+                           prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
                            prose-pre:bg-muted dark:prose-pre:bg-muted 
-                           prose-pre:text-foreground dark:prose-pre:text-foreground
-                           prose-blockquote:text-muted-foreground dark:prose-blockquote:text-muted-foreground 
                            prose-blockquote:border-border dark:prose-blockquote:border-border
                            prose-hr:border-border dark:prose-hr:border-border 
-                           prose-th:text-foreground dark:prose-th:text-foreground 
-                           prose-td:text-foreground dark:prose-td:text-foreground
-                           prose-table:border-collapse prose-table:border-border dark:prose-table:border-border
+                           prose-table:border-collapse
                            prose-th:border prose-th:border-border dark:prose-th:border-border prose-th:px-3 prose-th:py-2
                            prose-td:border prose-td:border-border dark:prose-td:border-border prose-td:px-3 prose-td:py-2
-                           prose-ol:text-foreground dark:prose-ol:text-foreground 
-                           prose-ul:text-foreground dark:prose-ul:text-foreground 
-                           prose-li:text-foreground dark:prose-li:text-foreground
-                           prose-a:text-primary dark:prose-a:text-primary 
+                           prose-a:text-primary dark:prose-a:text-primary prose-a:no-underline hover:prose-a:underline
                            hover:prose-a:text-primary/80 dark:hover:prose-a:text-primary/80
-                           prose-img:rounded-lg prose-img:shadow-md"
+                           prose-img:rounded-lg prose-img:shadow-md prose-img:max-w-full"
                 dangerouslySetInnerHTML={{ __html: md.render(debouncedText) }}
               />
             ) : (
@@ -648,7 +642,7 @@ export default function RichText({
               onDragOver={handleDragOver}
               onDrop={handleDrop}
               onKeyDown={handleKeyDown}
-              className={`w-full h-[300px] bg-card text-card-foreground border border-border rounded-lg shadow-sm p-6 focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent resize-none font-mono text-sm leading-relaxed transition-all duration-200 ${
+              className={`w-full h-[300px] bg-card dark:bg-gray-900 text-card-foreground border border-border rounded-lg shadow-sm p-6 focus:outline-none focus:ring-0 focus:border-border resize-none font-mono text-sm leading-relaxed ${
                 isDragOver ? 'border-primary bg-primary/5 border-2' : ''
               } ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
               placeholder={placeholder}
@@ -677,7 +671,7 @@ export default function RichText({
                           className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
                             index === selectedCommandIndex 
                               ? 'bg-primary text-primary-foreground' 
-                              : 'hover:bg-muted'
+                              : 'hover:bg-muted dark:hover:bg-gray-700'
                           }`}
                           onClick={() => insertCommand(command)}
                         >
@@ -731,7 +725,7 @@ export default function RichText({
       
       {/* Help text */}
       <div className="text-center">
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-muted-foreground dark:text-gray-600">
           Type <kbd className="px-1 py-0.5 bg-muted rounded text-xs">/</kbd> for commands • <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Space</kbd> to dismiss • Drag & drop images • Supports full markdown syntax
         </p>
       </div>
