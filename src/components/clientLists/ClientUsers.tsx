@@ -203,7 +203,7 @@ function ClientUserRow({user, refetch, isClientView = false}: {user: ClientUser,
       <td className="py-4 px-4">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center overflow-hidden">
-            <img src={user.clients[0].logoUrl || "/placeholder.svg"} alt="Client logo" className="w-full h-full object-cover" />
+            <img src={user.logoUrl || "/placeholder.svg"} alt="Client logo" className="w-full h-full object-cover" />
           </div>
           <span className="dark:text-gray-100">{user.clients[0].name}</span>
         </div>

@@ -236,7 +236,26 @@ function VulnerabilityView() {
               <div className="space-y-2">
                 <h3 className="font-medium text-gray-800 dark:text-gray-100">Description</h3>
                 <div
-                  className="text-gray-700 dark:text-gray-100 prose max-w-none break-words whitespace-pre-wrap"
+                  className="text-gray-700 dark:text-gray-100  max-w-none break-words whitespace-pre-wrap leading-normal
+                  prose prose-gray dark:prose-invert prose-sm
+                           prose-code:bg-muted dark:prose-code:bg-gray-900 
+                           prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:text-gray-700 dark:prose-code:text-gray-100
+                           prose-pre:bg-muted dark:prose-pre:bg-gray-900 
+                           prose-blockquote:border-border dark:prose-blockquote:border-border
+                           prose-hr:border-border dark:prose-hr:border-border 
+                           prose-table:border-collapse
+                           prose-th:border prose-th:border-border dark:prose-th:border-border prose-th:px-3 prose-th:py-2
+                           prose-td:border prose-td:border-border dark:prose-td:border-border prose-td:px-3 prose-td:py-2
+                           prose-ul:py-0 prose-ul:leading-0 prose-ul:-my-4
+                           prose-ol:py-0 prose-ol:leading-0 prose-ol:-my-4
+                           prose-li:py-0 prose-li:my-0 prose-li:leading-0 prose-li:marker:text-sm dark:prose-li:marker:text-white prose-li:marker:text-gray-500
+                           prose-img:m-0
+                           prose-a:text-primary dark:prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+                           hover:prose-a:text-primary/80 dark:hover:prose-a:text-primary/80
+                           prose-img:rounded-lg prose-img:shadow-md prose-img:max-w-full
+                           prose-headings:m-0 prose-headings:my-0 prose-headings:font-black prose-p:m-0 prose-p:my-0 prose-ul:m-0 prose-ol:m-0 prose-li:m-0 prose-pre:my-0
+                           before:prose-code:hidden after:prose-code:hidden
+                  "
                   dangerouslySetInnerHTML={{
                     __html: displayVulnerability.description || "",
                   }}
@@ -254,7 +273,25 @@ function VulnerabilityView() {
               <div className="space-y-2">
                 <h3 className="font-medium text-gray-800 dark:text-gray-100">Steps to Reproduce</h3>
                 <div
-                  className="text-gray-700 dark:text-gray-100 prose max-w-none break-words whitespace-pre-wrap"
+                  className="text-gray-700 dark:text-gray-100  max-w-none break-words whitespace-pre-wrap leading-normal
+                  prose prose-gray dark:prose-invert prose-sm
+                           prose-code:bg-muted dark:prose-code:bg-gray-900 
+                           prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:text-gray-700 dark:prose-code:text-gray-100
+                           prose-pre:bg-muted dark:prose-pre:bg-gray-900 
+                           prose-blockquote:border-border dark:prose-blockquote:border-border
+                           prose-hr:border-border dark:prose-hr:border-border 
+                           prose-table:border-collapse
+                           prose-th:border prose-th:border-border dark:prose-th:border-border prose-th:px-3 prose-th:py-2
+                           prose-td:border prose-td:border-border dark:prose-td:border-border prose-td:px-3 prose-td:py-2
+                           prose-ul:py-0 prose-ul:leading-0 prose-ul:-my-4
+                           prose-ol:py-0 prose-ol:leading-0 prose-ol:-my-4
+                           prose-li:py-0 prose-li:my-0 prose-li:leading-0 prose-li:marker:text-sm dark:prose-li:marker:text-white prose-li:marker:text-gray-500
+                           prose-img:m-0
+                           prose-a:text-primary dark:prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+                           hover:prose-a:text-primary/80 dark:hover:prose-a:text-primary/80
+                           prose-img:rounded-lg prose-img:shadow-md prose-img:max-w-full
+                           prose-headings:m-0 prose-headings:my-0 prose-headings:font-black prose-p:m-0 prose-p:my-0 prose-ul:m-0 prose-ol:m-0 prose-li:m-0 prose-pre:my-0
+                           before:prose-code:hidden after:prose-code:hidden"
                   dangerouslySetInnerHTML={{
                     __html: displayVulnerability.steps_to_reproduce || "",
                   }}
@@ -264,7 +301,25 @@ function VulnerabilityView() {
               <div className="space-y-2">
                 <h3 className="font-medium text-gray-800 dark:text-gray-100">Recommended Solution</h3>
                 <div
-                  className="text-gray-700 dark:text-gray-100 prose max-w-none break-words whitespace-pre-wrap"
+                  className="text-gray-700 dark:text-gray-100  max-w-none break-words whitespace-pre-wrap leading-normal
+                  prose prose-gray dark:prose-invert prose-sm
+                           prose-code:bg-muted dark:prose-code:bg-gray-900 
+                           prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm prose-code:text-gray-700 dark:prose-code:text-gray-100
+                           prose-pre:bg-muted dark:prose-pre:bg-gray-900 
+                           prose-blockquote:border-border dark:prose-blockquote:border-border
+                           prose-hr:border-border dark:prose-hr:border-border 
+                           prose-table:border-collapse
+                           prose-th:border prose-th:border-border dark:prose-th:border-border prose-th:px-3 prose-th:py-2
+                           prose-td:border prose-td:border-border dark:prose-td:border-border prose-td:px-3 prose-td:py-2
+                           prose-ul:py-0 prose-ul:leading-0 prose-ul:-my-4
+                           prose-ol:py-0 prose-ol:leading-0 prose-ol:-my-4
+                           prose-li:py-0 prose-li:my-0 prose-li:leading-0 prose-li:marker:text-sm dark:prose-li:marker:text-white prose-li:marker:text-gray-500
+                           prose-img:m-0
+                           prose-a:text-primary dark:prose-a:text-primary prose-a:no-underline hover:prose-a:underline
+                           hover:prose-a:text-primary/80 dark:hover:prose-a:text-primary/80
+                           prose-img:rounded-lg prose-img:shadow-md prose-img:max-w-full
+                           prose-headings:m-0 prose-headings:my-0 prose-headings:font-black prose-p:m-0 prose-p:my-0 prose-ul:m-0 prose-ol:m-0 prose-li:m-0 prose-pre:my-0
+                           before:prose-code:hidden after:prose-code:hidden"
                   dangerouslySetInnerHTML={{
                     __html: displayVulnerability.recommended_solution || "",
                   }}

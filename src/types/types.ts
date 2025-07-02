@@ -162,6 +162,7 @@ export interface ClientUser {
         name: string;
         logoUrl?: string;
     }[];
+    logoUrl?: string;
     pentests: {
         _id: string;
         name: string;
