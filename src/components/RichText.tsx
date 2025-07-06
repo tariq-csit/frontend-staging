@@ -206,12 +206,48 @@ function htmlToMarkdown(html: string): string {
   markdown = markdown.replace(/<img[^>]*src="([^"]*)"[^>]*alt="([^"]*)"[^>]*>/gi, '![$2]($1)')
   markdown = markdown.replace(/<img[^>]*src="([^"]*)"[^>]*>/gi, '![]($1)')
   markdown = markdown.replace(/<ul[^>]*>(.*?)<\/ul>/gis, (match, content) => {
-    return content.replace(/<li[^>]*>(.*?)<\/li>/gi, '- $1\n')
+    return content.replace(/<li[^>]*>(.*?)<\/li>/gi, (match: string, listContent: string) => `- ${listContent}\n`)
   })
   markdown = markdown.replace(/<ol[^>]*>(.*?)<\/ol>/gis, (match, content) => {
     let counter = 1
-    return content.replace(/<li[^>]*>(.*?)<\/li>/gi, () => `${counter++}. $1\n`)
+    return content.replace(/<li[^>]*>(.*?)<\/li>/gi, (match: string, listContent: string) => `${counter++}. ${listContent}\n`)
   })
+  // Convert tables to markdown
+  markdown = markdown.replace(/<table[^>]*>(.*?)<\/table>/gis, (match, tableContent) => {
+    // Extract table rows
+    const rows = tableContent.match(/<tr[^>]*>.*?<\/tr>/gis) || []
+    
+    if (rows.length === 0) return ''
+    
+    let markdownTable = ''
+    let isFirstRow = true
+    
+    rows.forEach((row: string) => {
+      // Extract cells from this row
+      const cells = row.match(/<(th|td)[^>]*>(.*?)<\/(th|td)>/gis) || []
+      
+      if (cells.length === 0) return
+      
+      // Convert cells to markdown
+      const markdownCells = cells.map((cell: string) => {
+        const cellContent = cell.replace(/<(th|td)[^>]*>(.*?)<\/(th|td)>/gis, '$2').trim()
+        return cellContent
+      })
+      
+      // Add the row
+      markdownTable += '| ' + markdownCells.join(' | ') + ' |\n'
+      
+      // Add separator row after first row (header)
+      if (isFirstRow) {
+        const separatorCells = markdownCells.map(() => '----------')
+        markdownTable += '|' + separatorCells.join('|') + '|\n'
+        isFirstRow = false
+      }
+    })
+    
+    return '\n' + markdownTable + '\n'
+  })
+  
   markdown = markdown.replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n')
   markdown = markdown.replace(/<br\s*\/?>/gi, '\n')
   markdown = markdown.replace(/<hr\s*\/?>/gi, '\n---\n')
@@ -235,7 +271,7 @@ interface RichTextProps {
 export default function RichText({ 
   value = "", 
   onChange = () => {}, 
-  placeholder = "Start typing your markdown here or drag and drop an image..." 
+  placeholder = "Start typing your markdown here, drag and drop, or paste images..." 
 }: RichTextProps) {
   const [text, setText] = useState("")
   const [showPreview, setShowPreview] = useState(false)
@@ -245,11 +281,13 @@ export default function RichText({
   const [commandMenuPosition, setCommandMenuPosition] = useState({ top: 0, left: 0 })
   const [commandFilter, setCommandFilter] = useState("")
   const [selectedCommandIndex, setSelectedCommandIndex] = useState(0)
+  const [isPasting, setIsPasting] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const commandMenuRef = useRef<HTMLDivElement>(null)
   const isUserInputRef = useRef(false)
   const { toast } = useToast()
+
 
   // Debounce text changes to prevent flickering during typing
   const debouncedText = useDebounce(text, 150)
@@ -528,7 +566,76 @@ export default function RichText({
     await validateAndUploadImage(imageFiles[0])
   }
 
-  const triggerImageUpload = () => {
+  const handlePaste = async (e: React.ClipboardEvent) => {
+    if (isUploading || isPasting) return
+
+    const clipboardData = e.clipboardData || (window as any).clipboardData
+    
+    if (!clipboardData) {
+      return
+    }
+
+    setIsPasting(true)
+    
+    let imageFound = false
+
+    try {
+      // First try to get files from clipboardData.files
+      if (clipboardData.files && clipboardData.files.length > 0) {
+        for (let i = 0; i < clipboardData.files.length; i++) {
+          const file = clipboardData.files[i]
+          
+          if (file.type.startsWith('image/')) {
+            e.preventDefault()
+            e.stopPropagation()
+            imageFound = true
+            await validateAndUploadImage(file)
+            break
+          }
+        }
+      }
+
+      // If no files found, try clipboardData.items
+      if (!imageFound && clipboardData.items) {
+        for (let i = 0; i < clipboardData.items.length; i++) {
+          const item = clipboardData.items[i]
+          
+          if (item.type.startsWith('image/')) {
+            e.preventDefault()
+            e.stopPropagation()
+            
+            const file = item.getAsFile()
+            if (file) {
+              imageFound = true
+              await validateAndUploadImage(file)
+            }
+            break
+          }
+        }
+      }
+
+      if (!imageFound) {
+        // Show a helpful message to the user
+        toast({
+          title: "No image detected",
+          description: "Copy an image to your clipboard first, then paste it here.",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Paste failed",
+        description: "There was an error processing the pasted content.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsPasting(false)
+    }
+  }
+
+  const triggerImageUpload = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
     fileInputRef.current?.click()
   }
 
@@ -635,16 +742,17 @@ export default function RichText({
               name="textarea"
               id="markdown"
               value={text}
-              disabled={isUploading}
+              disabled={isUploading || isPasting}
               onChange={handleTextChange}
               onDragEnter={handleDragEnter}
               onDragLeave={handleDragLeave}
               onDragOver={handleDragOver}
               onDrop={handleDrop}
+              onPaste={handlePaste}
               onKeyDown={handleKeyDown}
               className={`w-full h-[300px] bg-card dark:bg-gray-900 text-card-foreground border border-border rounded-lg shadow-sm p-6 focus:outline-none focus:ring-0 focus:border-border resize-none font-mono text-sm leading-relaxed ${
                 isDragOver ? 'border-primary bg-primary/5 border-2' : ''
-              } ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              } ${isUploading || isPasting ? 'opacity-50 cursor-not-allowed' : ''}`}
               placeholder={placeholder}
             />
             
@@ -719,6 +827,21 @@ export default function RichText({
                 </div>
               </div>
             )}
+            
+            {/* Paste processing overlay */}
+            {isPasting && (
+              <div className="absolute inset-0 bg-background/50 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                <div className="bg-card border border-border rounded-lg p-6 shadow-lg">
+                  <div className="flex items-center space-x-3">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Processing paste...</p>
+                      <p className="text-xs text-muted-foreground">Checking clipboard for images</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -726,7 +849,7 @@ export default function RichText({
       {/* Help text */}
       <div className="text-center">
         <p className="text-xs text-muted-foreground dark:text-gray-600">
-          Type <kbd className="px-1 py-0.5 bg-muted rounded text-xs">/</kbd> for commands • <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Space</kbd> to dismiss • Drag & drop images • Supports full markdown syntax
+          Type <kbd className="px-1 py-0.5 bg-muted rounded text-xs">/</kbd> for commands • <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Space</kbd> to dismiss • Drag & drop or <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Ctrl+V</kbd> to paste images • Supports full markdown syntax
         </p>
       </div>
     </main>
