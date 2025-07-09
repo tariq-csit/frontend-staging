@@ -267,7 +267,7 @@ function VulnerabilityView() {
           {/* Section 3: Recommendations and Steps to Reproduce */}
           <Card className="dark:bg-gray-800 dark:border-gray-700">
             <CardHeader className="pb-2 bg-gray-50 dark:bg-gray-800/50">
-              <CardTitle className="text-xl font-semibold dark:text-gray-100">3. Recommendations and Steps to Reproduce</CardTitle>
+              <CardTitle className="text-xl font-semibold dark:text-gray-100">3. Steps to Reproduce and Recommendations</CardTitle>
             </CardHeader>
             <CardContent className="pt-4 space-y-6">
               <div className="space-y-2">
