@@ -595,7 +595,7 @@ function VulnerabilityView() {
             </div>
 
             <Link to={`/vulnerability-reports/${pentestId}`}>
-              <Button variant="outline" className="w-full border-[#3a4a6b] text-[#3a4a6b] hover:bg-[#eef0ff] text-sm lg:text-base">
+              <Button variant="outline" onClick={(e) => e.stopPropagation()} className="w-full border-[#3a4a6b] text-[#3a4a6b] hover:bg-[#eef0ff] text-sm lg:text-base">
                 Go Back
               </Button>
             </Link>
