@@ -184,37 +184,61 @@ async function uploadImage(file: File, toast: any): Promise<{ url: string; name:
   }
 }
 
-// Convert HTML to markdown (basic conversion)
+// Convert HTML to markdown (improved conversion)
 function htmlToMarkdown(html: string): string {
+  if (!html || html.trim() === '') return ''
+  
   const tempDiv = document.createElement('div')
   tempDiv.innerHTML = html
   
-  // Basic HTML to markdown conversion
+  // Handle code blocks first (before other conversions)
   let markdown = tempDiv.innerHTML
   
-  // Convert common HTML tags to markdown
+  // Convert pre/code blocks to markdown (preserve multiline code)
+  markdown = markdown.replace(/<pre[^>]*><code[^>]*>([\s\S]*?)<\/code><\/pre>/gi, (match, content) => {
+    // Decode HTML entities and preserve formatting
+    const decodedContent = content
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&amp;/g, '&')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+    return '\n```\n' + decodedContent + '\n```\n'
+  })
+  
+  // Convert inline code before other conversions
+  markdown = markdown.replace(/<code[^>]*>(.*?)<\/code>/gi, '`$1`')
+  
+  // Convert other HTML tags to markdown
   markdown = markdown.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n')
   markdown = markdown.replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n')
   markdown = markdown.replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n')
+  markdown = markdown.replace(/<h4[^>]*>(.*?)<\/h4>/gi, '#### $1\n')
+  markdown = markdown.replace(/<h5[^>]*>(.*?)<\/h5>/gi, '##### $1\n')
+  markdown = markdown.replace(/<h6[^>]*>(.*?)<\/h6>/gi, '###### $1\n')
+  
   markdown = markdown.replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**')
   markdown = markdown.replace(/<b[^>]*>(.*?)<\/b>/gi, '**$1**')
   markdown = markdown.replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*')
   markdown = markdown.replace(/<i[^>]*>(.*?)<\/i>/gi, '*$1*')
-  markdown = markdown.replace(/<code[^>]*>(.*?)<\/code>/gi, '`$1`')
+  
   markdown = markdown.replace(/<blockquote[^>]*>(.*?)<\/blockquote>/gi, '> $1\n')
   markdown = markdown.replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
   markdown = markdown.replace(/<img[^>]*src="([^"]*)"[^>]*alt="([^"]*)"[^>]*>/gi, '![$2]($1)')
   markdown = markdown.replace(/<img[^>]*src="([^"]*)"[^>]*>/gi, '![]($1)')
+  
+  // Handle lists more carefully
   markdown = markdown.replace(/<ul[^>]*>(.*?)<\/ul>/gis, (match, content) => {
-    return content.replace(/<li[^>]*>(.*?)<\/li>/gi, (match: string, listContent: string) => `- ${listContent}\n`)
+    return content.replace(/<li[^>]*>(.*?)<\/li>/gi, (match: string, listContent: string) => `- ${listContent.trim()}\n`)
   })
+  
   markdown = markdown.replace(/<ol[^>]*>(.*?)<\/ol>/gis, (match, content) => {
     let counter = 1
-    return content.replace(/<li[^>]*>(.*?)<\/li>/gi, (match: string, listContent: string) => `${counter++}. ${listContent}\n`)
+    return content.replace(/<li[^>]*>(.*?)<\/li>/gi, (match: string, listContent: string) => `${counter++}. ${listContent.trim()}\n`)
   })
-  // Convert tables to markdown
+  
+  // Convert tables to markdown (improved)
   markdown = markdown.replace(/<table[^>]*>(.*?)<\/table>/gis, (match, tableContent) => {
-    // Extract table rows
     const rows = tableContent.match(/<tr[^>]*>.*?<\/tr>/gis) || []
     
     if (rows.length === 0) return ''
@@ -223,21 +247,17 @@ function htmlToMarkdown(html: string): string {
     let isFirstRow = true
     
     rows.forEach((row: string) => {
-      // Extract cells from this row
       const cells = row.match(/<(th|td)[^>]*>(.*?)<\/(th|td)>/gis) || []
       
       if (cells.length === 0) return
       
-      // Convert cells to markdown
       const markdownCells = cells.map((cell: string) => {
         const cellContent = cell.replace(/<(th|td)[^>]*>(.*?)<\/(th|td)>/gis, '$2').trim()
         return cellContent
       })
       
-      // Add the row
       markdownTable += '| ' + markdownCells.join(' | ') + ' |\n'
       
-      // Add separator row after first row (header)
       if (isFirstRow) {
         const separatorCells = markdownCells.map(() => '----------')
         markdownTable += '|' + separatorCells.join('|') + '|\n'
@@ -252,10 +272,10 @@ function htmlToMarkdown(html: string): string {
   markdown = markdown.replace(/<br\s*\/?>/gi, '\n')
   markdown = markdown.replace(/<hr\s*\/?>/gi, '\n---\n')
   
-  // Clean up HTML tags
+  // Clean up remaining HTML tags
   markdown = markdown.replace(/<[^>]*>/g, '')
   
-  // Clean up extra whitespace
+  // Clean up extra whitespace but preserve code block formatting
   markdown = markdown.replace(/\n\s*\n\s*\n/g, '\n\n')
   markdown = markdown.trim()
   
@@ -282,10 +302,12 @@ export default function RichText({
   const [commandFilter, setCommandFilter] = useState("")
   const [selectedCommandIndex, setSelectedCommandIndex] = useState(0)
   const [isPasting, setIsPasting] = useState(false)
+  const [isInitialized, setIsInitialized] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const commandMenuRef = useRef<HTMLDivElement>(null)
   const isUserInputRef = useRef(false)
+  const lastValueRef = useRef<string>("")
   const { toast } = useToast()
 
 
@@ -294,9 +316,15 @@ export default function RichText({
 
   // Convert incoming HTML value to markdown and sync with internal state
   useEffect(() => {
-    if (value !== undefined && !isUserInputRef.current) {
+    // Only process external changes if:
+    // 1. Component is not yet initialized (initial load)
+    // 2. The value has actually changed from what we last processed
+    // 3. This is not a user input event
+    if (value !== undefined && !isUserInputRef.current && value !== lastValueRef.current) {
       const markdownValue = htmlToMarkdown(value)
       setText(markdownValue)
+      lastValueRef.current = value
+      setIsInitialized(true)
     }
     // Reset the flag after processing external changes
     isUserInputRef.current = false
@@ -304,11 +332,15 @@ export default function RichText({
 
   // Update parent component when debounced text changes (only from user input)
   useEffect(() => {
-    if (isUserInputRef.current) {
+    if (isUserInputRef.current && isInitialized) {
       const htmlValue = md.render(debouncedText)
-      onChange(htmlValue)
+      // Only update parent if the HTML has actually changed
+      if (htmlValue !== lastValueRef.current) {
+        lastValueRef.current = htmlValue
+        onChange(htmlValue)
+      }
     }
-  }, [debouncedText, onChange])
+  }, [debouncedText, onChange, isInitialized])
 
   // Filter command menu items based on search
   const filteredCommands = commandMenuItems.filter(item =>
@@ -355,6 +387,32 @@ export default function RichText({
   useEffect(() => {
     setSelectedCommandIndex(0)
   }, [commandFilter])
+
+  // Cleanup effect to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      // Reset refs on unmount
+      isUserInputRef.current = false
+      lastValueRef.current = ""
+    }
+  }, [])
+
+  // Close command menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (commandMenuRef.current && !commandMenuRef.current.contains(event.target as Node)) {
+        closeCommandMenu()
+      }
+    }
+
+    if (showCommandMenu) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showCommandMenu])
 
   const validateAndUploadImage = async (file: File) => {
     // Validate file type
@@ -419,15 +477,16 @@ export default function RichText({
     setText(newText)
     
     // Command menu logic - only process if we detect specific command patterns
+    // Add more guards to prevent interference with normal typing
     try {
       // Only handle command menu if the last character is '/' and menu isn't already open
-      // or if menu is open and we're updating the filter
       if (newText[cursorPosition - 1] === '/' && !showCommandMenu) {
         // Only show command menu if '/' is at start of line or after whitespace
         const beforeSlash = newText.substring(0, cursorPosition - 1)
         const lastChar = beforeSlash[beforeSlash.length - 1]
         
-        if (!lastChar || lastChar === '\n' || lastChar === ' ' || lastChar === '\t') {
+        // More restrictive check: only show if truly at beginning of line or after clear whitespace
+        if (!lastChar || lastChar === '\n' || (lastChar === ' ' && beforeSlash.trim().endsWith(' '))) {
           showCommandMenuAt(cursorPosition)
         }
       } else if (showCommandMenu) {
@@ -436,12 +495,14 @@ export default function RichText({
         if (slashIndex !== -1 && slashIndex < cursorPosition) {
           const textAfterSlash = newText.slice(slashIndex + 1, cursorPosition)
           
-          // If user typed space after '/', close menu and keep the text as literal
-          if (newText[cursorPosition - 1] === ' ') {
+          // If user typed space, newline, or other breaking characters after '/', close menu
+          if (newText[cursorPosition - 1] === ' ' || newText[cursorPosition - 1] === '\n' || newText[cursorPosition - 1] === '\t') {
             closeCommandMenu()
-          } else {
-            // Update command filter
+          } else if (textAfterSlash.length <= 20) { // Prevent very long filters
+            // Update command filter only if reasonable length
             setCommandFilter(textAfterSlash)
+          } else {
+            closeCommandMenu()
           }
         } else {
           closeCommandMenu()
@@ -449,6 +510,7 @@ export default function RichText({
       }
     } catch (error) {
       // If any error occurs in command menu logic, just close it and continue
+      console.warn('Command menu error:', error)
       closeCommandMenu()
     }
   }
