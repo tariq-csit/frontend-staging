@@ -325,10 +325,13 @@ export default function RichText({
       setText(markdownValue)
       lastValueRef.current = value
       setIsInitialized(true)
+    } else if (!isInitialized && value !== undefined) {
+      // Handle case where initial value is empty string - still need to initialize
+      setIsInitialized(true)
     }
     // Reset the flag after processing external changes
     isUserInputRef.current = false
-  }, [value])
+  }, [value, isInitialized])
 
   // Update parent component when debounced text changes (only from user input)
   useEffect(() => {
