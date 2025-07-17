@@ -43,7 +43,7 @@ const commandMenuItems = [
   },
   {
     id: "heading2",
-    label: "Heading 2", 
+    label: "Heading 2",
     icon: Hash,
     syntax: "## ",
     description: "Medium heading",
@@ -54,7 +54,7 @@ const commandMenuItems = [
     label: "Heading 3",
     icon: Hash,
     syntax: "### ",
-    description: "Small heading", 
+    description: "Small heading",
     cursorOffset: 4
   },
   {
@@ -187,13 +187,13 @@ async function uploadImage(file: File, toast: any): Promise<{ url: string; name:
 // Convert HTML to markdown (improved conversion)
 function htmlToMarkdown(html: string): string {
   if (!html || html.trim() === '') return ''
-  
+
   const tempDiv = document.createElement('div')
   tempDiv.innerHTML = html
-  
+
   // Handle code blocks first (before other conversions)
   let markdown = tempDiv.innerHTML
-  
+
   // Convert pre/code blocks to markdown (preserve multiline code)
   markdown = markdown.replace(/<pre[^>]*><code[^>]*>([\s\S]*?)<\/code><\/pre>/gi, (match, content) => {
     // Decode HTML entities and preserve formatting
@@ -205,10 +205,10 @@ function htmlToMarkdown(html: string): string {
       .replace(/&#39;/g, "'")
     return '\n```\n' + decodedContent + '\n```\n'
   })
-  
+
   // Convert inline code before other conversions
   markdown = markdown.replace(/<code[^>]*>(.*?)<\/code>/gi, '`$1`')
-  
+
   // Convert other HTML tags to markdown
   markdown = markdown.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n')
   markdown = markdown.replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n')
@@ -216,69 +216,69 @@ function htmlToMarkdown(html: string): string {
   markdown = markdown.replace(/<h4[^>]*>(.*?)<\/h4>/gi, '#### $1\n')
   markdown = markdown.replace(/<h5[^>]*>(.*?)<\/h5>/gi, '##### $1\n')
   markdown = markdown.replace(/<h6[^>]*>(.*?)<\/h6>/gi, '###### $1\n')
-  
+
   markdown = markdown.replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**')
   markdown = markdown.replace(/<b[^>]*>(.*?)<\/b>/gi, '**$1**')
   markdown = markdown.replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*')
   markdown = markdown.replace(/<i[^>]*>(.*?)<\/i>/gi, '*$1*')
-  
+
   markdown = markdown.replace(/<blockquote[^>]*>(.*?)<\/blockquote>/gi, '> $1\n')
   markdown = markdown.replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
   markdown = markdown.replace(/<img[^>]*src="([^"]*)"[^>]*alt="([^"]*)"[^>]*>/gi, '![$2]($1)')
   markdown = markdown.replace(/<img[^>]*src="([^"]*)"[^>]*>/gi, '![]($1)')
-  
+
   // Handle lists more carefully
   markdown = markdown.replace(/<ul[^>]*>(.*?)<\/ul>/gis, (match, content) => {
     return content.replace(/<li[^>]*>(.*?)<\/li>/gi, (match: string, listContent: string) => `- ${listContent.trim()}\n`)
   })
-  
+
   markdown = markdown.replace(/<ol[^>]*>(.*?)<\/ol>/gis, (match, content) => {
     let counter = 1
     return content.replace(/<li[^>]*>(.*?)<\/li>/gi, (match: string, listContent: string) => `${counter++}. ${listContent.trim()}\n`)
   })
-  
+
   // Convert tables to markdown (improved)
   markdown = markdown.replace(/<table[^>]*>(.*?)<\/table>/gis, (match, tableContent) => {
     const rows = tableContent.match(/<tr[^>]*>.*?<\/tr>/gis) || []
-    
+
     if (rows.length === 0) return ''
-    
+
     let markdownTable = ''
     let isFirstRow = true
-    
+
     rows.forEach((row: string) => {
       const cells = row.match(/<(th|td)[^>]*>(.*?)<\/(th|td)>/gis) || []
-      
+
       if (cells.length === 0) return
-      
+
       const markdownCells = cells.map((cell: string) => {
         const cellContent = cell.replace(/<(th|td)[^>]*>(.*?)<\/(th|td)>/gis, '$2').trim()
         return cellContent
       })
-      
+
       markdownTable += '| ' + markdownCells.join(' | ') + ' |\n'
-      
+
       if (isFirstRow) {
         const separatorCells = markdownCells.map(() => '----------')
         markdownTable += '|' + separatorCells.join('|') + '|\n'
         isFirstRow = false
       }
     })
-    
+
     return '\n' + markdownTable + '\n'
   })
-  
+
   markdown = markdown.replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n')
   markdown = markdown.replace(/<br\s*\/?>/gi, '\n')
   markdown = markdown.replace(/<hr\s*\/?>/gi, '\n---\n')
-  
+
   // Clean up remaining HTML tags
   markdown = markdown.replace(/<[^>]*>/g, '')
-  
+
   // Clean up extra whitespace but preserve code block formatting
   markdown = markdown.replace(/\n\s*\n\s*\n/g, '\n\n')
   markdown = markdown.trim()
-  
+
   return markdown
 }
 
@@ -288,10 +288,10 @@ interface RichTextProps {
   placeholder?: string
 }
 
-export default function RichText({ 
-  value = "", 
-  onChange = () => {}, 
-  placeholder = "Start typing your markdown here, drag and drop, or paste images..." 
+export default function RichText({
+  value = "",
+  onChange = () => {},
+  placeholder = "Start typing your markdown here, drag and drop, or paste images..."
 }: RichTextProps) {
   const [text, setText] = useState("")
   const [showPreview, setShowPreview] = useState(false)
@@ -309,6 +309,8 @@ export default function RichText({
   const isUserInputRef = useRef(false)
   const lastValueRef = useRef<string>("")
   const { toast } = useToast()
+  // Add state for cursor position
+  const [cursorPosition, setCursorPosition] = useState(0)
 
 
   // Debounce text changes to prevent flickering during typing
@@ -359,13 +361,13 @@ export default function RichText({
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault()
-          setSelectedCommandIndex(prev => 
+          setSelectedCommandIndex(prev =>
             prev < filteredCommands.length - 1 ? prev + 1 : 0
           )
           break
         case 'ArrowUp':
           e.preventDefault()
-          setSelectedCommandIndex(prev => 
+          setSelectedCommandIndex(prev =>
             prev > 0 ? prev - 1 : filteredCommands.length - 1
           )
           break
@@ -442,14 +444,30 @@ export default function RichText({
     setIsUploading(true)
     try {
       const { url, name } = await uploadImage(file, toast)
-      
-      // Insert markdown image syntax at cursor position or at the end
       const imageName = name || file.name.replace(/\.[^/.]+$/, "")
       const markdownImage = `![${imageName}](${url})\n\n`
-      
-      // Mark this as user input and insert the image markdown
-      isUserInputRef.current = true
-      setText(prevText => prevText + markdownImage)
+
+      if (textareaRef.current) {
+        const prevText = textareaRef.current.value
+        const before = prevText.slice(0, cursorPosition)
+        const after = prevText.slice(cursorPosition)
+        const newText = before + markdownImage + after
+
+        isUserInputRef.current = true
+        setText(newText)
+
+        // Restore cursor after image markdown
+        setTimeout(() => {
+          textareaRef.current?.focus()
+          const newCursor = before.length + markdownImage.length
+          textareaRef.current?.setSelectionRange(newCursor, newCursor)
+          setCursorPosition(newCursor)
+        }, 0)
+      } else {
+        // fallback: append at end
+        isUserInputRef.current = true
+        setText(prevText => prevText + markdownImage)
+      }
     } catch (error) {
       console.error('Failed to upload image:', error)
     } finally {
@@ -462,7 +480,7 @@ export default function RichText({
     if (!file) return
 
     await validateAndUploadImage(file)
-    
+
     // Clear the file input
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
@@ -472,13 +490,14 @@ export default function RichText({
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newText = e.target.value
     const cursorPosition = e.target.selectionStart
-    
+    setCursorPosition(cursorPosition)
+
     // Mark this as user input to trigger onChange
     isUserInputRef.current = true
-    
+
     // Set text immediately without any processing
     setText(newText)
-    
+
     // Command menu logic - only process if we detect specific command patterns
     // Add more guards to prevent interference with normal typing
     try {
@@ -487,17 +506,17 @@ export default function RichText({
         // Only show command menu if '/' is at start of line or after whitespace
         const beforeSlash = newText.substring(0, cursorPosition - 1)
         const lastChar = beforeSlash[beforeSlash.length - 1]
-        
+
         // More restrictive check: only show if truly at beginning of line or after clear whitespace
         if (!lastChar || lastChar === '\n' || (lastChar === ' ' && beforeSlash.trim().endsWith(' '))) {
           showCommandMenuAt(cursorPosition)
         }
       } else if (showCommandMenu) {
         const slashIndex = newText.lastIndexOf('/', cursorPosition)
-        
+
         if (slashIndex !== -1 && slashIndex < cursorPosition) {
           const textAfterSlash = newText.slice(slashIndex + 1, cursorPosition)
-          
+
           // If user typed space, newline, or other breaking characters after '/', close menu
           if (newText[cursorPosition - 1] === ' ' || newText[cursorPosition - 1] === '\n' || newText[cursorPosition - 1] === '\t') {
             closeCommandMenu()
@@ -518,19 +537,23 @@ export default function RichText({
     }
   }
 
+  const handleSelect = (e: React.SyntheticEvent<HTMLTextAreaElement>) => {
+    setCursorPosition((e.target as HTMLTextAreaElement).selectionStart)
+  }
+
   const showCommandMenuAt = (cursorPosition: number) => {
     if (!textareaRef.current) return
 
     const textarea = textareaRef.current
     const { offsetTop, offsetLeft } = textarea
-    
+
     // Calculate approximate position based on cursor
     const lineHeight = 20
     const charWidth = 8
     const lines = textarea.value.substring(0, cursorPosition).split('\n')
     const currentLine = lines.length - 1
     const currentColumn = lines[lines.length - 1].length
-    
+
     const top = offsetTop + currentLine * lineHeight + 30
     const left = offsetLeft + currentColumn * charWidth
 
@@ -552,20 +575,20 @@ export default function RichText({
     const textarea = textareaRef.current
     const cursorPosition = textarea.selectionStart
     const textValue = textarea.value
-    
+
     // Find the slash position
     const slashIndex = textValue.lastIndexOf('/', cursorPosition)
-    
+
     if (slashIndex !== -1) {
       // Replace from slash to cursor with command syntax
       const beforeSlash = textValue.substring(0, slashIndex)
       const afterCursor = textValue.substring(cursorPosition)
       const newText = beforeSlash + command.syntax + afterCursor
-      
+
       // Mark this as user input
       isUserInputRef.current = true
       setText(newText)
-      
+
       // Set cursor position
       setTimeout(() => {
         const newCursorPosition = slashIndex + command.cursorOffset
@@ -573,7 +596,7 @@ export default function RichText({
         textarea.setSelectionRange(newCursorPosition, newCursorPosition + (command.selectLength || 0))
       }, 0)
     }
-    
+
     closeCommandMenu()
   }
 
@@ -586,7 +609,7 @@ export default function RichText({
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault()
     e.stopPropagation()
-    
+
     // Only set isDragOver to false if we're leaving the textarea itself
     // not just moving between child elements
     if (!textareaRef.current?.contains(e.relatedTarget as Node)) {
@@ -635,13 +658,13 @@ export default function RichText({
     if (isUploading || isPasting) return
 
     const clipboardData = e.clipboardData || (window as any).clipboardData
-    
+
     if (!clipboardData) {
       return
     }
 
     setIsPasting(true)
-    
+
     let imageFound = false
 
     try {
@@ -649,7 +672,7 @@ export default function RichText({
       if (clipboardData.files && clipboardData.files.length > 0) {
         for (let i = 0; i < clipboardData.files.length; i++) {
           const file = clipboardData.files[i]
-          
+
           if (file.type.startsWith('image/')) {
             e.preventDefault()
             e.stopPropagation()
@@ -664,11 +687,11 @@ export default function RichText({
       if (!imageFound && clipboardData.items) {
         for (let i = 0; i < clipboardData.items.length; i++) {
           const item = clipboardData.items[i]
-          
+
           if (item.type.startsWith('image/')) {
             e.preventDefault()
             e.stopPropagation()
-            
+
             const file = item.getAsFile()
             if (file) {
               imageFound = true
@@ -718,7 +741,7 @@ export default function RichText({
   return (
     <main className="bg-background dark:bg-gray-900 flex flex-col gap-4 text-foreground p-2 border border-border rounded-lg w-full">
       {/* Header with controls */}
-      <div className="flex items-center justify-end">   
+      <div className="flex items-center justify-end">
         <div className="flex items-center gap-2">
           {/* Image Upload Button */}
           <Button
@@ -740,7 +763,7 @@ export default function RichText({
               </>
             )}
           </Button>
-          
+
           {/* Preview Toggle */}
           <Button
             variant="outline"
@@ -782,11 +805,11 @@ export default function RichText({
             {debouncedText ? (
               <div
                 className="prose prose-slate dark:prose-invert max-w-none
-                           prose-code:bg-muted dark:prose-code:bg-muted 
+                           prose-code:bg-muted dark:prose-code:bg-muted
                            prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
-                           prose-pre:bg-muted dark:prose-pre:bg-muted 
+                           prose-pre:bg-muted dark:prose-pre:bg-muted
                            prose-blockquote:border-border dark:prose-blockquote:border-border
-                           prose-hr:border-border dark:prose-hr:border-border 
+                           prose-hr:border-border dark:prose-hr:border-border
                            prose-table:border-collapse
                            prose-th:border prose-th:border-border dark:prose-th:border-border prose-th:px-3 prose-th:py-2
                            prose-td:border prose-td:border-border dark:prose-td:border-border prose-td:px-3 prose-td:py-2
@@ -809,6 +832,7 @@ export default function RichText({
               value={text}
               disabled={isUploading || isPasting}
               onChange={handleTextChange}
+              onSelect={handleSelect}
               onDragEnter={handleDragEnter}
               onDragLeave={handleDragLeave}
               onDragOver={handleDragOver}
@@ -820,15 +844,15 @@ export default function RichText({
               } ${isUploading || isPasting ? 'opacity-50 cursor-not-allowed' : ''}`}
               placeholder={placeholder}
             />
-            
+
             {/* Command Menu */}
             {showCommandMenu && (
               <div
                 ref={commandMenuRef}
                 className="absolute z-50 bg-card border border-border rounded-lg shadow-lg max-h-64 overflow-y-auto min-w-[300px]"
-                style={{ 
-                  top: commandMenuPosition.top, 
-                  left: Math.min(commandMenuPosition.left, window.innerWidth - 320) 
+                style={{
+                  top: commandMenuPosition.top,
+                  left: Math.min(commandMenuPosition.left, window.innerWidth - 320)
                 }}
               >
                 <div className="p-2">
@@ -842,8 +866,8 @@ export default function RichText({
                         <div
                           key={command.id}
                           className={`flex items-center gap-3 px-3 py-2 rounded-md cursor-pointer transition-colors ${
-                            index === selectedCommandIndex 
-                              ? 'bg-primary text-primary-foreground' 
+                            index === selectedCommandIndex
+                              ? 'bg-primary text-primary-foreground'
                               : 'hover:bg-muted dark:hover:bg-gray-700'
                           }`}
                           onClick={() => insertCommand(command)}
@@ -864,7 +888,7 @@ export default function RichText({
                 </div>
               </div>
             )}
-            
+
             {/* Drag overlay */}
             {isDragOver && (
               <div className="absolute inset-0 bg-primary/10 border-2 border-dashed border-primary rounded-lg flex items-center justify-center pointer-events-none">
@@ -877,7 +901,7 @@ export default function RichText({
                 </div>
               </div>
             )}
-            
+
             {/* Upload loading overlay */}
             {isUploading && (
               <div className="absolute inset-0 bg-background/50 backdrop-blur-sm rounded-lg flex items-center justify-center">
@@ -892,7 +916,7 @@ export default function RichText({
                 </div>
               </div>
             )}
-            
+
             {/* Paste processing overlay */}
             {isPasting && (
               <div className="absolute inset-0 bg-background/50 backdrop-blur-sm rounded-lg flex items-center justify-center">
@@ -910,7 +934,7 @@ export default function RichText({
           </div>
         )}
       </div>
-      
+
       {/* Help text */}
       <div className="text-center">
         <p className="text-xs text-muted-foreground dark:text-gray-600">
