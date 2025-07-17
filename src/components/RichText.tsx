@@ -209,6 +209,19 @@ function htmlToMarkdown(html: string): string {
   // Convert inline code before other conversions
   markdown = markdown.replace(/<code[^>]*>(.*?)<\/code>/gi, '`$1`')
 
+  // Ordered lists first
+  markdown = markdown.replace(/<ol[^>]*>([\s\S]*?)<\/ol>/gi, (match, content) => {
+    let counter = 1;
+    return content.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, (liMatch: string, liContent: string) => {
+      return `${counter++}. ${liContent.trim()}\n`;
+    });
+  });
+
+  // Then unordered lists
+  markdown = markdown.replace(/<ul[^>]*>([\s\S]*?)<\/ul>/gi, (match, content) => {
+    return content.replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, (liMatch: string, liContent: string) => `- ${liContent.trim()}\n`);
+  });
+
   // Convert other HTML tags to markdown
   markdown = markdown.replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n')
   markdown = markdown.replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n')
@@ -226,16 +239,6 @@ function htmlToMarkdown(html: string): string {
   markdown = markdown.replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, '[$2]($1)')
   markdown = markdown.replace(/<img[^>]*src="([^"]*)"[^>]*alt="([^"]*)"[^>]*>/gi, '![$2]($1)')
   markdown = markdown.replace(/<img[^>]*src="([^"]*)"[^>]*>/gi, '![]($1)')
-
-  // Handle lists more carefully
-  markdown = markdown.replace(/<ul[^>]*>(.*?)<\/ul>/gis, (match, content) => {
-    return content.replace(/<li[^>]*>(.*?)<\/li>/gi, (match: string, listContent: string) => `- ${listContent.trim()}\n`)
-  })
-
-  markdown = markdown.replace(/<ol[^>]*>(.*?)<\/ol>/gis, (match, content) => {
-    let counter = 1
-    return content.replace(/<li[^>]*>(.*?)<\/li>/gi, (match: string, listContent: string) => `${counter++}. ${listContent.trim()}\n`)
-  })
 
   // Convert tables to markdown (improved)
   markdown = markdown.replace(/<table[^>]*>(.*?)<\/table>/gis, (match, tableContent) => {
