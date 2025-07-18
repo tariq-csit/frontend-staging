@@ -808,7 +808,7 @@ export default function RichText({
             {debouncedText ? (
               <div
                 className="prose prose-slate dark:prose-invert max-w-none
-                           prose-code:bg-muted dark:prose-code:bg-muted
+                           prose-code:bg-muted prose-code:text-black dark:prose-code:text-white dark:prose-code:bg-muted
                            prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:text-sm
                            prose-pre:bg-muted dark:prose-pre:bg-muted
                            prose-blockquote:border-border dark:prose-blockquote:border-border
