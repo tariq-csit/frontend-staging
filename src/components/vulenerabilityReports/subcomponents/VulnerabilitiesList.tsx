@@ -151,11 +151,11 @@ function VulnerabilitiesList({ vulnerabilities, pentestId, isLoading, isClientVi
               <span className="text-sm text-muted-foreground">Name</span>
               <TooltipProvider>
                 <Tooltip>
-                  <TooltipTrigger asChild>
                     <Link to={`/vulnerability-reports/${pentestId}/vulnerabilities/${vulnerability._id}`}>
+                  <TooltipTrigger asChild>
                       <p className="font-medium max-w-full truncate">{vulnerability.title}</p>
-                    </Link>
                   </TooltipTrigger>
+                    </Link>
                   <TooltipContent>
                     <p>{vulnerability.title}</p>
                   </TooltipContent>
