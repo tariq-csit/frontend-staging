@@ -14,38 +14,30 @@ import VulnerabilityStatusBadge from "./VulnerabilityStatusBadge"
 
 function VulnerabilityItemSkeleton() {
   return (
-    <div className="border-gray-100 dark:border-gray-700 p-4 grid grid-cols-9 items-center gap-8 border rounded-md min-w-[1000px]">
-      <div className="flex flex-col gap-1 col-span-4">
+    <div className="border-gray-100 dark:border-gray-700 p-4 grid grid-cols-6 items-center gap-8 border rounded-md min-w-[900px]">
+      <div className="flex flex-col gap-1 col-span-2">
         <Skeleton className="h-4 w-16 mb-1" />
         <Skeleton className="h-5 w-3/4" />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 col-span-2">
-        <div className="flex flex-col gap-1">
-          <Skeleton className="h-4 w-16 mb-1" />
-          <Skeleton className="h-7 w-24 rounded-[8px]" />
-        </div>
-
-        <div className="flex flex-col gap-1">
-          <Skeleton className="h-4 w-16 mb-1" />
-          <Skeleton className="h-7 w-24 rounded-[8px]" />
-        </div>
+      <div className="flex flex-col gap-1">
+        <Skeleton className="h-4 w-16 mb-1" />
+        <Skeleton className="h-7 w-24 rounded-[8px]" />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 col-span-2">
-        <div className="flex flex-col gap-1">
-          <Skeleton className="h-4 w-24 mb-1" />
-          <Skeleton className="h-5 w-32" />
-        </div>
-
-        <div className="flex flex-col gap-1">
-          <Skeleton className="h-4 w-24 mb-1" />
-          <Skeleton className="h-5 w-32" />
-        </div>
+      <div className="flex flex-col gap-1">
+        <Skeleton className="h-4 w-24 mb-1" />
+        <Skeleton className="h-5 w-32" />
       </div>
 
-      <div className="col-span-1 flex justify-end items-center">
-        <Skeleton className="h-5 w-24" />
+      <div className="flex flex-col gap-1">
+        <Skeleton className="h-4 w-24 mb-1" />
+        <Skeleton className="h-5 w-32" />
+      </div>
+
+      <div className="flex flex-col gap-1 justify-center items-end">
+        <Skeleton className="h-4 w-16 mb-1" />
+        <Skeleton className="h-9 w-[140px] rounded-md" />
       </div>
     </div>
   )
@@ -146,8 +138,8 @@ function VulnerabilitiesList({ vulnerabilities, pentestId, isLoading, isClientVi
 
       <div className={listClasses}>
         {vulnerabilities?.map((vulnerability, i) => (
-          <div key={i} className="border-inputBorder dark:bg-gray-900 dark:border-gray-900 p-4 grid grid-cols-[2fr_1fr_1fr_1fr_1fr] items-center gap-8 border rounded-md min-w-[900px]">
-            <div className="flex flex-col gap-1">
+          <div key={i} className="border-inputBorder dark:bg-gray-900 dark:border-gray-900 p-4 grid grid-cols-6 items-center gap-8 border rounded-md min-w-[900px]">
+            <div className="flex flex-col gap-1 col-span-2">
               <span className="text-sm text-muted-foreground">Name</span>
               <TooltipProvider>
                 <Tooltip>
