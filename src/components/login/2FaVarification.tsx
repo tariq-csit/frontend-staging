@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 import {
   Form,
   FormControl,
@@ -34,6 +35,7 @@ function TwoFaVarification(props:{
   email: string
 }) {
   const navigate = useNavigate();
+  const { redirectTo: handleRedirect } = useAuthRedirect();
   
   useEffect(() => {
     // Check if we have the necessary authentication state
@@ -75,7 +77,7 @@ function TwoFaVarification(props:{
         title: "Success",
         description: "2FA verification successful!",
       });
-      navigate('/dashboard');
+      handleRedirect();
       pinForm.reset();
     },
     onError: (error) => {

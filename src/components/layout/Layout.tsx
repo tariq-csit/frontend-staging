@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from "react";
 import Sidebar from "../sidebar/Sidebar";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import axiosInstance from "@/lib/AxiosInstance";
 import { apiRoutes } from "@/lib/routes";
 import bars from "/bars-solid.svg";
@@ -13,6 +13,7 @@ function Layout() {
   const [userImage, setUserImage] = useState("");
   const [userRole, setUserRole] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
 
   const sidebarRef = useRef<HTMLDivElement>(null);
 
@@ -32,13 +33,21 @@ function Layout() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     const refreshToken = localStorage.getItem("refreshToken");
-    
+
     // Check if we have both tokens for complete authentication
     if (!token || !refreshToken) {
       localStorage.clear(); // Clear any partial authentication state
-      navigate("/login");
+
+      // Add redirecturi parameter for the current path
+      const currentPath = location.pathname + location.search + location.hash;
+      // Only redirect if not already on login/signup routes
+      if (!currentPath.startsWith('/login') && !currentPath.startsWith('/signup') && !currentPath.startsWith('/forgot-password')) {
+        navigate(`/login?redirecturi=${encodeURIComponent(currentPath)}`);
+      } else {
+        navigate("/login");
+      }
     }
-  }, [navigate]);
+  }, [navigate, location]);
 
   // Close the sidebar on outside clicks only on mobile
   useEffect(() => {

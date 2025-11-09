@@ -1,18 +1,20 @@
 import { useNavigate } from "react-router-dom";
 import LoginForm from "./LoginForm"
 import { useEffect, useState } from "react";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 function Login() {
   const navigate = useNavigate();
+  const { redirectTo } = useAuthRedirect();
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-  
+
   useEffect(() => {
     if (localStorage.getItem("token")) {
-      navigate("/dashboard");
+      redirectTo();
     }
     setIsCheckingAuth(false);
-  }, [navigate]);
-  
+  }, [redirectTo]);
+
   if (isCheckingAuth) {
     return null; // or return a loading spinner if you prefer
   }

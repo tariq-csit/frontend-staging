@@ -23,7 +23,9 @@ const RouteGuard = ({ children, allowedRoles }: RouteGuardProps) => {
 
   // Redirect to login if error or no user found
   if (error || !user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    // Add redirecturi parameter for the current path
+    const currentPath = location.pathname + location.search + location.hash;
+    return <Navigate to={`/login?redirecturi=${encodeURIComponent(currentPath)}`} replace />;
   }
 
   // Check if user role is in the allowed roles list

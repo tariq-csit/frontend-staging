@@ -1,5 +1,5 @@
 import './App.css'
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import ClientLists from './components/clientLists/ClientLists';
 import DashboardHome from '@/components/dashboard/Dashboard';
@@ -30,6 +30,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useUser } from './hooks/useUser';
 import { ReactNode } from 'react';
 import { toast } from './hooks/use-toast';
+import { Navigate, useLocation } from 'react-router-dom';
 import IntegrationsPage from '@/components/integration/IntegrationsPage';
 import JiraCallback from '@/components/integration/JiraCallback';
 import JiraSetup from '@/components/integration/JiraSetup';
