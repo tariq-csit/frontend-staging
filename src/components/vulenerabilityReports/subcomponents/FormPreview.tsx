@@ -1,5 +1,6 @@
 "use client"
 
+import React, { useState } from "react"
 import { Button } from "@/components/ui/button"
 import FileAttachmentPreview from "./FileAttachmentsPreview"
 import CommentSection from "./CommentSection"
@@ -8,12 +9,19 @@ import axiosInstance from "@/lib/AxiosInstance"
 import { apiRoutes } from "@/lib/routes"
 import type { Attachment, Pentest, User, Vulnerability } from "@/types/types"
 import { useMutation, useQuery } from "@tanstack/react-query"
-import { Edit, Loader2, Lock, Trash2, SendHorizontal } from "lucide-react"
+import { Edit, Loader2, Lock, Trash2, SendHorizontal, Clock, ChevronRight } from "lucide-react"
 import { Select, SelectTrigger, SelectItem, SelectContent, SelectValue } from "@/components/ui/select"
 import { toast } from "@/hooks/use-toast"
 import CommentCard from "./CommentCard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { useSidebar } from "@/contexts/SidebarContext"
 import VulnerabilitySeverityBadge from "./VulnerabilitySeverityBadge"
 import VulnerabilityStatusBadge from "./VulnerabilityStatusBadge"
@@ -30,6 +38,7 @@ function VulnerabilityView() {
   const { pentestId, vulnerabilityId } = useParams<{ pentestId: string; vulnerabilityId: string }>()
   const navigate = useNavigate()
   const { isPentester, isClient, isAdmin, loading, user } = useUser();
+  const [isHistoryDialogOpen, setIsHistoryDialogOpen] = useState(false);
 
   const { data: vulnerability, refetch: refetchVulnerability, isLoading: isLoadingVulnerability } = useQuery({
     queryKey: ["pentest", pentestId, "vulnerability", vulnerabilityId],
@@ -162,6 +171,52 @@ function VulnerabilityView() {
       textColor: "text-[#991B1B] dark:text-[#FFFFFF]" 
     },
   ]
+
+  // Helper function to get status color
+  const getStatusColor = (status: string) => {
+    if (status === "New") {
+      return { 
+        bg: "bg-[#E5E7EB] dark:bg-[#6B7280]", 
+        text: "text-[#6B7280] dark:text-white", 
+        border: "border-[#6B7280]",
+        borderColor: "#6B7280"
+      };
+    } else if (status === "Triaged") {
+      return { 
+        bg: "bg-[#DAE6FD] dark:bg-[#2382F6]", 
+        text: "text-[#2382F6] dark:text-white", 
+        border: "border-[#2382F6]",
+        borderColor: "#2382F6"
+      };
+    } else if (status === "Ready For Retest") {
+      return { 
+        bg: "bg-[#FDE68A] dark:bg-[#F59E0B]", 
+        text: "text-[#92400E] dark:text-white", 
+        border: "border-[#F59E0B]",
+        borderColor: "#F59E0B"
+      };
+    } else if (status === "Resolved") {
+      return { 
+        bg: "bg-[#86EFAC] dark:bg-[#166534]", 
+        text: "text-[#166534] dark:text-white", 
+        border: "border-[#166534]",
+        borderColor: "#166534"
+      };
+    } else if (status === "Not Applicable") {
+      return { 
+        bg: "bg-[#FCA5A5] dark:bg-[#991B1B]", 
+        text: "text-[#991B1B] dark:text-white", 
+        border: "border-[#991B1B]",
+        borderColor: "#991B1B"
+      };
+    }
+    return { 
+      bg: "bg-gray-200 dark:bg-gray-700", 
+      text: "text-gray-700 dark:text-gray-300", 
+      border: "border-gray-400",
+      borderColor: "#9CA3AF"
+    };
+  }
 
   const displayVulnerability = vulnerability
   const displayPentest = pentest
@@ -519,7 +574,7 @@ function VulnerabilityView() {
             </div>
 
             {/* Status */}
-            <div className="mb-10">
+            <div className="mb-6">
               <h2 className="text-lg lg:text-xl font-bold mb-3">Status:</h2>
               <Select
                 value={displayVulnerability.status}
@@ -544,6 +599,218 @@ function VulnerabilityView() {
                 </SelectContent>
               </Select>
             </div>
+
+            {/* Status History - Compact Preview */}
+            {displayVulnerability.statusHistory && displayVulnerability.statusHistory.length > 0 && (
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-3">
+                  <h2 className="text-lg lg:text-xl font-bold flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
+                    Status History
+                  </h2>
+                  <Dialog open={isHistoryDialogOpen} onOpenChange={setIsHistoryDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-xs text-primary hover:text-primary/80 h-auto p-1"
+                      >
+                        View All
+                        <ChevronRight className="w-3 h-3 ml-1" />
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto dark:bg-gray-900">
+                      <DialogHeader>
+                        <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                          Status Change History
+                        </DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-0 mt-6">
+                        {displayVulnerability.statusHistory.map((historyEntry, index) => {
+                          const changedBy = historyEntry.changedBy;
+                          const changedByName = changedBy?.name || "System";
+                          const changedByAvatar = changedBy?.profilePicture;
+                          const changedAt = new Date(historyEntry.changedAt);
+                          const formattedDate = changedAt.toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          });
+
+                          const toStatusColor = getStatusColor(historyEntry.toStatus);
+                          const fromStatusColor = historyEntry.fromStatus ? getStatusColor(historyEntry.fromStatus) : null;
+
+                          return (
+                            <div
+                              key={index}
+                              className={`relative flex gap-4 p-4 rounded-xl transition-all hover:bg-gray-50 dark:hover:bg-gray-800/50 ${
+                                historyEntry.isCurrent
+                                  ? "bg-gradient-to-r from-primary/5 to-primary/10 dark:from-primary/20 dark:to-primary/30 border-2 border-primary/30"
+                                  : "border border-gray-200 dark:border-gray-800"
+                              } ${index < displayVulnerability.statusHistory!.length - 1 ? "mb-4" : ""}`}
+                            >
+                              {/* Timeline line */}
+                              {index < displayVulnerability.statusHistory!.length - 1 && (
+                                <div className="absolute left-[28px] top-[60px] w-0.5 h-full bg-gradient-to-b from-gray-300 to-gray-200 dark:from-gray-600 dark:to-gray-700" />
+                              )}
+
+                              {/* Avatar with status color ring */}
+                              <div className="relative flex-shrink-0">
+                                <div
+                                  className={`w-12 h-12 rounded-full flex items-center justify-center ring-4 ring-offset-2 ${
+                                    historyEntry.isCurrent
+                                      ? `${toStatusColor.border} ring-primary/20 dark:ring-primary/40`
+                                      : "ring-gray-200 dark:ring-gray-700"
+                                  }`}
+                                  style={{
+                                    boxShadow: historyEntry.isCurrent
+                                      ? `0 0 0 2px ${toStatusColor.borderColor}, 0 4px 12px rgba(0,0,0,0.1)`
+                                      : undefined
+                                  }}
+                                >
+                                  {changedByAvatar ? (
+                                    <img
+                                      src={changedByAvatar}
+                                      alt={changedByName}
+                                      className="w-12 h-12 rounded-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className={`w-12 h-12 rounded-full ${toStatusColor.bg} flex items-center justify-center`}>
+                                      <span className={`text-sm font-bold ${toStatusColor.text}`}>
+                                        {changedByName.charAt(0).toUpperCase()}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                                {historyEntry.isCurrent && (
+                                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-primary rounded-full border-2 border-white dark:border-gray-900 flex items-center justify-center">
+                                    <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Content */}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                  <span className="font-semibold text-gray-900 dark:text-gray-100">
+                                    {changedByName}
+                                  </span>
+                                  {historyEntry.isCurrent && (
+                                    <span className="px-2.5 py-0.5 text-xs font-bold bg-gradient-to-r from-primary to-primary/80 text-white rounded-full shadow-sm">
+                                      Current
+                                    </span>
+                                  )}
+                                </div>
+
+                                {/* Status change with colored badges */}
+                                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                  {historyEntry.fromStatus ? (
+                                    <>
+                                      <span className={`px-3 py-1 text-xs font-semibold rounded-full ${fromStatusColor?.bg} ${fromStatusColor?.text} border ${fromStatusColor?.border} shadow-sm`}>
+                                        {historyEntry.fromStatus}
+                                      </span>
+                                      <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                                    </>
+                                  ) : (
+                                    <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">Initial status:</span>
+                                  )}
+                                  <span className={`px-3 py-1 text-xs font-semibold rounded-full ${toStatusColor.bg} ${toStatusColor.text} border ${toStatusColor.border} shadow-sm ${historyEntry.isCurrent ? "ring-2 ring-primary/30" : ""}`}>
+                                    {historyEntry.toStatus}
+                                  </span>
+                                </div>
+
+                                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  {formattedDate}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+                <div className="space-y-2">
+                  {displayVulnerability.statusHistory
+                    .slice(-2)
+                    .reverse()
+                    .map((historyEntry, index) => {
+                      const changedBy = historyEntry.changedBy;
+                      const changedByName = changedBy?.name || "System";
+                      const changedByAvatar = changedBy?.profilePicture;
+                      const changedAt = new Date(historyEntry.changedAt);
+                      const formattedDate = changedAt.toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      });
+
+                      const toStatusColor = getStatusColor(historyEntry.toStatus);
+                      const fromStatusColor = historyEntry.fromStatus ? getStatusColor(historyEntry.fromStatus) : null;
+
+                      return (
+                        <div
+                          key={index}
+                          className={`group flex items-start gap-2.5 p-2.5 rounded-lg border transition-all ${
+                            historyEntry.isCurrent
+                              ? "bg-gradient-to-r from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10 border-primary/30 shadow-sm"
+                              : "bg-gray-50 dark:bg-gray-800/50 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                          }`}
+                        >
+                          <div className={`relative w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ${
+                            historyEntry.isCurrent
+                              ? `${toStatusColor.border} ring-primary/20`
+                              : "ring-gray-200 dark:ring-gray-700"
+                          }`}>
+                            {changedByAvatar ? (
+                              <img
+                                src={changedByAvatar}
+                                alt={changedByName}
+                                className="w-7 h-7 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className={`w-7 h-7 rounded-full ${toStatusColor.bg} flex items-center justify-center`}>
+                                <span className={`text-[10px] font-bold ${toStatusColor.text}`}>
+                                  {changedByName.charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                            )}
+                            {historyEntry.isCurrent && (
+                              <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-primary rounded-full border border-white dark:border-gray-900" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-gray-900 dark:text-gray-100 truncate mb-1">
+                              {changedByName}
+                            </p>
+                            <div className="flex items-center gap-1.5 flex-wrap mb-1">
+                              {historyEntry.fromStatus && (
+                                <>
+                                  <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full ${fromStatusColor?.bg} ${fromStatusColor?.text} border ${fromStatusColor?.border}`}>
+                                    {historyEntry.fromStatus}
+                                  </span>
+                                  <ChevronRight className="w-3 h-3 text-gray-400" />
+                                </>
+                              )}
+                              <span className={`px-2 py-0.5 text-[10px] font-semibold rounded-full ${toStatusColor.bg} ${toStatusColor.text} border ${toStatusColor.border} ${historyEntry.isCurrent ? "ring-1 ring-primary/30" : ""}`}>
+                                {historyEntry.toStatus}
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                              <Clock className="w-2.5 h-2.5" />
+                              {formattedDate}
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </div>
+            )}
 
             {/* Divider */}
             <Separator className="my-6" />

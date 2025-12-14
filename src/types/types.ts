@@ -24,6 +24,16 @@ interface Comment {
   updatedAt: string
 }
 
+export interface StatusHistoryEntry {
+  status: string;
+  changedAt: string;
+  changedBy: User | null;
+  fromStatus: string | null;
+  toStatus: string;
+  duration: number;
+  isCurrent?: boolean;
+}
+
 export interface Vulnerability {
   _id: string;
   title: string;
@@ -44,6 +54,7 @@ export interface Vulnerability {
   createdAt: string;
   updatedAt: string;
   hasJiraIntegration: boolean;
+  statusHistory?: StatusHistoryEntry[];
 }
 
 export interface SignUpData {
