@@ -34,6 +34,8 @@ import { Navigate, useLocation } from 'react-router-dom';
 import IntegrationsPage from '@/components/integration/IntegrationsPage';
 import JiraCallback from '@/components/integration/JiraCallback';
 import JiraSetup from '@/components/integration/JiraSetup';
+import SlackCallback from '@/components/integration/SlackCallback';
+import SlackSetup from '@/components/integration/SlackSetup';
 
 // Component that only allows admin users to access a route
 const AdminProtectedRoute = ({ children }: { children: ReactNode }) => {
@@ -215,6 +217,15 @@ function App() {
               } />
 
               <Route path='/clients/integrations/jira/callback' element={<JiraCallback />} />
+
+              <Route path='/integrations/slack/setup' element={
+                <ClientProtectedRoute>
+                  <SlackSetup />
+                </ClientProtectedRoute>
+              } />
+
+              <Route path='/integrations/slack/success' element={<SlackCallback />} />
+              <Route path='/clients/integrations/slack/callback' element={<SlackCallback />} />
             </Route>
           </Routes>
           <Toaster />

@@ -200,6 +200,22 @@ export const apiRoutes = {
         // Unlink pentest from Jira integration
         unlink: (clientId: string, pentestId: string) => `/clients/${clientId}/pentests/${pentestId}/jira`,
       },
+      slack: {
+        // Get Slack OAuth URL
+        auth: (clientId: string) => `/clients/${clientId}/integrations/slack/auth`,
+        // Callback after OAuth authorization
+        callback: `/clients/integrations/slack/callback`,
+        // Get integration status
+        status: (clientId: string) => `/clients/${clientId}/integrations/slack`,
+        // Get available Slack channels
+        channels: (clientId: string) => `/clients/${clientId}/integrations/slack/channels`,
+        // Link pentest to channel
+        linkPentest: (clientId: string, pentestId: string) => `/clients/${clientId}/integrations/slack/pentests/${pentestId}/channel`,
+        // Update notification settings
+        updateNotifications: (clientId: string) => `/clients/${clientId}/integrations/slack/notifications`,
+        // Disconnect integration
+        disconnect: (clientId: string) => `/clients/${clientId}/integrations/slack`,
+      },
     },
   },
 

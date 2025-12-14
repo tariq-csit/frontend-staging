@@ -62,7 +62,8 @@ export interface Client {
   poc_email: string;
   logoUrl: string;
   integrations: {
-    jira: boolean;
+    jira?: boolean;
+    slack?: boolean;
   };
   RequestedPentestsNo: number;
   pentests: {
@@ -130,6 +131,7 @@ export interface Pentest {
   retestReport: Report;
   attachments: Attachment[];
   hasJiraIntegration: boolean;
+  hasSlackIntegration?: boolean;
 }
 
 // export interface Pentest {

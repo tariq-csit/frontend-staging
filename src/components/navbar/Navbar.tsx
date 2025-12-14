@@ -9,12 +9,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import axiosInstance from "@/lib/AxiosInstance";
 import { apiRoutes } from "@/lib/routes";
+import { clearAllDrafts } from "@/hooks/useDraftSave";
 
 function Navbar(props: { name: string; image: string; role: string }) {
   const handleLogout = async () => {
     try {
       await axiosInstance.post(apiRoutes.logout);
-      // localStorage.clear();
+      // Clear all vulnerability drafts before clearing localStorage
+      clearAllDrafts();
+      localStorage.clear();
+      window.location.href = "/login";
     } catch (error) {
       console.log(error);
     }

@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import { UserRole } from "@/hooks/useUser";
 import { ModeToggle } from "@/components/mode-toggle";
 import { cn } from "@/lib/utils";
+import { clearAllDrafts } from "@/hooks/useDraftSave";
 
 function Sidebar(props: {
   name: string,
@@ -178,6 +179,8 @@ function Sidebar(props: {
             setCollapsed={setCollapsed}
             onClick={async () => {
               await axiosInstance.post(apiRoutes.logout);
+              // Clear all vulnerability drafts before clearing localStorage
+              clearAllDrafts();
               localStorage.clear();
               navigate("/login");
             }}

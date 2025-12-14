@@ -101,6 +101,31 @@ export function deleteDraft(pentestId: string, mode: 'create' | 'edit'): void {
 }
 
 /**
+ * Clear all vulnerability drafts from localStorage
+ * Should be called on logout for security/privacy
+ */
+export function clearAllDrafts(): void {
+  try {
+    const keysToRemove: string[] = [];
+    
+    // Iterate through all localStorage keys
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith(DRAFT_PREFIX)) {
+        keysToRemove.push(key);
+      }
+    }
+    
+    // Remove all draft keys
+    keysToRemove.forEach(key => {
+      localStorage.removeItem(key);
+    });
+  } catch (error) {
+    console.warn('Failed to clear all drafts from localStorage:', error);
+  }
+}
+
+/**
  * Hook for auto-saving drafts with debouncing
  */
 export function useDraftSave(

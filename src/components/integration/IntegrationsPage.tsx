@@ -15,6 +15,7 @@ const IntegrationsPage: React.FC = () => {
   const { isClient, loading: userLoading } = useUser();
   const navigate = useNavigate();
   const [isConnectingToJira, setIsConnectingToJira] = React.useState(false);
+  const [isConnectingToSlack, setIsConnectingToSlack] = React.useState(false);
 
   // Fetch client organization information for client users
   const { data: clientOrganization, refetch: refetchOrganization, isLoading: organizationLoading } = useQuery({
@@ -22,21 +23,44 @@ const IntegrationsPage: React.FC = () => {
     queryFn: () => axiosInstance.get(apiRoutes.client.organization).then((res) => res.data as Client),
     enabled: isClient() && !userLoading, // Only fetch if user is loaded and is a client
   });
-  console.log(clientOrganization);
-  // Calculate unified loading state
-  const isLoading = userLoading || (isClient() && organizationLoading);
 
-  // Refetch organization data when page becomes visible (useful when returning from OAuth)
+  // Fetch Slack integration status
+  const { data: slackIntegrationStatus, refetch: refetchSlackStatus, isLoading: slackStatusLoading } = useQuery({
+    queryKey: ['slack-integration-status', clientOrganization?._id],
+    queryFn: async () => {
+      if (!clientOrganization?._id) return null;
+      try {
+        const response = await axiosInstance.get(apiRoutes.client.integrations.slack.status(clientOrganization._id));
+        return response.data;
+      } catch (error: any) {
+        // If the error response is "Slack integration not found", return null
+        if (error?.response?.data?.message === 'Slack integration not found') {
+          return null;
+        }
+        throw error;
+      }
+    },
+    enabled: isClient() && !userLoading && !!clientOrganization?._id,
+  });
+
+  // Determine if Slack is connected
+  const isSlackConnected = slackIntegrationStatus?.isIntegrated === true;
+
+  // Calculate unified loading state
+  const isLoading = userLoading || (isClient() && organizationLoading) || (isClient() && slackStatusLoading);
+
+  // Refetch organization data and Slack status when page becomes visible (useful when returning from OAuth)
   React.useEffect(() => {
     const handleVisibilityChange = () => {
       if (!document.hidden && isClient()) {
         refetchOrganization();
+        refetchSlackStatus();
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [isClient, refetchOrganization]);
+  }, [isClient, refetchOrganization, refetchSlackStatus]);
 
   const handleConnectToJira = async () => {
     setIsConnectingToJira(true);
@@ -122,6 +146,88 @@ const IntegrationsPage: React.FC = () => {
       toast({
         title: "Disconnection Failed",
         description: "Unable to disconnect Jira. Please try again later.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleConnectToSlack = async () => {
+    setIsConnectingToSlack(true);
+    try {
+      const clientId = clientOrganization?._id;
+      
+      if (!clientId) {
+        toast({
+          title: "Error",
+          description: "Client information not found. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      console.log('Initiating Slack integration for client:', clientId);
+      
+      // Call the get Slack OAuth URL API
+      const response = await axiosInstance.get(apiRoutes.client.integrations.slack.auth(clientId));
+      
+      console.log('Slack OAuth URL response:', response.data);
+      
+      if (response.data?.url) {
+        console.log('Redirecting to Slack OAuth URL:', response.data.url);
+        // Backend handles the callback at VITE_API_URL, then redirects to frontend success page
+        // Redirect to Slack OAuth authorization URL
+        window.location.href = response.data.url;
+      } else {
+        console.error('No OAuth URL received from backend');
+        toast({
+          title: "Error",
+          description: "Failed to initiate Slack integration. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error connecting to Slack:', error);
+      toast({
+        title: "Connection Failed",
+        description: "Unable to connect to Slack. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsConnectingToSlack(false);
+    }
+  };
+
+  const handleEditSlackConfiguration = () => {
+    navigate('/integrations/slack/setup');
+  };
+
+  const handleDisconnectSlack = async () => {
+    try {
+      const clientId = clientOrganization?._id;
+      
+      if (!clientId) {
+        toast({
+          title: "Error",
+          description: "Client information not found. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      await axiosInstance.delete(apiRoutes.client.integrations.slack.disconnect(clientId));
+      
+      toast({
+        title: "Disconnected",
+        description: "Slack integration has been disconnected successfully.",
+      });
+      
+      // Refetch Slack integration status to update UI
+      refetchSlackStatus();
+    } catch (error) {
+      console.error('Error disconnecting Slack:', error);
+      toast({
+        title: "Disconnection Failed",
+        description: "Unable to disconnect Slack. Please try again later.",
         variant: "destructive",
       });
     }
@@ -241,16 +347,9 @@ const IntegrationsPage: React.FC = () => {
           </Card>
 
           {/* Slack Integration */}
-          <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-200 relative">
+          <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow duration-200">
             <CardContent className="p-6">
               <div className="flex flex-col items-start space-y-4">
-                {/* Coming Soon Badge */}
-                <div className="absolute top-4 right-4">
-                  <span className="px-2 py-1 text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 rounded-full">
-                    Coming Soon
-                  </span>
-                </div>
-                
                 {/* Slack Logo */}
                 <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
                   <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none">
@@ -269,13 +368,48 @@ const IntegrationsPage: React.FC = () => {
                   and status updates directly in your Slack channels.
                 </p>
                 
-                {/* Coming Soon Button */}
-                <Button 
-                  disabled
-                  className="w-full bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 font-medium py-2 px-4 rounded-lg cursor-not-allowed"
-                >
-                  Coming Soon
-                </Button>
+                {/* Connection Status */}
+                {isSlackConnected && (
+                  <div className="flex items-center gap-2 px-3 py-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-sm text-green-700 dark:text-green-300 font-medium">
+                      Connected{slackIntegrationStatus?.teamName ? ` - ${slackIntegrationStatus.teamName}` : ''}
+                    </span>
+                  </div>
+                )}
+                
+                {/* Connect/Disconnect Button */}
+                {isSlackConnected ? (
+                  <div className='grid grid-cols-2 gap-2'>
+                    <Button 
+                      onClick={handleDisconnectSlack}
+                      variant="outline"
+                      className="w-full border-red-200 text-red-600 hover:bg-red-50 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
+                    >
+                      Disconnect Slack
+                    </Button>
+                    <Button 
+                      onClick={handleEditSlackConfiguration}
+                    >
+                      Configure Slack
+                    </Button>
+                  </div>
+                ) : (
+                  <Button 
+                    onClick={handleConnectToSlack}
+                    disabled={isConnectingToSlack}
+                    className="w-full bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isConnectingToSlack ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Connecting...
+                      </>
+                    ) : (
+                      'Connect to Slack'
+                    )}
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
