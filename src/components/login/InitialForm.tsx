@@ -72,6 +72,10 @@ function InitialForm(props:{
       props.setEmail(variables.email);
       localStorage.setItem("user", JSON.stringify(data.user));
       localStorage.setItem("token", data.token);
+      // Store refreshToken if provided by backend
+      if (data.refreshToken) {
+        localStorage.setItem("refreshToken", data.refreshToken);
+      }
       toast({
         title: "Success",
         description: "Successfully logged in!",

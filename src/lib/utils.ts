@@ -49,3 +49,42 @@ export function sanitizeHtml(html: string): string {
   })
 }
 
+/**
+ * Decode JWT token and extract payload
+ * @param token - JWT token string
+ * @returns Decoded payload or null if invalid
+ */
+export function decodeJWT(token: string): any | null {
+  try {
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      return null;
+    }
+    const payload = parts[1];
+    const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+    return decoded;
+  } catch (error) {
+    return null;
+  }
+}
+
+/**
+ * Check if JWT token is expired or will expire soon
+ * @param token - JWT token string
+ * @param bufferMinutes - Minutes before expiration to consider token as "expiring soon" (default: 5)
+ * @returns true if token is expired or expiring soon, false otherwise
+ */
+export function isTokenExpiringSoon(token: string, bufferMinutes: number = 5): boolean {
+  const decoded = decodeJWT(token);
+  if (!decoded || !decoded.exp) {
+    return true; // If we can't decode or no exp, consider it expired
+  }
+  
+  const expirationTime = decoded.exp * 1000; // Convert to milliseconds
+  const currentTime = Date.now();
+  const bufferTime = bufferMinutes * 60 * 1000; // Convert buffer to milliseconds
+  
+  // Token is expiring soon if expiration is within the buffer time
+  return expirationTime - currentTime <= bufferTime;
+}
+

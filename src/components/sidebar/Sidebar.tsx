@@ -6,7 +6,7 @@ import largeLogo from "/logo-large.png";
 import smallLogo from "/logo-small.png";
 import ProfileNav from "./ProfileNav";
 import { apiRoutes } from "@/lib/routes";
-import axiosInstance from "@/lib/AxiosInstance";
+import axiosInstance, { stopTokenRefresh } from "@/lib/AxiosInstance";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { useNavigate } from "react-router-dom";
 import { UserRole } from "@/hooks/useUser";
@@ -179,6 +179,8 @@ function Sidebar(props: {
             setCollapsed={setCollapsed}
             onClick={async () => {
               await axiosInstance.post(apiRoutes.logout);
+              // Stop token refresh timer
+              stopTokenRefresh();
               // Clear all vulnerability drafts before clearing localStorage
               clearAllDrafts();
               localStorage.clear();

@@ -19,7 +19,7 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { Loader2, Shield } from 'lucide-react';
-import axiosInstance from '@/lib/AxiosInstance';
+import axiosInstance, { startTokenRefresh } from '@/lib/AxiosInstance';
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import { useEffect } from 'react';
@@ -73,6 +73,8 @@ function TwoFaVarification(props:{
     onSuccess: (data) => {
       localStorage.setItem('token', data.token);
       localStorage.setItem('refreshToken', data.refreshToken);
+      // Start the token refresh timer
+      startTokenRefresh();
       toast({
         title: "Success",
         description: "2FA verification successful!",

@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import axiosInstance from "@/lib/AxiosInstance";
+import axiosInstance, { stopTokenRefresh } from "@/lib/AxiosInstance";
 import { apiRoutes } from "@/lib/routes";
 import { clearAllDrafts } from "@/hooks/useDraftSave";
 
@@ -15,6 +15,8 @@ function Navbar(props: { name: string; image: string; role: string }) {
   const handleLogout = async () => {
     try {
       await axiosInstance.post(apiRoutes.logout);
+      // Stop token refresh timer
+      stopTokenRefresh();
       // Clear all vulnerability drafts before clearing localStorage
       clearAllDrafts();
       localStorage.clear();

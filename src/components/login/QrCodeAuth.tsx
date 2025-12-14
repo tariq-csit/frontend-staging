@@ -19,7 +19,7 @@ import {
 import { Loader2, QrCode, Shield, Copy, Key, Eye, EyeOff } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
-import axiosInstance from "@/lib/AxiosInstance";
+import axiosInstance, { startTokenRefresh } from "@/lib/AxiosInstance";
 import { useState } from "react";
 
 const pinSchema = z.object({
@@ -76,6 +76,12 @@ function QrCodeAuth(props: {
     onSuccess: (data) => {
       props.settoken(data.token);
       localStorage.setItem("token", data.token);
+      // Store refreshToken if provided by backend
+      if (data.refreshToken) {
+        localStorage.setItem("refreshToken", data.refreshToken);
+      }
+      // Start the token refresh timer
+      startTokenRefresh();
       toast({
         title: "2FA Setup Complete",
         description: "Your account is now secured with two-factor authentication",
