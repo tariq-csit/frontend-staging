@@ -40,11 +40,138 @@ export interface AdminMetrics {
 export interface ClientMetrics {
   ongoingPentests: number;
   scheduledPentests: number;
-  totalVulnerabilities: number;
+  vulnerabilityCount: number;
   vulnerabilitiesByMonth: Array<{
-    count: number;
     month: number;
     year: number;
+    count: number;
   }>;
-  pentests: Pentest[];
+  pentests: Array<{
+    _id: string;
+    title: string;
+    service: string;
+    startDate: string;
+    vulnerabilityCount: number;
+    status: string;
+    pentesters: any[];
+  }>;
+  overview: {
+    pentests: {
+      ongoing: number;
+      scheduled: number;
+      completed: number;
+      total: number;
+    };
+    vulnerabilities: {
+      total: number;
+      bySeverity: {
+        critical: number;
+        high: number;
+        medium: number;
+        low: number;
+      };
+      byStatus: {
+        new: number;
+        triaged: number;
+        readyForRetest: number;
+        resolved: number;
+        notApplicable: number;
+      };
+    };
+    riskScore: number;
+    completionRate: number;
+  };
+  severityDistribution: {
+    critical: { count: number; percentage: number };
+    high: { count: number; percentage: number };
+    medium: { count: number; percentage: number };
+    low: { count: number; percentage: number };
+  };
+  statusDistribution: {
+    new: { count: number; percentage: number };
+    triaged: { count: number; percentage: number };
+    readyForRetest: { count: number; percentage: number };
+    resolved: { count: number; percentage: number };
+    notApplicable: { count: number; percentage: number };
+  };
+  resolutionMetrics: {
+    averageResolutionTime: {
+      critical: number;
+      high: number;
+      medium: number;
+      low: number;
+      overall: number;
+    };
+    averageTimeInStatus: {
+      new: number;
+      triaged: number;
+      readyForRetest: number;
+      resolved: number;
+      notApplicable: number;
+    };
+    resolutionRate: number;
+  };
+  trends: {
+    resolutionVelocity: {
+      last7Days: number;
+      last30Days: number;
+      trend: string;
+    };
+    vulnerabilitiesByMonth: Array<{
+      month: number;
+      year: number;
+      total: number;
+      bySeverity: Array<{
+        critical: number;
+        high: number;
+        medium: number;
+        low: number;
+      }>;
+    }>;
+  };
+  serviceTypeAnalytics: {
+    webapppentest?: {
+      count: number;
+      severities: {
+        critical: number;
+        high: number;
+        medium: number;
+        low: number;
+      };
+      averageCvss: number;
+      averageSeverity: string;
+      criticalCount: number;
+    };
+    networkpentest?: {
+      count: number;
+      severities: {
+        critical: number;
+        high: number;
+        medium: number;
+        low: number;
+      };
+      averageCvss: number;
+      averageSeverity: string;
+      criticalCount: number;
+    };
+    cloudpentest?: {
+      count: number;
+      severities: {
+        critical: number;
+        high: number;
+        medium: number;
+        low: number;
+      };
+      averageCvss: number;
+      averageSeverity: string;
+      criticalCount: number;
+    };
+  };
+  insights: Array<{
+    type: string;
+    priority: string;
+    message: string;
+    action: string;
+    count: number;
+  }>;
 }

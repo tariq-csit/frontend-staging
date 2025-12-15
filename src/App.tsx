@@ -3,6 +3,9 @@ import { Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import ClientLists from './components/clientLists/ClientLists';
 import DashboardHome from '@/components/dashboard/Dashboard';
+import Dashboard1 from '@/components/dashboard/Dashboard1';
+import Dashboard2 from '@/components/dashboard/Dashboard2';
+import Dashboard3 from '@/components/dashboard/Dashboard3';
 import Root from '@/components/Root';
 import PentestersList from './components/pentests/pentestersList/PentestersList';
 import ClientUsers from './components/clientLists/ClientUsers';
@@ -140,6 +143,9 @@ function App() {
             <Route path='/' element={<Layout />}>
               <Route index element={<Root />} />
               <Route path='dashboard' element={<DashboardHome />} />
+              <Route path='dashboard1' element={<Dashboard1 />} />
+              <Route path='dashboard2' element={<Dashboard2 />} />
+              <Route path='dashboard3' element={<Dashboard3 />} />
 
               <Route path='/pentests' element={<PentestsList />} />
               <Route path='/pentests/:pentestId/' element={<PentestDetails />} />
