@@ -107,11 +107,11 @@ const EnhancedClientMetrics: React.FC<EnhancedClientMetricsProps> = ({ data, isL
       value: data.overview?.riskScore || 0,
       animated: riskScoreAnimated,
       icon: Shield,
-      iconBg: (data.overview?.riskScore || 0) >= 75 ? "bg-red-100 dark:bg-red-950/40" : (data.overview?.riskScore || 0) >= 50 ? "bg-orange-100 dark:bg-orange-950/40" : "bg-green-100 dark:bg-green-950/40",
-      iconColor: (data.overview?.riskScore || 0) >= 75 ? "text-red-600 dark:text-red-400" : (data.overview?.riskScore || 0) >= 50 ? "text-orange-600 dark:text-orange-400" : "text-green-600 dark:text-green-400",
+          iconBg: (data.overview?.riskScore || 0) >= 7.5 ? "bg-red-100 dark:bg-red-950/40" : (data.overview?.riskScore || 0) >= 5 ? "bg-orange-100 dark:bg-orange-950/40" : "bg-green-100 dark:bg-green-950/40",
+          iconColor: (data.overview?.riskScore || 0) >= 7.5 ? "text-red-600 dark:text-red-400" : (data.overview?.riskScore || 0) >= 5 ? "text-orange-600 dark:text-orange-400" : "text-green-600 dark:text-green-400",
       text: "text-gray-900 dark:text-gray-100",
       border: "border-gray-200 dark:border-gray-800",
-      suffix: "/100",
+          suffix: "/10",
     },
     {
       label: "Completion Rate",
@@ -141,7 +141,7 @@ const EnhancedClientMetrics: React.FC<EnhancedClientMetricsProps> = ({ data, isL
       {metrics.map((metric, index) => {
         const Icon = metric.icon;
         const tooltipText = metric.label === "Risk Score" 
-          ? "Risk score calculated from vulnerability severity and status (0-100)"
+          ? "Risk score calculated from vulnerability severity and status (0-10)"
           : metric.label === "Completion Rate"
           ? "Percentage of completed pentests"
           : metric.label === "Critical Vulnerabilities"

@@ -96,6 +96,8 @@ const InsightsPanel: React.FC<InsightsPanelProps> = ({ data, isLoading }) => {
     switch (type.toLowerCase()) {
       case "critical":
         return AlertTriangle;
+      case "high":
+        return AlertTriangle;
       case "deadline":
         return Clock;
       case "unresponded_comments":
@@ -131,7 +133,7 @@ const InsightsPanel: React.FC<InsightsPanelProps> = ({ data, isLoading }) => {
     }
 
     // Default navigation based on action type
-    if (action.toLowerCase().includes("review") || action.toLowerCase().includes("critical")) {
+    if (action.toLowerCase().includes("review") || action.toLowerCase().includes("critical") || action.toLowerCase().includes("high")) {
       navigate("/vulnerability-reports");
     } else if (action.toLowerCase().includes("deadline")) {
       navigate("/pentests");

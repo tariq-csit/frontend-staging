@@ -21,15 +21,17 @@ const RiskScoreCard: React.FC<RiskScoreCardProps> = ({ riskScore, isLoading }) =
   });
 
   const getRiskLevel = (score: number) => {
-    if (score >= 75) return { level: "Critical", color: "text-red-600 dark:text-red-400", bgGradient: "from-red-500 to-red-700", bgLight: "bg-red-50 dark:bg-red-950/30", borderColor: "border-red-200 dark:border-red-900/50", badgeBg: "bg-red-100 dark:bg-red-950/40", badgeText: "text-red-700 dark:text-red-400" };
-    if (score >= 50) return { level: "High", color: "text-orange-600 dark:text-orange-400", bgGradient: "from-orange-500 to-orange-700", bgLight: "bg-orange-50 dark:bg-orange-950/30", borderColor: "border-orange-200 dark:border-orange-900/50", badgeBg: "bg-orange-100 dark:bg-orange-950/40", badgeText: "text-orange-700 dark:text-orange-400" };
-    if (score >= 25) return { level: "Medium", color: "text-yellow-600 dark:text-yellow-400", bgGradient: "from-yellow-500 to-yellow-700", bgLight: "bg-yellow-50 dark:bg-yellow-950/30", borderColor: "border-yellow-200 dark:border-yellow-900/50", badgeBg: "bg-yellow-100 dark:bg-yellow-950/40", badgeText: "text-yellow-700 dark:text-yellow-400" };
+    // Risk score is on a scale of 0-10
+    if (score >= 7.5) return { level: "Critical", color: "text-red-600 dark:text-red-400", bgGradient: "from-red-500 to-red-700", bgLight: "bg-red-50 dark:bg-red-950/30", borderColor: "border-red-200 dark:border-red-900/50", badgeBg: "bg-red-100 dark:bg-red-950/40", badgeText: "text-red-700 dark:text-red-400" };
+    if (score >= 5) return { level: "High", color: "text-orange-600 dark:text-orange-400", bgGradient: "from-orange-500 to-orange-700", bgLight: "bg-orange-50 dark:bg-orange-950/30", borderColor: "border-orange-200 dark:border-orange-900/50", badgeBg: "bg-orange-100 dark:bg-orange-950/40", badgeText: "text-orange-700 dark:text-orange-400" };
+    if (score >= 2.5) return { level: "Medium", color: "text-yellow-600 dark:text-yellow-400", bgGradient: "from-yellow-500 to-yellow-700", bgLight: "bg-yellow-50 dark:bg-yellow-950/30", borderColor: "border-yellow-200 dark:border-yellow-900/50", badgeBg: "bg-yellow-100 dark:bg-yellow-950/40", badgeText: "text-yellow-700 dark:text-yellow-400" };
     return { level: "Low", color: "text-green-600 dark:text-green-400", bgGradient: "from-green-500 to-green-700", bgLight: "bg-green-50 dark:bg-green-950/30", borderColor: "border-green-200 dark:border-green-900/50", badgeBg: "bg-green-100 dark:bg-green-950/40", badgeText: "text-green-700 dark:text-green-400" };
   };
 
   const riskLevel = getRiskLevel(riskScore);
   const circumference = 2 * Math.PI * 70;
-  const offset = circumference - (riskScore / 100) * circumference;
+  // Convert score from 0-10 scale to percentage (0-100) for the circular progress
+  const offset = circumference - (riskScore / 10) * circumference;
 
   if (isLoading) {
     return (
@@ -103,11 +105,11 @@ const RiskScoreCard: React.FC<RiskScoreCardProps> = ({ riskScore, isLoading }) =
                 strokeWidth="12"
                 fill="none"
                 strokeDasharray={circumference}
-                strokeDashoffset={animatedScore.number.to((v) => circumference - (v / 100) * circumference)}
+                strokeDashoffset={animatedScore.number.to((v) => circumference - (v / 10) * circumference)}
                 strokeLinecap="round"
                 className={`text-transparent bg-gradient-to-r ${riskLevel.bgGradient} bg-clip-text`}
                 style={{
-                  stroke: riskScore >= 75 ? "#ef4444" : riskScore >= 50 ? "#f97316" : riskScore >= 25 ? "#eab308" : "#22c55e",
+                  stroke: riskScore >= 7.5 ? "#ef4444" : riskScore >= 5 ? "#f97316" : riskScore >= 2.5 ? "#eab308" : "#22c55e",
                 }}
               />
             </svg>
@@ -116,10 +118,10 @@ const RiskScoreCard: React.FC<RiskScoreCardProps> = ({ riskScore, isLoading }) =
               <div className="text-center">
                 <div className={`text-4xl font-bold ${riskLevel.color}`}>
                   <animated.span>
-                    {animatedScore.number.to((n) => Math.round(n) || 0)}
+                    {animatedScore.number.to((n) => (n || 0).toFixed(1))}
                   </animated.span>
                 </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">out of 100</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">out of 10</div>
               </div>
             </div>
           </div>
@@ -136,18 +138,18 @@ const RiskScoreCard: React.FC<RiskScoreCardProps> = ({ riskScore, isLoading }) =
               <animated.div
                 className={`h-full bg-gradient-to-r ${riskLevel.bgGradient} rounded-full`}
                 style={{
-                  width: animatedScore.number.to((v) => `${v}%`),
+                  width: animatedScore.number.to((v) => `${(v / 10) * 100}%`),
                 }}
               />
             </div>
           </div>
 
           {/* Warning indicator for high risk */}
-          {riskScore >= 50 && (
+          {riskScore >= 5 && (
             <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${riskLevel.bgLight} border ${riskLevel.borderColor}`}>
               <AlertTriangle className={`w-4 h-4 ${riskLevel.color}`} />
               <span className={`text-xs font-medium ${riskLevel.color}`}>
-                {riskScore >= 75 ? "Immediate action required" : "Review recommended"}
+                {riskScore >= 7.5 ? "Immediate action required" : "Review recommended"}
               </span>
             </div>
           )}
