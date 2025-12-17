@@ -5,7 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyMedia } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Globe, Network, Cloud, AlertTriangle, BarChart3, Info } from "lucide-react";
+import { Globe, Network, Cloud, Smartphone, AlertTriangle, BarChart3, Info } from "lucide-react";
 import { ClientMetrics } from "./types";
 import { useSpring, animated } from "@react-spring/web";
 
@@ -83,6 +83,13 @@ const ServiceTypeAnalytics: React.FC<ServiceTypeAnalyticsProps> = ({ data, isLoa
       color: "green",
       data: data.serviceTypeAnalytics?.cloudpentest,
     },
+    {
+      key: "mobileapppentest",
+      name: "Mobile App Pentest",
+      icon: Smartphone,
+      color: "orange",
+      data: data.serviceTypeAnalytics?.mobileapppentest,
+    },
   ].filter((service) => service.data);
 
   const getColorClasses = (color: string) => {
@@ -104,6 +111,12 @@ const ServiceTypeAnalytics: React.FC<ServiceTypeAnalyticsProps> = ({ data, isLoa
         border: "border-green-200 dark:border-green-800",
         text: "text-green-600 dark:text-green-400",
         iconBg: "bg-green-100 dark:bg-green-900/40",
+      },
+      orange: {
+        bg: "bg-orange-50 dark:bg-orange-900/20",
+        border: "border-orange-200 dark:border-orange-800",
+        text: "text-orange-600 dark:text-orange-400",
+        iconBg: "bg-orange-100 dark:bg-orange-900/40",
       },
     };
     return colors[color] || colors.blue;
@@ -229,7 +242,7 @@ const ServiceTypeAnalytics: React.FC<ServiceTypeAnalyticsProps> = ({ data, isLoa
           Breakdown of vulnerabilities by service type
         </p>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {services.map((service) => (
           <ServiceCard key={service.key} service={service} />
         ))}

@@ -119,6 +119,9 @@ export const apiRoutes = {
     dashboard: `/clients/dashboard`,
     latestActivities: `/clients/latest-activities`,
     
+    // Reports
+    reports: `/clients/reports`,
+    
     // Organization/Client Info
     organization: `/clients/organization`,
     

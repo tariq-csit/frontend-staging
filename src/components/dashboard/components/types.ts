@@ -166,6 +166,18 @@ export interface ClientMetrics {
       averageSeverity: string;
       criticalCount: number;
     };
+    mobileapppentest?: {
+      count: number;
+      severities: {
+        critical: number;
+        high: number;
+        medium: number;
+        low: number;
+      };
+      averageCvss: number;
+      averageSeverity: string;
+      criticalCount: number;
+    };
   };
   insights: Array<{
     type: string;

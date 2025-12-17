@@ -13,5 +13,8 @@ export { default as ServiceTypeAnalytics } from './ServiceTypeAnalytics';
 export { default as InsightsPanel } from './InsightsPanel';
 export { default as InsightsVulnerabilitiesDialog } from './InsightsVulnerabilitiesDialog';
 export { default as InsightsPentestsDialog } from './InsightsPentestsDialog';
+export { default as ReportsTab } from './ReportsTab';
+export { default as ReportCard } from './ReportCard';
+export { default as PasswordRequestDialog } from './PasswordRequestDialog';
 export { default as EnhancedClientMetrics } from './EnhancedClientMetrics';
 export { default as VulnerabilityTrendChart } from './VulnerabilityTrendChart';

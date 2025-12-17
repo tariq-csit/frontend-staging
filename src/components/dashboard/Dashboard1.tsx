@@ -10,6 +10,7 @@ import {
   InsightsPanel,
   ClientPentestsView,
   ActivityFeedSection,
+  ReportsTab,
 } from "./components";
 
 function Dashboard1() {
@@ -36,12 +37,13 @@ function Dashboard1() {
 
         {/* Tab-Based Navigation */}
         <Tabs defaultValue="overview" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 h-auto p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 h-auto p-1 bg-gray-100 dark:bg-gray-800 rounded-lg">
             <TabsTrigger value="overview" className="text-xs sm:text-sm">Overview</TabsTrigger>
             <TabsTrigger value="analytics" className="text-xs sm:text-sm">Analytics</TabsTrigger>
             <TabsTrigger value="services" className="text-xs sm:text-sm">Services</TabsTrigger>
             <TabsTrigger value="insights" className="text-xs sm:text-sm">Insights</TabsTrigger>
             <TabsTrigger value="pentests" className="text-xs sm:text-sm">Pentests</TabsTrigger>
+            <TabsTrigger value="reports" className="text-xs sm:text-sm">Reports</TabsTrigger>
             <TabsTrigger value="activities" className="text-xs sm:text-sm">Activities</TabsTrigger>
           </TabsList>
 
@@ -111,6 +113,11 @@ function Dashboard1() {
                 No pentests available
               </div>
             )}
+          </TabsContent>
+
+          {/* Reports Tab */}
+          <TabsContent value="reports" className="mt-4">
+            <ReportsTab />
           </TabsContent>
 
           {/* Activities Tab */}
