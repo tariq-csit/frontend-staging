@@ -9,9 +9,10 @@ import { ClientMetrics } from "./types";
 interface ResolutionMetricsProps {
   data?: ClientMetrics;
   isLoading?: boolean;
+  showOnly?: "rate" | "resolutionTime" | "timeInStatus" | "all";
 }
 
-const ResolutionMetrics: React.FC<ResolutionMetricsProps> = ({ data, isLoading }) => {
+const ResolutionMetrics: React.FC<ResolutionMetricsProps> = ({ data, isLoading, showOnly = "all" }) => {
   const resolutionRate = useSpring({
     from: { number: 0 },
     number: data?.resolutionMetrics?.resolutionRate || 0,
@@ -101,67 +102,57 @@ const ResolutionMetrics: React.FC<ResolutionMetricsProps> = ({ data, isLoading }
     return null;
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Resolution Rate Card */}
-      <Card className="dark:bg-gray-800 dark:border-gray-700 bg-gradient-to-br from-green-50 to-white dark:from-green-900/20 dark:to-gray-800 border-2 border-green-200 dark:border-green-800">
-        <CardHeader>
-          <CardTitle className="text-lg font-bold dark:text-gray-100 flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+  const renderResolutionRate = () => {
+    const rateValue = data?.resolutionMetrics?.resolutionRate || 0;
+    
+    return (
+      <Card className="dark:bg-gray-900/50 dark:border-gray-800 border border-gray-200 h-full flex flex-col">
+        <CardHeader className="pb-3 flex-shrink-0">
+          <CardTitle className="text-base font-bold dark:text-gray-100 flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
             Resolution Rate
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-4xl font-bold text-green-600 dark:text-green-400">
+        <CardContent className="pt-0 flex-1 flex flex-col justify-center min-h-0">
+          <div className="space-y-4">
+            <div className="text-center">
+              <div className="text-4xl font-bold text-green-600 dark:text-green-400 mb-1">
                 <animated.span>
                   {resolutionRate.number.to((n) => `${(n || 0).toFixed(1)}%`)}
                 </animated.span>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 of vulnerabilities resolved
               </p>
             </div>
-            <div className="w-24 h-24 relative">
-              <svg className="transform -rotate-90 w-24 h-24" viewBox="0 0 100 100">
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="40"
-                  stroke="currentColor"
-                  strokeWidth="8"
-                  fill="none"
-                  className="text-gray-200 dark:text-gray-700"
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
+                <span>Progress</span>
+                <span className="font-medium">{rateValue.toFixed(1)}%</span>
+              </div>
+              <div className="relative h-2.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                <div 
+                  className="h-full w-full flex-1 bg-green-600 dark:bg-green-500 transition-all duration-500 ease-out"
+                  style={{ transform: `translateX(-${100 - rateValue}%)` }}
                 />
-                <animated.circle
-                  cx="50"
-                  cy="50"
-                  r="40"
-                  stroke="currentColor"
-                  strokeWidth="8"
-                  fill="none"
-                  strokeDasharray={251.2}
-                  strokeDashoffset={resolutionRate.number.to((v) => 251.2 - (v / 100) * 251.2)}
-                  strokeLinecap="round"
-                  className="text-green-600 dark:text-green-400"
-                />
-              </svg>
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
+    );
+  };
 
-      {/* Average Resolution Time by Severity */}
-      <Card className="dark:bg-gray-900/50 dark:border-gray-800 border border-gray-200">
-        <CardHeader>
-          <CardTitle className="text-lg font-bold dark:text-gray-100 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-blue-500" />
+  const renderResolutionTime = () => (
+    <Card className="dark:bg-gray-900/50 dark:border-gray-800 border border-gray-200 h-full flex flex-col">
+        <CardHeader className="pb-3 flex-shrink-0">
+          <CardTitle className="text-base font-bold dark:text-gray-100 flex items-center gap-2">
+            <Clock className="w-4 h-4 text-blue-500" />
             Average Resolution Time by Severity
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="h-52">
+        <CardContent className="pt-0 flex-1 flex flex-col min-h-0">
+          <div className="flex-1 min-h-0 mb-3">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={resolutionTimeData}>
                 <XAxis
@@ -181,11 +172,11 @@ const ResolutionMetrics: React.FC<ResolutionMetricsProps> = ({ data, isLoading }
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="grid grid-cols-2 gap-3 mt-4">
+          <div className="grid grid-cols-2 gap-2 flex-shrink-0">
             {resolutionTimeData.map((item) => (
               <div
                 key={item.name}
-                className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-gray-700/50"
+                className="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-700/50"
               >
                 <div className="flex items-center gap-2">
                   <div
@@ -204,17 +195,18 @@ const ResolutionMetrics: React.FC<ResolutionMetricsProps> = ({ data, isLoading }
           </div>
         </CardContent>
       </Card>
+  );
 
-      {/* Average Time in Status */}
-      <Card className="dark:bg-gray-900/50 dark:border-gray-800 border border-gray-200">
-        <CardHeader>
-          <CardTitle className="text-lg font-bold dark:text-gray-100 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-purple-500" />
+  const renderTimeInStatus = () => (
+    <Card className="dark:bg-gray-900/50 dark:border-gray-800 border border-gray-200 h-full flex flex-col">
+        <CardHeader className="pb-3 flex-shrink-0">
+          <CardTitle className="text-base font-bold dark:text-gray-100 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-purple-500" />
             Average Time in Status
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="h-52">
+        <CardContent className="pt-0 flex-1 flex flex-col min-h-0">
+          <div className="flex-1 min-h-0 mb-3">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={timeInStatusData}>
                 <XAxis
@@ -237,11 +229,11 @@ const ResolutionMetrics: React.FC<ResolutionMetricsProps> = ({ data, isLoading }
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="space-y-2 mt-4">
+          <div className="space-y-1.5 flex-shrink-0">
             {timeInStatusData.map((item) => (
               <div
                 key={item.name}
-                className="flex items-center justify-between p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                className="flex items-center justify-between p-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
               >
                 <div className="flex items-center gap-2">
                   <div
@@ -260,6 +252,25 @@ const ResolutionMetrics: React.FC<ResolutionMetricsProps> = ({ data, isLoading }
           </div>
         </CardContent>
       </Card>
+  );
+
+  if (showOnly === "rate") {
+    return renderResolutionRate();
+  }
+
+  if (showOnly === "resolutionTime") {
+    return renderResolutionTime();
+  }
+
+  if (showOnly === "timeInStatus") {
+    return renderTimeInStatus();
+  }
+
+  return (
+    <div className="space-y-3">
+      {renderResolutionRate()}
+      {renderResolutionTime()}
+      {renderTimeInStatus()}
     </div>
   );
 };

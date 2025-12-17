@@ -1,5 +1,6 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, CartesianGrid } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrendingUp, TrendingDown, Minus, BarChart3 } from "lucide-react";
@@ -8,9 +9,10 @@ import { ClientMetrics } from "./types";
 interface TrendsSectionProps {
   data?: ClientMetrics;
   isLoading?: boolean;
+  showOnly?: "velocity" | "monthly" | "all";
 }
 
-const TrendsSection: React.FC<TrendsSectionProps> = ({ data, isLoading }) => {
+const TrendsSection: React.FC<TrendsSectionProps> = ({ data, isLoading, showOnly = "all" }) => {
   if (isLoading) {
     return (
       <Card className="dark:bg-gray-900/50 dark:border-gray-800 border border-gray-200">
@@ -34,7 +36,16 @@ const TrendsSection: React.FC<TrendsSectionProps> = ({ data, isLoading }) => {
 
   const trend = data.trends?.resolutionVelocity?.trend || "stable";
   const TrendIcon = trend === "improving" ? TrendingUp : trend === "declining" ? TrendingDown : Minus;
-  const trendColor = trend === "improving" ? "text-green-600" : trend === "declining" ? "text-red-600" : "text-gray-600";
+  const getTrendBadgeVariant = () => {
+    if (trend === "improving") return "default";
+    if (trend === "declining") return "destructive";
+    return "secondary";
+  };
+  const trendBadgeClass = trend === "improving" 
+    ? "bg-green-600 dark:bg-green-500 text-white border-green-600 dark:border-green-500" 
+    : trend === "declining" 
+    ? "bg-red-600 dark:bg-red-500 text-white border-red-600 dark:border-red-500"
+    : "bg-gray-600 dark:bg-gray-500 text-white border-gray-600 dark:border-gray-500";
 
   // Monthly vulnerabilities data
   const monthlyData = (data.trends?.vulnerabilitiesByMonth || []).map((month) => ({
@@ -62,42 +73,43 @@ const TrendsSection: React.FC<TrendsSectionProps> = ({ data, isLoading }) => {
     return null;
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Resolution Velocity */}
-      <Card className="dark:bg-gray-900/50 dark:border-gray-800 border border-gray-200">
-        <CardHeader>
+  const renderResolutionVelocity = () => (
+    <Card className="dark:bg-gray-900/50 dark:border-gray-800 border border-gray-200 h-full flex flex-col">
+        <CardHeader className="pb-3 flex-shrink-0">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-bold dark:text-gray-100 flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-blue-500" />
+            <CardTitle className="text-base font-bold dark:text-gray-100 flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-blue-500" />
               Resolution Velocity
             </CardTitle>
-            <div className={`flex items-center gap-1 px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 ${trendColor}`}>
-              <TrendIcon className="w-4 h-4" />
-              <span className="text-xs font-semibold capitalize">{trend}</span>
-            </div>
+            <Badge 
+              variant="outline" 
+              className={`flex items-center gap-1.5 capitalize ${trendBadgeClass}`}
+            >
+              <TrendIcon className="w-3 h-3" />
+              <span className="text-xs font-semibold">{trend}</span>
+            </Badge>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div className="p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+        <CardContent className="pt-0 flex-1 flex flex-col min-h-0">
+          <div className="grid grid-cols-2 gap-3 mb-3 flex-shrink-0">
+            <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+              <div className="text-xl font-bold text-blue-600 dark:text-blue-400">
                 {data.trends.resolutionVelocity.last7Days}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                 Resolved (7 days)
               </div>
             </div>
-            <div className="p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+            <div className="p-3 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+              <div className="text-xl font-bold text-green-600 dark:text-green-400">
                 {data.trends.resolutionVelocity.last30Days}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+              <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
                 Resolved (30 days)
               </div>
             </div>
           </div>
-          <div className="h-40">
+          <div className="flex-1 min-h-0">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={velocityData}>
                 <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
@@ -110,17 +122,18 @@ const TrendsSection: React.FC<TrendsSectionProps> = ({ data, isLoading }) => {
           </div>
         </CardContent>
       </Card>
+  );
 
-      {/* Monthly Vulnerabilities Trend */}
-      <Card className="dark:bg-gray-900/50 dark:border-gray-800 border border-gray-200">
-        <CardHeader>
-          <CardTitle className="text-lg font-bold dark:text-gray-100 flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-purple-500" />
+  const renderMonthlyVulnerabilities = () => (
+    <Card className="dark:bg-gray-900/50 dark:border-gray-800 border border-gray-200">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base font-bold dark:text-gray-100 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-purple-500" />
             Vulnerabilities by Month
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="h-80">
+        <CardContent className="pt-0">
+          <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={monthlyData}>
                 <defs>
@@ -187,27 +200,27 @@ const TrendsSection: React.FC<TrendsSectionProps> = ({ data, isLoading }) => {
               </AreaChart>
             </ResponsiveContainer>
           </div>
-          <div className="grid grid-cols-4 gap-2 mt-4">
-            <div className="text-center p-2 rounded-lg bg-red-50 dark:bg-red-900/20">
-              <div className="text-lg font-bold text-red-600 dark:text-red-400">
+          <div className="grid grid-cols-4 gap-2 mt-3">
+            <div className="text-center p-1.5 rounded-lg bg-red-50 dark:bg-red-900/20">
+              <div className="text-base font-bold text-red-600 dark:text-red-400">
                 {monthlyData.reduce((sum, m) => sum + m.critical, 0)}
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400">Critical</div>
             </div>
-            <div className="text-center p-2 rounded-lg bg-orange-50 dark:bg-orange-900/20">
-              <div className="text-lg font-bold text-orange-600 dark:text-orange-400">
+            <div className="text-center p-1.5 rounded-lg bg-orange-50 dark:bg-orange-900/20">
+              <div className="text-base font-bold text-orange-600 dark:text-orange-400">
                 {monthlyData.reduce((sum, m) => sum + m.high, 0)}
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400">High</div>
             </div>
-            <div className="text-center p-2 rounded-lg bg-yellow-50 dark:bg-yellow-900/20">
-              <div className="text-lg font-bold text-yellow-600 dark:text-yellow-400">
+            <div className="text-center p-1.5 rounded-lg bg-yellow-50 dark:bg-yellow-900/20">
+              <div className="text-base font-bold text-yellow-600 dark:text-yellow-400">
                 {monthlyData.reduce((sum, m) => sum + m.medium, 0)}
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400">Medium</div>
             </div>
-            <div className="text-center p-2 rounded-lg bg-green-50 dark:bg-green-900/20">
-              <div className="text-lg font-bold text-green-600 dark:text-green-400">
+            <div className="text-center p-1.5 rounded-lg bg-green-50 dark:bg-green-900/20">
+              <div className="text-base font-bold text-green-600 dark:text-green-400">
                 {monthlyData.reduce((sum, m) => sum + m.low, 0)}
               </div>
               <div className="text-xs text-gray-600 dark:text-gray-400">Low</div>
@@ -215,6 +228,20 @@ const TrendsSection: React.FC<TrendsSectionProps> = ({ data, isLoading }) => {
           </div>
         </CardContent>
       </Card>
+  );
+
+  if (showOnly === "velocity") {
+    return renderResolutionVelocity();
+  }
+
+  if (showOnly === "monthly") {
+    return renderMonthlyVulnerabilities();
+  }
+
+  return (
+    <div className="space-y-3">
+      {renderResolutionVelocity()}
+      {renderMonthlyVulnerabilities()}
     </div>
   );
 };

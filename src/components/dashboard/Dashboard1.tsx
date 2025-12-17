@@ -48,8 +48,11 @@ function Dashboard1() {
           {/* Overview Tab */}
           <TabsContent value="overview" className="mt-4 space-y-4">
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-1">
+              <div className="lg:col-span-1 flex flex-col gap-4">
                 <RiskScoreCard riskScore={isClientData(dashboardData) ? (dashboardData.overview?.riskScore || 0) : 0} isLoading={isLoading} />
+                <div className="h-[335px]">
+                  <ActivityFeedSection />
+                </div>
               </div>
               <div className="lg:col-span-2">
                 <VulnerabilityAnalytics data={isClientData(dashboardData) ? dashboardData : undefined} isLoading={isLoading} />
@@ -58,10 +61,34 @@ function Dashboard1() {
           </TabsContent>
 
           {/* Analytics Tab */}
-          <TabsContent value="analytics" className="mt-4 space-y-4">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <TrendsSection data={isClientData(dashboardData) ? dashboardData : undefined} isLoading={isLoading} />
-              <ResolutionMetrics data={isClientData(dashboardData) ? dashboardData : undefined} isLoading={isLoading} />
+          <TabsContent value="analytics" className="mt-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4" style={{ gridAutoRows: '1fr' }}>
+              {/* Top Row: Resolution Velocity + Resolution Rate */}
+              <div className="lg:col-span-1 flex">
+                <div className="w-full">
+                  <TrendsSection data={isClientData(dashboardData) ? dashboardData : undefined} isLoading={isLoading} showOnly="velocity" />
+                </div>
+              </div>
+              <div className="lg:col-span-1 flex">
+                <div className="w-full">
+                  <ResolutionMetrics data={isClientData(dashboardData) ? dashboardData : undefined} isLoading={isLoading} showOnly="rate" />
+                </div>
+              </div>
+              {/* Middle Row: Vulnerabilities by Month - Full Width */}
+              <div className="lg:col-span-2">
+                <TrendsSection data={isClientData(dashboardData) ? dashboardData : undefined} isLoading={isLoading} showOnly="monthly" />
+              </div>
+              {/* Bottom Row: Average Resolution Time + Average Time in Status */}
+              <div className="lg:col-span-1 flex">
+                <div className="w-full">
+                  <ResolutionMetrics data={isClientData(dashboardData) ? dashboardData : undefined} isLoading={isLoading} showOnly="resolutionTime" />
+                </div>
+              </div>
+              <div className="lg:col-span-1 flex">
+                <div className="w-full">
+                  <ResolutionMetrics data={isClientData(dashboardData) ? dashboardData : undefined} isLoading={isLoading} showOnly="timeInStatus" />
+                </div>
+              </div>
             </div>
           </TabsContent>
 
