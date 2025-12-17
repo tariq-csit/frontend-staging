@@ -2,7 +2,7 @@ import './App.css'
 import { Routes, Route } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import ClientLists from './components/clientLists/ClientLists';
-import Dashboard1 from '@/components/dashboard/Dashboard1';
+import DashboardRouter from '@/components/dashboard/DashboardRouter';
 import Root from '@/components/Root';
 import PentestersList from './components/pentests/pentestersList/PentestersList';
 import ClientUsers from './components/clientLists/ClientUsers';
@@ -139,7 +139,7 @@ function App() {
             <Route path='/reset-password/:token' element={<ResetPassword />} />
             <Route path='/' element={<Layout />}>
               <Route index element={<Root />} />
-              <Route path='dashboard' element={<Dashboard1 />} />
+              <Route path='dashboard' element={<DashboardRouter />} />
 
               <Route path='/pentests' element={<PentestsList />} />
               <Route path='/pentests/:pentestId/' element={<PentestDetails />} />
