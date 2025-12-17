@@ -10,6 +10,7 @@ import { AlertTriangle, Clock, ArrowRight, CheckCircle2, Info, MessageSquare } f
 import { ClientMetrics } from "./types";
 import { useNavigate } from "react-router-dom";
 import InsightsVulnerabilitiesDialog from "./InsightsVulnerabilitiesDialog";
+import InsightsPentestsDialog from "./InsightsPentestsDialog";
 
 interface InsightsPanelProps {
   data?: ClientMetrics;
@@ -21,7 +22,8 @@ const InsightsPanel: React.FC<InsightsPanelProps> = ({ data, isLoading }) => {
   const [selectedInsight, setSelectedInsight] = useState<{
     type: string;
     title: string;
-    vulnerabilities: any[];
+    vulnerabilities?: any[];
+    pentests?: any[];
   } | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
@@ -117,9 +119,14 @@ const InsightsPanel: React.FC<InsightsPanelProps> = ({ data, isLoading }) => {
       return;
     }
 
-    // If there are pentests (for deadline insights), navigate to pentests page
+    // If there are pentests (for deadline insights), show them in a dialog
     if (pentests && pentests.length > 0) {
-      navigate("/pentests");
+      setSelectedInsight({
+        type,
+        title: insight.message,
+        pentests,
+      });
+      setDialogOpen(true);
       return;
     }
 
@@ -209,13 +216,21 @@ const InsightsPanel: React.FC<InsightsPanelProps> = ({ data, isLoading }) => {
         </div>
       </CardContent>
 
-      {selectedInsight && (
+      {selectedInsight && selectedInsight.vulnerabilities && (
         <InsightsVulnerabilitiesDialog
           open={dialogOpen}
           onOpenChange={setDialogOpen}
           title={selectedInsight.title}
           vulnerabilities={selectedInsight.vulnerabilities}
           insightType={selectedInsight.type}
+        />
+      )}
+      {selectedInsight && selectedInsight.pentests && (
+        <InsightsPentestsDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          title={selectedInsight.title}
+          pentests={selectedInsight.pentests}
         />
       )}
     </Card>
