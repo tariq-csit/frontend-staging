@@ -20,7 +20,7 @@ interface Vulnerability {
   title: string;
   severity: string;
   status: string;
-  cvss: number;
+  cvss: number | null;
   createdAt: string;
   pentest: {
     _id: string;
@@ -108,10 +108,10 @@ const InsightsVulnerabilitiesDialog: React.FC<InsightsVulnerabilitiesDialogProps
                         <div>
                           <span className="text-gray-500 dark:text-gray-400">CVSS Score:</span>
                           <p className="font-medium text-gray-900 dark:text-gray-100">
-                            {vuln.cvss.toFixed(1)}
+                            {vuln.cvss !== null && vuln.cvss !== undefined ? vuln.cvss.toFixed(1) : "N/A"}
                           </p>
                           <p className="text-xs text-gray-500 dark:text-gray-400">
-                            Reported {format(new Date(vuln.createdAt), "MMM d, yyyy")}
+                            Reported {vuln.createdAt ? format(new Date(vuln.createdAt), "MMM d, yyyy") : "Unknown date"}
                           </p>
                         </div>
                       </div>
@@ -127,11 +127,11 @@ const InsightsVulnerabilitiesDialog: React.FC<InsightsVulnerabilitiesDialogProps
                                   <Avatar className="h-6 w-6">
                                     <AvatarImage src={vuln.lastComment.author.profilePicture} />
                                     <AvatarFallback className="text-xs">
-                                      {vuln.lastComment.author.name.charAt(0)}
+                                      {vuln.lastComment.author.name?.charAt(0) || "U"}
                                     </AvatarFallback>
                                   </Avatar>
                                   <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                    {vuln.lastComment.author.name}
+                                    {vuln.lastComment.author.name || "Unknown"}
                                   </span>
                                   <Badge variant="outline" className="text-xs">
                                     {vuln.lastComment.author.role}
@@ -146,7 +146,7 @@ const InsightsVulnerabilitiesDialog: React.FC<InsightsVulnerabilitiesDialogProps
                                   {vuln.lastComment.comment}
                                 </p>
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                  {format(new Date(vuln.lastComment.createdAt), "MMM d, yyyy 'at' h:mm a")}
+                                  {vuln.lastComment.createdAt ? format(new Date(vuln.lastComment.createdAt), "MMM d, yyyy 'at' h:mm a") : "Unknown date"}
                                 </p>
                               </div>
                             </div>

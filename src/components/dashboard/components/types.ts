@@ -190,7 +190,7 @@ export interface ClientMetrics {
       title: string;
       severity: string;
       status: string;
-      cvss: number;
+      cvss: number | null;
       createdAt: string;
       pentest: {
         _id: string;
