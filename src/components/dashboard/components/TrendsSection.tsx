@@ -1,6 +1,8 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, AreaChart, Area, BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, CartesianGrid } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TrendingUp, TrendingDown, Minus, BarChart3 } from "lucide-react";
@@ -57,17 +59,40 @@ const TrendsSection: React.FC<TrendsSectionProps> = ({ data, isLoading, showOnly
     total: month.total || 0,
   }));
 
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const velocityChartConfig = {
+    resolved: { label: "Resolved", color: "#3b82f6" },
+  };
+
+  const monthlyChartConfig = {
+    critical: { label: "Critical", color: "#ef4444" },
+    high: { label: "High", color: "#f97316" },
+    medium: { label: "Medium", color: "#eab308" },
+    low: { label: "Low", color: "#22c55e" },
+  };
+
+  const VelocityTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-          <p className="font-semibold text-gray-900 dark:text-gray-100 mb-2">{label}</p>
-          {payload.map((entry: any, index: number) => (
-            <p key={index} className="text-sm" style={{ color: entry.color }}>
-              {entry.name}: <span className="font-medium">{entry.value}</span>
-            </p>
-          ))}
-        </div>
+        <ChartTooltipContent
+          active={active}
+          payload={payload.map((item: any) => ({ ...item, name: "resolved" }))}
+          config={velocityChartConfig}
+          label={label}
+        />
+      );
+    }
+    return null;
+  };
+
+  const MonthlyTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <ChartTooltipContent
+          active={active}
+          payload={payload}
+          config={monthlyChartConfig}
+          label={label}
+        />
       );
     }
     return null;
@@ -115,8 +140,17 @@ const TrendsSection: React.FC<TrendsSectionProps> = ({ data, isLoading, showOnly
                 <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                 <XAxis dataKey="period" tick={{ fill: "#6b7280", fontSize: 12 }} />
                 <YAxis tick={{ fill: "#6b7280", fontSize: 12 }} />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="resolved" fill="#3b82f6" radius={[8, 8, 0, 0]} />
+                <Tooltip 
+                  content={<VelocityTooltip />}
+                  cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
+                  animationDuration={200}
+                />
+                <Bar 
+                  dataKey="resolved" 
+                  fill="#3b82f6" 
+                  radius={[8, 8, 0, 0]}
+                  style={{ transition: 'opacity 0.2s ease-in-out' }}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -163,7 +197,7 @@ const TrendsSection: React.FC<TrendsSectionProps> = ({ data, isLoading, showOnly
                   height={80}
                 />
                 <YAxis tick={{ fill: "#6b7280", fontSize: 12 }} />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={<MonthlyTooltip />} />
                 <Legend />
                 <Area
                   type="monotone"

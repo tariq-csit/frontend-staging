@@ -1,4 +1,5 @@
 import React from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import ActivityFeed from "../../activePentests/subComponenets/Activities";
 
 interface ActivityFeedSectionProps {
@@ -27,9 +28,9 @@ const ActivityFeedSection: React.FC<ActivityFeedSectionProps> = ({ compact = fal
           Recent Activities
         </h2>
       </div>
-      <div className="flex-1 overflow-hidden min-h-0">
+      <ScrollArea className="flex-1 min-h-0">
         <ActivityFeed />
-      </div>
+      </ScrollArea>
     </div>
   );
 };

@@ -11,5 +11,6 @@ export { default as ResolutionMetrics } from './ResolutionMetrics';
 export { default as TrendsSection } from './TrendsSection';
 export { default as ServiceTypeAnalytics } from './ServiceTypeAnalytics';
 export { default as InsightsPanel } from './InsightsPanel';
+export { default as InsightsVulnerabilitiesDialog } from './InsightsVulnerabilitiesDialog';
 export { default as EnhancedClientMetrics } from './EnhancedClientMetrics';
 export { default as VulnerabilityTrendChart } from './VulnerabilityTrendChart';

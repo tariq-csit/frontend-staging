@@ -1,7 +1,11 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyMedia } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Globe, Network, Cloud, AlertTriangle, BarChart3 } from "lucide-react";
+import { Globe, Network, Cloud, AlertTriangle, BarChart3, Info } from "lucide-react";
 import { ClientMetrics } from "./types";
 import { useSpring, animated } from "@react-spring/web";
 
@@ -28,7 +32,34 @@ const ServiceTypeAnalytics: React.FC<ServiceTypeAnalyticsProps> = ({ data, isLoa
     );
   }
 
-  if (!data || !data.serviceTypeAnalytics) return null;
+  if (!data || !data.serviceTypeAnalytics) {
+    return (
+      <div>
+        <div className="mb-4">
+          <h2 className="text-xl font-bold dark:text-gray-100 flex items-center gap-2">
+            <BarChart3 className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            Service Type Analytics
+          </h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            Breakdown of vulnerabilities by service type
+          </p>
+        </div>
+        <Card className="dark:bg-gray-900/50 dark:border-gray-800 border border-gray-200">
+          <CardContent className="p-6">
+            <Empty>
+              <EmptyMedia variant="icon">
+                <BarChart3 className="w-6 h-6 text-gray-400" />
+              </EmptyMedia>
+              <EmptyHeader>
+                <EmptyTitle>No Service Data Available</EmptyTitle>
+                <EmptyDescription>Service type analytics data is not available at this time.</EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const services = [
     {
@@ -100,9 +131,18 @@ const ServiceTypeAnalytics: React.FC<ServiceTypeAnalyticsProps> = ({ data, isLoa
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${colors.iconBg}`}>
-                <Icon className={`w-5 h-5 ${colors.text}`} />
-              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className={`p-2 rounded-lg ${colors.iconBg} cursor-help`}>
+                      <Icon className={`w-5 h-5 ${colors.text}`} />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Service type: {service.name}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               <CardTitle className="text-lg font-bold dark:text-gray-100">{service.name}</CardTitle>
             </div>
           </div>
@@ -138,13 +178,13 @@ const ServiceTypeAnalytics: React.FC<ServiceTypeAnalyticsProps> = ({ data, isLoa
               { label: "Low", value: service.data?.severities.low || 0, color: "#22c55e" },
             ].map((severity) => (
               <div key={severity.label} className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+                <Badge variant="outline" className="flex items-center gap-2">
                   <div
                     className="w-2 h-2 rounded-full"
                     style={{ backgroundColor: severity.color }}
                   />
-                  <span className="text-sm text-gray-700 dark:text-gray-300">{severity.label}</span>
-                </div>
+                  <span className="text-sm">{severity.label}</span>
+                </Badge>
                 <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
                   {severity.value}
                 </span>
@@ -152,8 +192,10 @@ const ServiceTypeAnalytics: React.FC<ServiceTypeAnalyticsProps> = ({ data, isLoa
             ))}
           </div>
 
+          <Separator className="my-3" />
+          
           {/* Average Severity & Critical Count */}
-          <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+          <div className="pt-3">
             <div className="flex items-center justify-between">
               <div>
                 <div className="text-xs text-gray-600 dark:text-gray-400">Average Severity</div>
@@ -162,12 +204,12 @@ const ServiceTypeAnalytics: React.FC<ServiceTypeAnalyticsProps> = ({ data, isLoa
                 </div>
               </div>
               {service.data?.criticalCount !== undefined && service.data.criticalCount > 0 && (
-                <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/30">
-                  <AlertTriangle className="w-3 h-3 text-red-600 dark:text-red-400" />
-                  <span className="text-xs font-bold text-red-600 dark:text-red-400">
+                <Badge variant="destructive" className="flex items-center gap-1">
+                  <AlertTriangle className="w-3 h-3" />
+                  <span className="text-xs font-bold">
                     {service.data.criticalCount} Critical
                   </span>
-                </div>
+                </Badge>
               )}
             </div>
           </div>

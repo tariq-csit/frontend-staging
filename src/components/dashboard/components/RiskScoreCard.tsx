@@ -1,7 +1,10 @@
 import React from "react";
 import { useSpring, animated } from "@react-spring/web";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertTriangle, TrendingUp, Shield } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { AlertTriangle, TrendingUp, Shield, Info } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface RiskScoreCardProps {
@@ -45,13 +48,35 @@ const RiskScoreCard: React.FC<RiskScoreCardProps> = ({ riskScore, isLoading }) =
     <Card className={`dark:bg-gray-900/50 dark:border-gray-800 overflow-hidden border ${riskLevel.borderColor} bg-white dark:bg-gray-900/50`}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-base font-semibold dark:text-gray-100 flex items-center gap-2">
-            <Shield className={`w-4 h-4 ${riskLevel.color}`} />
-            Risk Score
-          </CardTitle>
-          <span className={`px-2 py-0.5 rounded text-xs font-medium ${riskLevel.badgeBg} ${riskLevel.badgeText} border ${riskLevel.borderColor}`}>
-            {riskLevel.level}
-          </span>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <CardTitle className="text-base font-semibold dark:text-gray-100 flex items-center gap-2 cursor-help">
+                  <Shield className={`w-4 h-4 ${riskLevel.color}`} />
+                  Risk Score
+                  <Info className="w-3 h-3 text-gray-400" />
+                </CardTitle>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Risk score calculated from vulnerability severity and status</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge
+                  variant="outline"
+                  className={`${riskLevel.badgeBg} ${riskLevel.badgeText} border ${riskLevel.borderColor}`}
+                >
+                  {riskLevel.level}
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Risk level based on vulnerability severity and count</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </CardHeader>
       <CardContent>
@@ -99,6 +124,8 @@ const RiskScoreCard: React.FC<RiskScoreCardProps> = ({ riskScore, isLoading }) =
             </div>
           </div>
 
+          <Separator />
+          
           {/* Risk Indicators */}
           <div className="w-full space-y-2">
             <div className="flex items-center justify-between text-sm">

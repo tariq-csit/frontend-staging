@@ -1,7 +1,8 @@
 import React from "react";
 import { useSpring, animated } from "@react-spring/web";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Shield, AlertTriangle, Clock, CheckCircle2, TrendingUp, FileText, Calendar } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Shield, AlertTriangle, Clock, CheckCircle2, TrendingUp, FileText, Calendar, Info } from "lucide-react";
 import { ClientMetrics } from "./types";
 
 interface EnhancedClientMetricsProps {
@@ -139,28 +140,45 @@ const EnhancedClientMetrics: React.FC<EnhancedClientMetricsProps> = ({ data, isL
     <>
       {metrics.map((metric, index) => {
         const Icon = metric.icon;
+        const tooltipText = metric.label === "Risk Score" 
+          ? "Risk score calculated from vulnerability severity and status (0-100)"
+          : metric.label === "Completion Rate"
+          ? "Percentage of completed pentests"
+          : metric.label === "Critical Vulnerabilities"
+          ? "Number of critical severity vulnerabilities"
+          : `Total count of ${metric.label.toLowerCase()}`;
+        
         return (
-          <div
-            key={index}
-            className={`group relative overflow-hidden rounded-lg bg-white dark:bg-gray-900/50 border ${metric.border} hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-sm transition-all duration-200`}
-          >
-            <div className="p-4 flex items-center gap-3">
-              <div className={`p-2.5 rounded-lg ${metric.iconBg} group-hover:scale-105 transition-transform duration-200`}>
-                <Icon className={`w-5 h-5 ${metric.iconColor}`} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">
-                  {metric.label}
+          <TooltipProvider key={index}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div
+                  className={`group relative overflow-hidden rounded-lg bg-white dark:bg-gray-900/50 border ${metric.border} hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-sm transition-all duration-200 cursor-help`}
+                >
+                  <div className="p-4 flex items-center gap-3">
+                    <div className={`p-2.5 rounded-lg ${metric.iconBg} group-hover:scale-105 transition-transform duration-200`}>
+                      <Icon className={`w-5 h-5 ${metric.iconColor}`} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium flex items-center gap-1">
+                        {metric.label}
+                        <Info className="w-3 h-3 opacity-50" />
+                      </div>
+                      <div className={`text-2xl font-semibold ${metric.text}`}>
+                        <animated.span>
+                          {metric.animated.number.to((n) => Math.round(n) || 0)}
+                        </animated.span>
+                        {metric.suffix && <span className="text-lg ml-0.5">{metric.suffix}</span>}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <div className={`text-2xl font-semibold ${metric.text}`}>
-                  <animated.span>
-                    {metric.animated.number.to((n) => Math.round(n) || 0)}
-                  </animated.span>
-                  {metric.suffix && <span className="text-lg ml-0.5">{metric.suffix}</span>}
-                </div>
-              </div>
-            </div>
-          </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{tooltipText}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         );
       })}
     </>

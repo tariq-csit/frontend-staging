@@ -173,5 +173,43 @@ export interface ClientMetrics {
     message: string;
     action: string;
     count: number;
+    vulnerabilities?: Array<{
+      _id: string;
+      title: string;
+      severity: string;
+      status: string;
+      cvss: number;
+      createdAt: string;
+      pentest: {
+        _id: string;
+        title: string;
+        service: string;
+        status: string;
+      };
+      reporter?: {
+        _id: string;
+        name: string;
+        profilePicture?: string;
+      } | null;
+      lastComment?: {
+        _id: string;
+        comment: string;
+        createdAt: string;
+        author: {
+          _id: string;
+          name: string;
+          role: string;
+          profilePicture?: string;
+        };
+        daysSinceComment: number;
+      };
+    }>;
+    pentests?: Array<{
+      _id: string;
+      title: string;
+      endDate: string;
+      daysUntilDeadline: number;
+      status: string;
+    }>;
   }>;
 }

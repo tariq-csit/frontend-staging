@@ -1,10 +1,15 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyMedia } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertTriangle, Clock, ArrowRight, CheckCircle2, Info } from "lucide-react";
+import { AlertTriangle, Clock, ArrowRight, CheckCircle2, Info, MessageSquare } from "lucide-react";
 import { ClientMetrics } from "./types";
 import { useNavigate } from "react-router-dom";
+import InsightsVulnerabilitiesDialog from "./InsightsVulnerabilitiesDialog";
 
 interface InsightsPanelProps {
   data?: ClientMetrics;
@@ -13,6 +18,12 @@ interface InsightsPanelProps {
 
 const InsightsPanel: React.FC<InsightsPanelProps> = ({ data, isLoading }) => {
   const navigate = useNavigate();
+  const [selectedInsight, setSelectedInsight] = useState<{
+    type: string;
+    title: string;
+    vulnerabilities: any[];
+  } | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -33,12 +44,15 @@ const InsightsPanel: React.FC<InsightsPanelProps> = ({ data, isLoading }) => {
     return (
       <Card className="dark:bg-gray-900/50 dark:border-gray-800 border border-gray-200">
         <CardContent className="p-6">
-          <div className="flex items-center justify-center py-8">
-            <div className="text-center">
-              <CheckCircle2 className="w-12 h-12 text-green-500 dark:text-green-400 mx-auto mb-3" />
-              <p className="text-gray-600 dark:text-gray-400">No insights at this time</p>
-            </div>
-          </div>
+          <Empty>
+            <EmptyMedia variant="icon">
+              <CheckCircle2 className="w-6 h-6 text-green-500 dark:text-green-400" />
+            </EmptyMedia>
+            <EmptyHeader>
+              <EmptyTitle>No Insights Available</EmptyTitle>
+              <EmptyDescription>No insights or recommendations at this time.</EmptyDescription>
+            </EmptyHeader>
+          </Empty>
         </CardContent>
       </Card>
     );
@@ -82,17 +96,40 @@ const InsightsPanel: React.FC<InsightsPanelProps> = ({ data, isLoading }) => {
         return AlertTriangle;
       case "deadline":
         return Clock;
+      case "unresponded_comments":
+        return MessageSquare;
       default:
         return Info;
     }
   };
 
-  const handleAction = (action: string, type: string) => {
-    // Navigate based on action type
+  const handleAction = (insight: any) => {
+    const { action, type, vulnerabilities, pentests } = insight;
+
+    // If there are vulnerabilities, show them in a dialog
+    if (vulnerabilities && vulnerabilities.length > 0) {
+      setSelectedInsight({
+        type,
+        title: insight.message,
+        vulnerabilities,
+      });
+      setDialogOpen(true);
+      return;
+    }
+
+    // If there are pentests (for deadline insights), navigate to pentests page
+    if (pentests && pentests.length > 0) {
+      navigate("/pentests");
+      return;
+    }
+
+    // Default navigation based on action type
     if (action.toLowerCase().includes("review") || action.toLowerCase().includes("critical")) {
       navigate("/vulnerability-reports");
     } else if (action.toLowerCase().includes("deadline")) {
       navigate("/pentests");
+    } else if (action.toLowerCase().includes("comment")) {
+      navigate("/vulnerability-reports");
     }
   };
 
@@ -104,9 +141,9 @@ const InsightsPanel: React.FC<InsightsPanelProps> = ({ data, isLoading }) => {
             <AlertTriangle className="w-5 h-5 text-orange-500" />
             Insights & Recommendations
           </h2>
-          <span className="px-3 py-1 rounded-full bg-gray-100 dark:bg-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-300">
+          <Badge variant="secondary" className="text-sm font-semibold">
             {data.insights.length}
-          </span>
+          </Badge>
         </div>
         <div className="space-y-3">
           {data.insights.map((insight, index) => {
@@ -127,22 +164,38 @@ const InsightsPanel: React.FC<InsightsPanelProps> = ({ data, isLoading }) => {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2">
                       <PriorityIcon className={`w-4 h-4 ${styles.iconColor}`} />
-                      <span className={`text-xs font-bold uppercase ${styles.text}`}>
+                      <Badge
+                        variant="outline"
+                        className={`text-xs font-bold uppercase ${styles.badge} border ${styles.border}`}
+                      >
                         {insight.priority} Priority
-                      </span>
+                      </Badge>
                       {insight.count > 0 && (
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${styles.badge}`}>
+                        <Badge
+                          variant="outline"
+                          className={`text-xs font-semibold ${styles.badge} border ${styles.border}`}
+                        >
                           {insight.count}
-                        </span>
+                        </Badge>
                       )}
                     </div>
-                    <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
-                      {insight.message}
-                    </p>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <p className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2 cursor-help">
+                            {insight.message}
+                          </p>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{insight.message}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <Separator className="my-2" />
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleAction(insight.action, insight.type)}
+                      onClick={() => handleAction(insight)}
                       className={`${styles.border} ${styles.text} hover:${styles.bg} dark:hover:${styles.bg}`}
                     >
                       {insight.action}
@@ -155,6 +208,16 @@ const InsightsPanel: React.FC<InsightsPanelProps> = ({ data, isLoading }) => {
           })}
         </div>
       </CardContent>
+
+      {selectedInsight && (
+        <InsightsVulnerabilitiesDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          title={selectedInsight.title}
+          vulnerabilities={selectedInsight.vulnerabilities}
+          insightType={selectedInsight.type}
+        />
+      )}
     </Card>
   );
 };

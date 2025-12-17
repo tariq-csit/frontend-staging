@@ -1,5 +1,6 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, Legend, Cell } from "recharts";
 import { useSpring, animated } from "@react-spring/web";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -88,14 +89,61 @@ const ResolutionMetrics: React.FC<ResolutionMetricsProps> = ({ data, isLoading, 
     },
   ];
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const resolutionTimeChartConfig = {
+    days: { label: "Days", color: "#3b82f6" },
+    Critical: { label: "Critical", color: "#ef4444" },
+    High: { label: "High", color: "#f97316" },
+    Medium: { label: "Medium", color: "#eab308" },
+    Low: { label: "Low", color: "#22c55e" },
+  };
+
+  const timeInStatusChartConfig = {
+    days: { label: "Days", color: "#3b82f6" },
+    New: { label: "New", color: "#6b7280" },
+    Triaged: { label: "Triaged", color: "#3b82f6" },
+    "Ready For Retest": { label: "Ready For Retest", color: "#f59e0b" },
+    Resolved: { label: "Resolved", color: "#22c55e" },
+    "Not Applicable": { label: "Not Applicable", color: "#ef4444" },
+  };
+
+  const ResolutionTimeTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      const name = data.name;
       return (
-        <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
-          <p className="font-semibold text-gray-900 dark:text-gray-100">{payload[0].name}</p>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            Average: <span className="font-medium">{payload[0].value.toFixed(1)} days</span>
-          </p>
+        <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 shadow-lg backdrop-blur-sm animate-in fade-in-0 zoom-in-95 duration-200">
+          <div className="flex items-center gap-2.5">
+            <div
+              className="h-3 w-3 rounded-full ring-2 ring-white dark:ring-gray-800"
+              style={{ backgroundColor: data.color }}
+            />
+            <div className="flex flex-col">
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{name}</span>
+              <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{data.days.toFixed(1)} days</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  const TimeInStatusTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      const name = data.name;
+      return (
+        <div className="rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-3 shadow-lg backdrop-blur-sm animate-in fade-in-0 zoom-in-95 duration-200">
+          <div className="flex items-center gap-2.5">
+            <div
+              className="h-3 w-3 rounded-full ring-2 ring-white dark:ring-gray-800"
+              style={{ backgroundColor: data.color }}
+            />
+            <div className="flex flex-col">
+              <span className="text-xs font-medium text-gray-500 dark:text-gray-400">{name}</span>
+              <span className="text-sm font-bold text-gray-900 dark:text-gray-100">{data.days.toFixed(1)} days</span>
+            </div>
+          </div>
         </div>
       );
     }
@@ -163,10 +211,22 @@ const ResolutionMetrics: React.FC<ResolutionMetricsProps> = ({ data, isLoading, 
                   tick={{ fill: "#6b7280", fontSize: 12 }}
                   label={{ value: "Days", angle: -90, position: "insideLeft", fill: "#6b7280" }}
                 />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="days" radius={[8, 8, 0, 0]}>
+                <Tooltip 
+                  content={<ResolutionTimeTooltip />}
+                  cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
+                  animationDuration={200}
+                />
+                <Bar 
+                  dataKey="days" 
+                  radius={[8, 8, 0, 0]}
+                  style={{ transition: 'all 0.2s ease-in-out' }}
+                >
                   {resolutionTimeData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.color}
+                      style={{ transition: 'opacity 0.2s ease-in-out' }}
+                    />
                   ))}
                 </Bar>
               </BarChart>
@@ -197,8 +257,15 @@ const ResolutionMetrics: React.FC<ResolutionMetricsProps> = ({ data, isLoading, 
       </Card>
   );
 
-  const renderTimeInStatus = () => (
-    <Card className="dark:bg-gray-900/50 dark:border-gray-800 border border-gray-200 h-full flex flex-col">
+  const renderTimeInStatus = () => {
+    // Create shorter labels for the chart to avoid rotation
+    const chartData = timeInStatusData.map((item) => ({
+      ...item,
+      shortName: item.name === "Ready For Retest" ? "Ready" : item.name === "Not Applicable" ? "N/A" : item.name,
+    }));
+
+    return (
+      <Card className="dark:bg-gray-900/50 dark:border-gray-800 border border-gray-200 h-full flex flex-col">
         <CardHeader className="pb-3 flex-shrink-0">
           <CardTitle className="text-base font-bold dark:text-gray-100 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-purple-500" />
@@ -208,32 +275,41 @@ const ResolutionMetrics: React.FC<ResolutionMetricsProps> = ({ data, isLoading, 
         <CardContent className="pt-0 flex-1 flex flex-col min-h-0">
           <div className="flex-1 min-h-0 mb-3">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={timeInStatusData}>
+              <BarChart data={chartData}>
                 <XAxis
-                  dataKey="name"
+                  dataKey="shortName"
                   tick={{ fill: "#6b7280", fontSize: 12 }}
-                  angle={-45}
-                  textAnchor="end"
-                  height={80}
                 />
                 <YAxis
                   tick={{ fill: "#6b7280", fontSize: 12 }}
                   label={{ value: "Days", angle: -90, position: "insideLeft", fill: "#6b7280" }}
                 />
-                <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="days" radius={[8, 8, 0, 0]}>
-                  {timeInStatusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
+                <Tooltip 
+                  content={<TimeInStatusTooltip />}
+                  cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
+                  animationDuration={200}
+                />
+                <Bar 
+                  dataKey="days" 
+                  radius={[8, 8, 0, 0]}
+                  style={{ transition: 'all 0.2s ease-in-out' }}
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={entry.color}
+                      style={{ transition: 'opacity 0.2s ease-in-out' }}
+                    />
                   ))}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div className="space-y-1.5 flex-shrink-0">
+          <div className="grid grid-cols-2 gap-2 flex-shrink-0">
             {timeInStatusData.map((item) => (
               <div
                 key={item.name}
-                className="flex items-center justify-between p-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                className="flex items-center justify-between p-2 rounded-lg bg-gray-50 dark:bg-gray-700/50"
               >
                 <div className="flex items-center gap-2">
                   <div
@@ -252,7 +328,8 @@ const ResolutionMetrics: React.FC<ResolutionMetricsProps> = ({ data, isLoading, 
           </div>
         </CardContent>
       </Card>
-  );
+    );
+  };
 
   if (showOnly === "rate") {
     return renderResolutionRate();
