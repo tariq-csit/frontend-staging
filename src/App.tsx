@@ -36,6 +36,7 @@ import JiraCallback from '@/components/integration/JiraCallback';
 import JiraSetup from '@/components/integration/JiraSetup';
 import SlackCallback from '@/components/integration/SlackCallback';
 import SlackSetup from '@/components/integration/SlackSetup';
+import DebugLogsPage from '@/pages/DebugLogsPage';
 
 // Component that only allows admin users to access a route
 const AdminProtectedRoute = ({ children }: { children: ReactNode }) => {
@@ -226,6 +227,8 @@ function App() {
 
               <Route path='/integrations/slack/success' element={<SlackCallback />} />
               <Route path='/clients/integrations/slack/callback' element={<SlackCallback />} />
+              
+              <Route path='/debug-logs' element={<DebugLogsPage />} />
             </Route>
           </Routes>
           <Toaster />

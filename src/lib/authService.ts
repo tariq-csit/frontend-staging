@@ -1,5 +1,6 @@
 import axiosInstance from './AxiosInstance';
 import { apiRoutes } from './routes';
+import { debugLogger } from './debugLogger';
 
 // Types
 export interface CheckLoginMethodsResponse {
@@ -240,12 +241,28 @@ export function arrayBufferToBase64Url(buffer: ArrayBuffer): string {
  * Convert base64url string to array buffer (for WebAuthn)
  */
 export function base64UrlToArrayBuffer(base64url: string): ArrayBuffer {
-  const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+  // Convert base64url to base64
+  let base64 = base64url.replace(/-/g, '+').replace(/_/g, '/');
+  
+  // Add padding if needed
+  const pad = base64.length % 4;
+  if (pad) {
+    if (pad === 1) {
+      throw new Error('InvalidLengthError: Input base64url string is the wrong length to determine padding');
+    }
+    base64 += new Array(5 - pad).join('=');
+  }
+  
+  // Decode base64 to binary string
   const binary = atob(base64);
+  
+  // Convert binary string to Uint8Array
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) {
     bytes[i] = binary.charCodeAt(i);
   }
+  
+  // Return the ArrayBuffer (not a view, but the actual buffer)
   return bytes.buffer;
 }
 
@@ -257,6 +274,7 @@ export function base64UrlToArrayBuffer(base64url: string): ArrayBuffer {
 export function transformOptionsForWebAuthn(
   options: any
 ): PublicKeyCredentialRequestOptions | PublicKeyCredentialCreationOptions {
+  debugLogger.info('Starting transformation of WebAuthn options', { originalOptions: options });
   // Build a completely new object structure to avoid any mutation issues
   const transformed: any = {};
   
@@ -314,19 +332,29 @@ export function transformOptionsForWebAuthn(
 
   // Deep clone and convert excludeCredentials ids from base64url to ArrayBuffer
   if (options.excludeCredentials && Array.isArray(options.excludeCredentials)) {
-    transformed.excludeCredentials = options.excludeCredentials.map((cred: any) => {
+    debugLogger.debug('Processing excludeCredentials', { count: options.excludeCredentials.length, credentials: options.excludeCredentials });
+    
+    transformed.excludeCredentials = options.excludeCredentials.map((cred: any, index: number) => {
+      debugLogger.debug(`Converting credential ${index}`, { credential: cred });
+      
       const newCred: any = {
         type: cred.type,
         id: typeof cred.id === 'string' ? base64UrlToArrayBuffer(cred.id) : cred.id,
       };
+      
+      debugLogger.debug(`Converted credential ${index}`, { convertedId: newCred.id });
+      
       // Preserve transports if present
       if (cred.transports && Array.isArray(cred.transports)) {
         newCred.transports = [...cred.transports];
       }
       return newCred;
     });
+    
+    debugLogger.debug('Final excludeCredentials', { excludeCredentials: transformed.excludeCredentials });
   }
 
+  debugLogger.info('Transformation complete', { transformedOptions: transformed });
   return transformed as PublicKeyCredentialRequestOptions | PublicKeyCredentialCreationOptions;
 }
 

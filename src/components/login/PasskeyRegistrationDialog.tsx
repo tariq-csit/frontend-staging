@@ -81,13 +81,8 @@ export function PasskeyRegistrationDialog({
 
       // Step 3: Create credential using browser WebAuthn API (do this immediately after transformation)
       // Don't delay between transformation and create() call as options might become stale
-      // Ensure we create a fresh object reference to avoid any mutation issues
-      const webauthnOptions: PublicKeyCredentialCreationOptions = {
-        ...transformedOptions,
-      } as PublicKeyCredentialCreationOptions;
-
       const attestation = (await navigator.credentials.create({
-        publicKey: webauthnOptions,
+        publicKey: transformedOptions as PublicKeyCredentialCreationOptions,
       })) as PublicKeyCredential;
 
       if (!attestation) {
