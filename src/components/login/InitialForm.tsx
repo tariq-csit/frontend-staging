@@ -176,8 +176,17 @@ function InitialForm(props:{
       redirectTo();
     },
     onError: (error: any) => {
+      // Reset loading state
+      setIsPasskeyLogin(false);
+      
       // Handle user cancellation
       if (error.name === 'NotAllowedError' || error.name === 'AbortError') {
+        // Reset Turnstile to get a new token for password login
+        if (turnstile) {
+          turnstile.reset();
+          setTurnstileToken(null);
+        }
+        
         toast({
           title: "Authentication Cancelled",
           description: "You can use password login instead.",
@@ -185,6 +194,12 @@ function InitialForm(props:{
         });
         setShowPasswordField(true);
       } else {
+        // Reset Turnstile for other errors too
+        if (turnstile) {
+          turnstile.reset();
+          setTurnstileToken(null);
+        }
+        
         toast({
           title: "Passkey Login Failed",
           description: error.message || "Failed to authenticate with passkey. You can use password login instead.",
