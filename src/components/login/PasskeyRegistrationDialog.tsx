@@ -76,10 +76,11 @@ export function PasskeyRegistrationDialog({
       // Step 1: Start registration
       const { options, challengeKey } = await startPasskeyRegistration(values.deviceName);
 
-      // Step 2: Transform options for WebAuthn API
+      // Step 2: Transform options for WebAuthn API (must be done immediately, before any delay)
       const transformedOptions = transformOptionsForWebAuthn(options);
 
-      // Step 3: Create credential using browser WebAuthn API
+      // Step 3: Create credential using browser WebAuthn API (do this immediately after transformation)
+      // Don't delay between transformation and create() call as options might become stale
       const attestation = (await navigator.credentials.create({
         publicKey: transformedOptions as PublicKeyCredentialCreationOptions,
       })) as PublicKeyCredential;

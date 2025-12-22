@@ -252,11 +252,32 @@ export function base64UrlToArrayBuffer(base64url: string): ArrayBuffer {
 /**
  * Transform server-provided options for WebAuthn API
  * Converts base64url strings to ArrayBuffers as required by WebAuthn
+ * Creates a deep clone to avoid mutating the original options
  */
 export function transformOptionsForWebAuthn(
   options: any
 ): PublicKeyCredentialRequestOptions | PublicKeyCredentialCreationOptions {
-  const transformed = { ...options };
+  // Create a proper deep clone - start with shallow copy and deep clone nested objects
+  const transformed: any = {
+    ...options,
+  };
+  
+  // Deep clone nested objects that might be mutated
+  if (options.rp) {
+    transformed.rp = { ...options.rp };
+  }
+  if (options.user) {
+    transformed.user = { ...options.user };
+  }
+  if (options.pubKeyCredParams) {
+    transformed.pubKeyCredParams = [...options.pubKeyCredParams];
+  }
+  if (options.authenticatorSelection) {
+    transformed.authenticatorSelection = { ...options.authenticatorSelection };
+  }
+  if (options.extensions) {
+    transformed.extensions = { ...options.extensions };
+  }
   
   // Convert base64url strings to ArrayBuffers for challenge
   if (transformed.challenge && typeof transformed.challenge === 'string') {
@@ -271,17 +292,17 @@ export function transformOptionsForWebAuthn(
     };
   }
 
-  // Convert allowCredentials ids from base64url to ArrayBuffer
-  if (transformed.allowCredentials && Array.isArray(transformed.allowCredentials)) {
-    transformed.allowCredentials = transformed.allowCredentials.map((cred: any) => ({
+  // Deep clone and convert allowCredentials ids from base64url to ArrayBuffer
+  if (options.allowCredentials && Array.isArray(options.allowCredentials)) {
+    transformed.allowCredentials = options.allowCredentials.map((cred: any) => ({
       ...cred,
       id: typeof cred.id === 'string' ? base64UrlToArrayBuffer(cred.id) : cred.id,
     }));
   }
 
-  // Convert excludeCredentials ids from base64url to ArrayBuffer
-  if (transformed.excludeCredentials && Array.isArray(transformed.excludeCredentials)) {
-    transformed.excludeCredentials = transformed.excludeCredentials.map((cred: any) => ({
+  // Deep clone and convert excludeCredentials ids from base64url to ArrayBuffer
+  if (options.excludeCredentials && Array.isArray(options.excludeCredentials)) {
+    transformed.excludeCredentials = options.excludeCredentials.map((cred: any) => ({
       ...cred,
       id: typeof cred.id === 'string' ? base64UrlToArrayBuffer(cred.id) : cred.id,
     }));
