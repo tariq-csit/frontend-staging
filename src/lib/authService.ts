@@ -256,6 +256,14 @@ export function transformOptionsForWebAuthn(
     transformed.challenge = base64UrlToArrayBuffer(transformed.challenge);
   }
 
+  // Convert user.id from base64/base64url string to ArrayBuffer (for registration)
+  if (transformed.user && transformed.user.id && typeof transformed.user.id === 'string') {
+    transformed.user = {
+      ...transformed.user,
+      id: base64UrlToArrayBuffer(transformed.user.id),
+    };
+  }
+
   // Convert allowCredentials ids from base64url to ArrayBuffer
   if (transformed.allowCredentials && Array.isArray(transformed.allowCredentials)) {
     transformed.allowCredentials = transformed.allowCredentials.map((cred: any) => ({
