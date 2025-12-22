@@ -1,5 +1,5 @@
 import { apiRoutes } from "@/lib/routes";
-import { Eye, EyeOff, Loader2, User } from "lucide-react";
+import { Eye, EyeOff, Loader2, User, Shield } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Form,
@@ -13,13 +13,22 @@ import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axiosInstance from "@/lib/AxiosInstance";
 import { isAxiosError } from "axios";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "@/hooks/use-toast";
 import Turnstile, { useTurnstile } from "react-turnstile";
+import {
+  checkLoginMethods,
+  startPasskeyLogin,
+  completePasskeyLogin,
+  transformOptionsForWebAuthn,
+  isWebAuthnSupported,
+} from "@/lib/authService";
+import { startTokenRefresh } from "@/lib/AxiosInstance";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 const formSchema = z.object({
   email: z
@@ -36,9 +45,11 @@ const formSchema = z.object({
     }, {
       message: "Please enter a valid email"
     }),
-  password: z.string().min(8, {
-    message: "Password should be atleast 8 characters long",
-  }),
+  password: z.string().optional(),
+}).refine((data) => {
+  // Password is only required if password field is shown
+  // This will be validated in the component logic
+  return true;
 });
 
 function InitialForm(props:{
@@ -47,6 +58,12 @@ function InitialForm(props:{
   setEmail : (email: string)=>void
 }) {
   const [showPassword, setShowPassword] = useState(false);
+  const [hasPasskeys, setHasPasskeys] = useState<boolean | null>(null);
+  const [showPasswordField, setShowPasswordField] = useState(false);
+  const [isCheckingLoginMethods, setIsCheckingLoginMethods] = useState(false);
+  const [isPasskeyLogin, setIsPasskeyLogin] = useState(false);
+  const { redirectTo } = useAuthRedirect();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -57,14 +74,141 @@ function InitialForm(props:{
 
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const turnstile = useTurnstile();
+  const emailValue = form.watch("email");
 
+  // Function to check login methods (only called explicitly via Enter or Continue button)
+  const checkLoginMethodsAsync = async () => {
+    // Trigger form validation first
+    const isEmailValid = await form.trigger("email");
+    
+    if (!isEmailValid) {
+      return;
+    }
+
+    const email = form.getValues("email");
+    
+    if (!email || !turnstileToken) {
+      if (!turnstileToken) {
+        toast({
+          title: "Please wait",
+          description: "Security verification is loading. Please wait a moment.",
+          variant: "default",
+        });
+      }
+      return;
+    }
+
+    setIsCheckingLoginMethods(true);
+    try {
+      const response = await checkLoginMethods(email, turnstileToken);
+      setHasPasskeys(response.hasPasskeys);
+      setShowPasswordField(!response.hasPasskeys);
+      
+      // Reset Turnstile to get a new token for the actual login
+      // The previous token was consumed by check-login-methods
+      if (turnstile) {
+        turnstile.reset();
+        setTurnstileToken(null);
+      }
+    } catch (error) {
+      // On error, default to password login
+      setHasPasskeys(false);
+      setShowPasswordField(true);
+      
+      // Reset Turnstile even on error
+      if (turnstile) {
+        turnstile.reset();
+        setTurnstileToken(null);
+      }
+    } finally {
+      setIsCheckingLoginMethods(false);
+    }
+  };
+
+  // Reset login method state when email changes (but don't auto-check)
+  useEffect(() => {
+    // Reset the state when email changes so UI resets
+    setHasPasskeys(null);
+    setShowPasswordField(false);
+    setIsCheckingLoginMethods(false);
+  }, [emailValue]);
+
+  // Passkey login mutation
+  const passkeyLoginMutation = useMutation({
+    mutationFn: async (email: string) => {
+      if (!isWebAuthnSupported()) {
+        throw new Error("Passkeys are not supported in your browser");
+      }
+
+      // Step 1: Start passkey login
+      const { options, challengeKey } = await startPasskeyLogin(email, turnstileToken);
+
+      // Step 2: Transform options for WebAuthn API
+      const transformedOptions = transformOptionsForWebAuthn(options);
+
+      // Step 3: Get assertion from browser
+      const assertion = (await navigator.credentials.get({
+        publicKey: transformedOptions as PublicKeyCredentialRequestOptions,
+      })) as PublicKeyCredential;
+
+      if (!assertion) {
+        throw new Error("Failed to authenticate with passkey");
+      }
+
+      // Step 4: Complete passkey login
+      const result = await completePasskeyLogin({
+        email,
+        challengeKey,
+        assertion,
+      });
+
+      return result;
+    },
+    onSuccess: (data) => {
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("refreshToken", data.refreshToken);
+      localStorage.setItem("user", JSON.stringify({ role: data.role }));
+      startTokenRefresh();
+      toast({
+        title: "Success",
+        description: "Successfully logged in with passkey!",
+      });
+      redirectTo();
+    },
+    onError: (error: any) => {
+      // Handle user cancellation
+      if (error.name === 'NotAllowedError' || error.name === 'AbortError') {
+        toast({
+          title: "Authentication Cancelled",
+          description: "You can use password login instead.",
+          variant: "destructive",
+        });
+        setShowPasswordField(true);
+      } else {
+        toast({
+          title: "Passkey Login Failed",
+          description: error.message || "Failed to authenticate with passkey. You can use password login instead.",
+          variant: "destructive",
+        });
+        setShowPasswordField(true);
+      }
+    },
+  });
+
+  // Password login mutation
   const loginMutation = useMutation({
     mutationFn: async (values: z.infer<typeof formSchema>) => {
-      const response = await axiosInstance.post(apiRoutes.login, {
+      if (!values.password) {
+        throw new Error("Password is required");
+      }
+      const requestBody: Record<string, string> = {
         email: values.email,
         password: values.password,
-        "cf-turnstile-response": turnstileToken,
-      });
+      };
+      if (turnstileToken) {
+        requestBody["cf-turnstile-response"] = turnstileToken;
+      }
+      const response = await axiosInstance.post(apiRoutes.login, requestBody);
       return response.data;
     },
     onSuccess: (data: any, variables) => {
@@ -100,8 +244,44 @@ function InitialForm(props:{
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    loginMutation.mutate(values);
+    if (hasPasskeys && !showPasswordField && !values.password) {
+      // Trigger passkey login
+      setIsPasskeyLogin(true);
+      passkeyLoginMutation.mutate(values.email);
+    } else {
+      // Password login - validate password is present
+      if (!values.password || values.password.length < 8) {
+        form.setError("password", {
+          type: "manual",
+          message: "Password should be at least 8 characters long",
+        });
+        return;
+      }
+      loginMutation.mutate(values as z.infer<typeof formSchema> & { password: string });
+    }
   }
+
+  const handlePasskeyLogin = () => {
+    const email = form.getValues("email");
+    if (!email || !form.formState.isValid) {
+      form.trigger("email");
+      return;
+    }
+    setIsPasskeyLogin(true);
+    passkeyLoginMutation.mutate(email);
+  };
+
+  const handleUsePasswordInstead = () => {
+    setShowPasswordField(true);
+    form.setFocus("password");
+  };
+
+  const handleUsePasskeyInstead = () => {
+    setShowPasswordField(false);
+    form.setValue("password", "");
+  };
+
+  const isLoading = loginMutation.isPending || passkeyLoginMutation.isPending || isPasskeyLogin;
 
   return (
     <div className="min-h-screen bg-white dark:bg-black flex">
@@ -167,58 +347,129 @@ function InitialForm(props:{
                           placeholder="Enter your email..."
                           className="bg-gray-50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary dark:focus:border-gray-600"
                           {...field}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && turnstileToken && !form.formState.errors.email) {
+                              e.preventDefault();
+                              checkLoginMethodsAsync();
+                            }
+                          }}
                         />
                       </FormControl>
                       <FormMessage className="text-red-500 dark:text-red-400" />
+                      {isCheckingLoginMethods && (
+                        <p className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          Checking login methods...
+                        </p>
+                      )}
+                      {/* Show continue button if email is valid but login method not determined yet */}
+                      {!form.formState.errors.email && 
+                       emailValue && 
+                       emailValue.trim().length > 0 &&
+                       turnstileToken && 
+                       hasPasskeys === null && 
+                       !isCheckingLoginMethods && (
+                        <Button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            checkLoginMethodsAsync();
+                          }}
+                          className="w-full mt-3 bg-primary hover:bg-primary/90 text-white font-medium py-2"
+                        >
+                          Continue
+                        </Button>
+                      )}
                     </FormItem>
                   )}
                 />
 
-                {/* Password Field */}
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm text-gray-700 dark:text-gray-300 font-medium">
-                        Password
-                      </FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input
-                            type={showPassword ? "text" : "password"}
-                            placeholder="••••••••••"
-                            className="bg-gray-50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary dark:focus:border-gray-600 pr-10"
-                            {...field}
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent text-gray-500 dark:text-gray-400"
-                            onClick={() => setShowPassword(!showPassword)}
-                            aria-label={showPassword ? "Hide password" : "Show password"}
-                          >
-                            {showPassword ? (
-                              <EyeOff className="h-4 w-4" />
-                            ) : (
-                              <Eye className="h-4 w-4" />
+                {/* Conditional Password Field or Passkey Button */}
+                {showPasswordField || hasPasskeys === false ? (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm text-gray-700 dark:text-gray-300 font-medium">
+                            Password
+                          </FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Input
+                                type={showPassword ? "text" : "password"}
+                                placeholder="••••••••••"
+                                className="bg-gray-50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary dark:focus:border-gray-600 pr-10"
+                                {...field}
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent text-gray-500 dark:text-gray-400"
+                                onClick={() => setShowPassword(!showPassword)}
+                                aria-label={showPassword ? "Hide password" : "Show password"}
+                              >
+                                {showPassword ? (
+                                  <EyeOff className="h-4 w-4" />
+                                ) : (
+                                  <Eye className="h-4 w-4" />
+                                )}
+                              </Button>
+                            </div>
+                          </FormControl>
+                          <FormMessage className="text-red-500 dark:text-red-400" />
+                          <div className="flex justify-between items-center">
+                            <Link
+                              to="/forgot-password"
+                              className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white underline"
+                            >
+                              Forgot Password?
+                            </Link>
+                            {hasPasskeys === true && (
+                              <button
+                                type="button"
+                                onClick={handleUsePasskeyInstead}
+                                className="text-sm text-primary hover:text-primary/80 underline"
+                              >
+                                Use passkey instead
+                              </button>
                             )}
-                          </Button>
-                        </div>
-                      </FormControl>
-                      <FormMessage className="text-red-500 dark:text-red-400" />
-                      <div className="text-right">
-                        <Link
-                          to="/forgot-password"
-                          className="text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white underline"
-                        >
-                          Forgot Password?
-                        </Link>
-                      </div>
-                    </FormItem>
-                  )}
-                />
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                ) : hasPasskeys === true && !showPasswordField ? (
+                  <div className="space-y-3">
+                    <Button
+                      type="button"
+                      onClick={handlePasskeyLogin}
+                      disabled={isLoading || !turnstileToken || isCheckingLoginMethods}
+                      className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-4 flex items-center justify-center gap-2"
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Authenticating...
+                        </>
+                      ) : (
+                        <>
+                          <Shield className="h-4 w-4" />
+                          Login with Passkey
+                        </>
+                      )}
+                    </Button>
+                    <button
+                      type="button"
+                      onClick={handleUsePasswordInstead}
+                      className="w-full text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white underline"
+                    >
+                      Use password instead
+                    </button>
+                  </div>
+                ) : null}
 
                 {/* Turnstile Widget */}
                 <Turnstile
@@ -227,21 +478,23 @@ function InitialForm(props:{
                   className="w-full"
                 />
 
-                {/* Sign In Button */}
-                <Button 
-                  className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-4" 
-                  type="submit"
-                  disabled={loginMutation.isPending || !turnstileToken}
-                >
-                  {loginMutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Signing in...
-                    </>
-                  ) : (
-                    "Sign in"
-                  )}
-                </Button>
+                {/* Sign In Button (only shown for password login) */}
+                {(showPasswordField || hasPasskeys === false) && (
+                  <Button 
+                    className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-4" 
+                    type="submit"
+                    disabled={isLoading || !turnstileToken}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Signing in...
+                      </>
+                    ) : (
+                      "Sign in"
+                    )}
+                  </Button>
+                )}
 
                 {/* Sign Up Link */}
                 <div className="text-center text-sm text-gray-600 dark:text-gray-400">

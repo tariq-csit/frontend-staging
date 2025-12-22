@@ -19,6 +19,7 @@ import { FileUpload } from "@/components/FileUpload"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useSetPageTitle } from "@/hooks/useSetPageTitle"
 import { useUser } from "@/hooks/useUser"
+import { PasskeyManagementSection } from "./PasskeyManagementSection"
 
 // Form schemas
 const nameFormSchema = z.object({
@@ -447,8 +448,11 @@ export default function SettingsPage() {
         </Card>
       </div>
 
+      {/* Passkey Management Section */}
+      <PasskeyManagementSection />
+
       {/* Notification Preferences Section */}
-      <div>
+      <div className="mt-8">
         <h2 className="text-xl font-bold mb-4 dark:text-gray-100">Notification Preferences</h2>
         <Card className="shadow-sm dark:bg-gray-900 dark:border-gray-700">
           <CardContent className="pb-0">

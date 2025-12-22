@@ -6,6 +6,8 @@ import { apiRoutes } from "@/lib/routes";
 import bars from "/bars-solid.svg";
 import { useQuery } from "@tanstack/react-query";
 import { useSidebar } from "@/contexts/SidebarContext";
+import { PasskeySetupPrompt } from "@/components/login/PasskeySetupPrompt";
+import { PasskeyRegistrationDialog } from "@/components/login/PasskeyRegistrationDialog";
 
 function Layout() {
   const { isCollapsed, setCollapsed } = useSidebar();
@@ -14,6 +16,8 @@ function Layout() {
   const [userRole, setUserRole] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
+  const [showPasskeySetup, setShowPasskeySetup] = useState(false);
+  const [showRegisterDialog, setShowRegisterDialog] = useState(false);
 
   const sidebarRef = useRef<HTMLDivElement>(null);
 
@@ -28,6 +32,19 @@ function Layout() {
       return response.data;
     },
   });
+
+  // Show passkey setup prompt after login (once per session)
+  useEffect(() => {
+    const hasShownThisSession = sessionStorage.getItem("passkeySetupPromptShown");
+    if (!hasShownThisSession && location.pathname !== "/login" && location.pathname !== "/signup") {
+      // Small delay to let the page render first
+      const timer = setTimeout(() => {
+        setShowPasskeySetup(true);
+        sessionStorage.setItem("passkeySetupPromptShown", "true");
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [location.pathname]);
 
   // Redirect to login if no token
   useEffect(() => {
@@ -111,6 +128,22 @@ function Layout() {
           <Outlet />
         </div>
       </main>
+
+      {/* Passkey Setup Prompt */}
+      <PasskeySetupPrompt
+        open={showPasskeySetup}
+        onOpenChange={setShowPasskeySetup}
+        onSetupClick={() => {
+          setShowPasskeySetup(false);
+          setShowRegisterDialog(true);
+        }}
+      />
+
+      {/* Passkey Registration Dialog */}
+      <PasskeyRegistrationDialog
+        open={showRegisterDialog}
+        onOpenChange={setShowRegisterDialog}
+      />
     </div>
   );
 }

@@ -8,6 +8,19 @@ export const apiRoutes = {
   setup2FaVerify: `/auth/setup-2fa-verify`,
   verify2Fa : `/auth/verify-2fa`,
   user: `/auth/me`,
+  checkLoginMethods: `/auth/check-login-methods`,
+  passkey: {
+    login: {
+      start: `/auth/passkey/login/start`,
+      complete: `/auth/passkey/login/complete`,
+    },
+    register: {
+      start: `/auth/passkey/register/start`,
+      complete: `/auth/passkey/register/complete`,
+    },
+    list: `/auth/passkeys`,
+    delete: (credentialId: string) => `/auth/passkeys/${credentialId}`,
+  },
 
   // Admin Dashboard Routes
   dashboard : `/admin/dashboard`,
