@@ -123,15 +123,15 @@ export function PasskeyRegistrationDialog({
         });
       } 
       // Handle duplicate credential error (InvalidStateError)
-      // This happens when the device/browser already has a passkey for this user
+      // This happens when the specific authenticator already has a passkey for this user
       else if (error.name === 'InvalidStateError' || 
                error.message?.includes('already registered') ||
                error.message?.includes('credentials already registered') ||
                error.message?.includes('object that is not') ||
                error.message?.includes('no longer, usable')) {
         toast({
-          title: 'Device Already Has a Passkey',
-          description: 'This device already has a passkey registered for your account. Each device can only store one passkey per account. To register a new passkey on this device, please delete the existing one first from the list below, or use a different device.',
+          title: 'Authenticator Already Has a Passkey',
+          description: 'This authenticator (e.g., Touch ID, Windows Hello) already has a passkey registered for your account. To register another passkey, try using a different authenticator option (like a security key or phone), delete the existing one first, or use a different device.',
           variant: 'destructive',
         });
       }
