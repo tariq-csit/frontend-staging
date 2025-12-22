@@ -62,6 +62,7 @@ function InitialForm(props:{
   const [showPasswordField, setShowPasswordField] = useState(false);
   const [isCheckingLoginMethods, setIsCheckingLoginMethods] = useState(false);
   const [isPasskeyLogin, setIsPasskeyLogin] = useState(false);
+  const [pendingPasskeyLogin, setPendingPasskeyLogin] = useState(false);
   const { redirectTo } = useAuthRedirect();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -102,13 +103,27 @@ function InitialForm(props:{
     try {
       const response = await checkLoginMethods(email, turnstileToken);
       setHasPasskeys(response.hasPasskeys);
-      setShowPasswordField(!response.hasPasskeys);
       
-      // Reset Turnstile to get a new token for the actual login
-      // The previous token was consumed by check-login-methods
-      if (turnstile) {
-        turnstile.reset();
-        setTurnstileToken(null);
+      if (response.hasPasskeys) {
+        // User has passkeys - automatically start passkey login
+        // Reset Turnstile first to get a new token for passkey login
+        if (turnstile) {
+          turnstile.reset();
+          setTurnstileToken(null);
+        }
+        
+        // Set flag to trigger passkey login once Turnstile generates new token
+        setPendingPasskeyLogin(true);
+        setShowPasswordField(false);
+      } else {
+        // User doesn't have passkeys - show password field
+        setShowPasswordField(true);
+        
+        // Reset Turnstile to get a new token for password login
+        if (turnstile) {
+          turnstile.reset();
+          setTurnstileToken(null);
+        }
       }
     } catch (error) {
       // On error, default to password login
@@ -131,7 +146,27 @@ function InitialForm(props:{
     setHasPasskeys(null);
     setShowPasswordField(false);
     setIsCheckingLoginMethods(false);
+    setPendingPasskeyLogin(false);
   }, [emailValue]);
+
+  // Auto-trigger passkey login when Turnstile token is ready and passkey login is pending
+  useEffect(() => {
+    if (pendingPasskeyLogin && turnstileToken && hasPasskeys === true && !isPasskeyLogin && !isCheckingLoginMethods) {
+      const email = form.getValues("email");
+      const isEmailValid = !form.formState.errors.email && email.length > 0;
+      
+      if (email && isEmailValid) {
+        // Small delay to ensure everything is ready
+        const timer = setTimeout(() => {
+          setIsPasskeyLogin(true);
+          setPendingPasskeyLogin(false);
+          passkeyLoginMutation.mutate(email);
+        }, 300);
+        return () => clearTimeout(timer);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingPasskeyLogin, turnstileToken, hasPasskeys, isPasskeyLogin, isCheckingLoginMethods]);
 
   // Passkey login mutation
   const passkeyLoginMutation = useMutation({
@@ -282,6 +317,14 @@ function InitialForm(props:{
       form.trigger("email");
       return;
     }
+    if (!turnstileToken) {
+      toast({
+        title: "Please wait",
+        description: "Security verification is loading. Please wait a moment.",
+        variant: "default",
+      });
+      return;
+    }
     setIsPasskeyLogin(true);
     passkeyLoginMutation.mutate(email);
   };
@@ -363,9 +406,21 @@ function InitialForm(props:{
                           className="bg-gray-50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-primary dark:focus:border-gray-600"
                           {...field}
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter' && turnstileToken && !form.formState.errors.email) {
+                            if (e.key === 'Enter') {
                               e.preventDefault();
-                              checkLoginMethodsAsync();
+                              
+                              // If passkey button is shown, trigger passkey login
+                              if (hasPasskeys === true && !showPasswordField && turnstileToken) {
+                                handlePasskeyLogin();
+                              } 
+                              // If password field is shown, submit the form
+                              else if (showPasswordField || hasPasskeys === false) {
+                                form.handleSubmit(onSubmit)();
+                              }
+                              // Otherwise, check login methods
+                              else if (turnstileToken && !form.formState.errors.email) {
+                                checkLoginMethodsAsync();
+                              }
                             }
                           }}
                         />
