@@ -252,44 +252,56 @@ export function base64UrlToArrayBuffer(base64url: string): ArrayBuffer {
 /**
  * Transform server-provided options for WebAuthn API
  * Converts base64url strings to ArrayBuffers as required by WebAuthn
- * Creates a deep clone to avoid mutating the original options
+ * Builds a completely new object to avoid any mutation issues
  */
 export function transformOptionsForWebAuthn(
   options: any
 ): PublicKeyCredentialRequestOptions | PublicKeyCredentialCreationOptions {
-  // Create a proper deep clone - start with shallow copy and deep clone nested objects
-  const transformed: any = {
-    ...options,
-  };
+  // Build a completely new object structure to avoid any mutation issues
+  const transformed: any = {};
   
-  // Deep clone nested objects that might be mutated
+  // Copy primitive and simple properties
+  if (options.timeout !== undefined) transformed.timeout = options.timeout;
+  if (options.attestation !== undefined) transformed.attestation = options.attestation;
+  if (options.hints !== undefined && Array.isArray(options.hints)) {
+    transformed.hints = [...options.hints];
+  }
+  
+  // Deep clone rp object
   if (options.rp) {
     transformed.rp = { ...options.rp };
   }
+  
+  // Deep clone and convert user object (for registration)
   if (options.user) {
-    transformed.user = { ...options.user };
+    transformed.user = {
+      ...options.user,
+      id: typeof options.user.id === 'string' 
+        ? base64UrlToArrayBuffer(options.user.id)
+        : options.user.id,
+    };
   }
-  if (options.pubKeyCredParams) {
-    transformed.pubKeyCredParams = [...options.pubKeyCredParams];
+  
+  // Deep clone pubKeyCredParams array
+  if (options.pubKeyCredParams && Array.isArray(options.pubKeyCredParams)) {
+    transformed.pubKeyCredParams = options.pubKeyCredParams.map((param: any) => ({ ...param }));
   }
+  
+  // Deep clone authenticatorSelection object
   if (options.authenticatorSelection) {
     transformed.authenticatorSelection = { ...options.authenticatorSelection };
   }
+  
+  // Deep clone extensions object
   if (options.extensions) {
     transformed.extensions = { ...options.extensions };
   }
   
-  // Convert base64url strings to ArrayBuffers for challenge
-  if (transformed.challenge && typeof transformed.challenge === 'string') {
-    transformed.challenge = base64UrlToArrayBuffer(transformed.challenge);
-  }
-
-  // Convert user.id from base64/base64url string to ArrayBuffer (for registration)
-  if (transformed.user && transformed.user.id && typeof transformed.user.id === 'string') {
-    transformed.user = {
-      ...transformed.user,
-      id: base64UrlToArrayBuffer(transformed.user.id),
-    };
+  // Convert challenge from base64url string to ArrayBuffer
+  if (options.challenge && typeof options.challenge === 'string') {
+    transformed.challenge = base64UrlToArrayBuffer(options.challenge);
+  } else if (options.challenge) {
+    transformed.challenge = options.challenge;
   }
 
   // Deep clone and convert allowCredentials ids from base64url to ArrayBuffer
@@ -302,10 +314,17 @@ export function transformOptionsForWebAuthn(
 
   // Deep clone and convert excludeCredentials ids from base64url to ArrayBuffer
   if (options.excludeCredentials && Array.isArray(options.excludeCredentials)) {
-    transformed.excludeCredentials = options.excludeCredentials.map((cred: any) => ({
-      ...cred,
-      id: typeof cred.id === 'string' ? base64UrlToArrayBuffer(cred.id) : cred.id,
-    }));
+    transformed.excludeCredentials = options.excludeCredentials.map((cred: any) => {
+      const newCred: any = {
+        type: cred.type,
+        id: typeof cred.id === 'string' ? base64UrlToArrayBuffer(cred.id) : cred.id,
+      };
+      // Preserve transports if present
+      if (cred.transports && Array.isArray(cred.transports)) {
+        newCred.transports = [...cred.transports];
+      }
+      return newCred;
+    });
   }
 
   return transformed as PublicKeyCredentialRequestOptions | PublicKeyCredentialCreationOptions;
