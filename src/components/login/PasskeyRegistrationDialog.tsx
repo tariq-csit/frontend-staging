@@ -77,13 +77,14 @@ export function PasskeyRegistrationDialog({
       const { options, challengeKey } = await startPasskeyRegistration(values.deviceName);
 
       // Step 2: Transform options for WebAuthn API (must be done immediately, before any delay)
-      const transformedOptions = transformOptionsForWebAuthn(options);
+      const transformedOptions = transformOptionsForWebAuthn(options) as PublicKeyCredentialCreationOptions;
 
       // Step 3: Create credential using browser WebAuthn API (do this immediately after transformation)
-      // Don't delay between transformation and create() call as options might become stale
-      const attestation = (await navigator.credentials.create({
-        publicKey: transformedOptions as PublicKeyCredentialCreationOptions,
-      })) as PublicKeyCredential;
+      // Pass the transformed options DIRECTLY without any additional copying
+      // Any additional copying (spread operator, Object.assign, etc.) can cause ArrayBuffers to become unusable
+      const attestation = await navigator.credentials.create({
+        publicKey: transformedOptions,
+      }) as PublicKeyCredential;
 
       if (!attestation) {
         throw new Error('Failed to create passkey');
@@ -120,7 +121,21 @@ export function PasskeyRegistrationDialog({
           description: 'Passkey registration was cancelled. You can try again anytime.',
           variant: 'destructive',
         });
-      } else {
+      } 
+      // Handle duplicate credential error (InvalidStateError)
+      // This happens when the device/browser already has a passkey for this user
+      else if (error.name === 'InvalidStateError' || 
+               error.message?.includes('already registered') ||
+               error.message?.includes('credentials already registered') ||
+               error.message?.includes('object that is not') ||
+               error.message?.includes('no longer, usable')) {
+        toast({
+          title: 'Device Already Has a Passkey',
+          description: 'This device already has a passkey registered for your account. Each device can only store one passkey per account. To register a new passkey on this device, please delete the existing one first from the list below, or use a different device.',
+          variant: 'destructive',
+        });
+      }
+      else {
         toast({
           title: 'Registration Failed',
           description: error.message || 'Failed to register passkey. Please try again.',

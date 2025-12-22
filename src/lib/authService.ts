@@ -1,6 +1,5 @@
 import axiosInstance from './AxiosInstance';
 import { apiRoutes } from './routes';
-import { debugLogger } from './debugLogger';
 
 // Types
 export interface CheckLoginMethodsResponse {
@@ -296,11 +295,9 @@ export function base64ToArrayBufferForUserId(base64String: string): ArrayBuffer 
   
   if (isHexString && decoded.length === 24) {
     // It's a MongoDB ObjectId in hex format - convert hex to bytes
-    debugLogger.debug('Detected hex-encoded user.id, converting from hex', { hexString: decoded });
     return hexStringToArrayBuffer(decoded);
   } else {
     // It's already raw bytes
-    debugLogger.debug('Using raw bytes for user.id', { byteLength: decoded.length });
     const bytes = new Uint8Array(decoded.length);
     for (let i = 0; i < decoded.length; i++) {
       bytes[i] = decoded.charCodeAt(i);
@@ -317,17 +314,13 @@ export function base64ToArrayBufferForUserId(base64String: string): ArrayBuffer 
 export function transformOptionsForWebAuthn(
   options: any
 ): PublicKeyCredentialRequestOptions | PublicKeyCredentialCreationOptions {
-  debugLogger.info('Starting transformation of WebAuthn options', { originalOptions: options });
-  
   // Use structuredClone if available for a truly deep clone (removes all shared references)
   let clonedOptions: any;
   if (typeof structuredClone !== 'undefined') {
     try {
       clonedOptions = structuredClone(options);
-      debugLogger.debug('Used structuredClone for deep copy');
     } catch (e) {
       // structuredClone might fail on some objects, fallback to manual clone
-      debugLogger.debug('structuredClone failed, using manual clone', { error: String(e) });
       clonedOptions = JSON.parse(JSON.stringify(options));
     }
   } else {
@@ -411,17 +404,11 @@ export function transformOptionsForWebAuthn(
 
   // Deep clone and convert excludeCredentials ids from base64url to ArrayBuffer
   if (clonedOptions.excludeCredentials && Array.isArray(clonedOptions.excludeCredentials)) {
-    debugLogger.debug('Processing excludeCredentials', { count: clonedOptions.excludeCredentials.length, credentials: clonedOptions.excludeCredentials });
-    
-    transformed.excludeCredentials = clonedOptions.excludeCredentials.map((cred: any, index: number) => {
-      debugLogger.debug(`Converting credential ${index}`, { credential: cred });
-      
+    transformed.excludeCredentials = clonedOptions.excludeCredentials.map((cred: any) => {
       const newCred: any = {
         type: cred.type,
         id: typeof cred.id === 'string' ? base64UrlToArrayBuffer(cred.id) : cred.id,
       };
-      
-      debugLogger.debug(`Converted credential ${index}`, { convertedId: newCred.id });
       
       // Preserve transports if present
       if (cred.transports && Array.isArray(cred.transports)) {
@@ -429,11 +416,8 @@ export function transformOptionsForWebAuthn(
       }
       return newCred;
     });
-    
-    debugLogger.debug('Final excludeCredentials', { excludeCredentials: transformed.excludeCredentials });
   }
 
-  debugLogger.info('Transformation complete', { transformedOptions: transformed });
   return transformed as PublicKeyCredentialRequestOptions | PublicKeyCredentialCreationOptions;
 }
 
