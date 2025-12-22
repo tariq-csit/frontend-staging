@@ -20,6 +20,8 @@ function Navbar(props: { name: string; image: string; role: string }) {
       // Clear all vulnerability drafts before clearing localStorage
       clearAllDrafts();
       localStorage.clear();
+      // Clear sessionStorage so passkey prompt shows again on next login
+      sessionStorage.clear();
       window.location.href = "/login";
     } catch (error) {
       console.log(error);

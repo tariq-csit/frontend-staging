@@ -184,6 +184,8 @@ function Sidebar(props: {
               // Clear all vulnerability drafts before clearing localStorage
               clearAllDrafts();
               localStorage.clear();
+              // Clear sessionStorage so passkey prompt shows again on next login
+              sessionStorage.clear();
               navigate("/login");
             }}
           />

@@ -37,6 +37,11 @@ export interface PasskeyRegistrationCompleteRequest {
   attestation: PublicKeyCredential;
 }
 
+export interface PasskeyRegistrationCompleteResponse {
+  message: string;
+  credentialID?: string;
+}
+
 export interface PasskeyInfo {
   credentialId: string;  // Normalized to camelCase for frontend
   deviceName: string;
@@ -170,7 +175,7 @@ export async function startPasskeyRegistration(
  */
 export async function completePasskeyRegistration(
   data: PasskeyRegistrationCompleteRequest
-): Promise<void> {
+): Promise<PasskeyRegistrationCompleteResponse> {
   // Type guard for AuthenticatorAttestationResponse
   const attestationResponse = data.attestation.response as AuthenticatorAttestationResponse;
   
@@ -185,7 +190,7 @@ export async function completePasskeyRegistration(
     type: data.attestation.type,
   };
 
-  await axiosInstance.post(
+  const response = await axiosInstance.post(
     apiRoutes.passkey.register.complete,
     {
       challengeKey: data.challengeKey,
@@ -197,6 +202,8 @@ export async function completePasskeyRegistration(
       },
     }
   );
+  
+  return response.data;
 }
 
 /**

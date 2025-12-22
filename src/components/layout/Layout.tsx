@@ -33,9 +33,10 @@ function Layout() {
     },
   });
 
-  // Show passkey setup prompt after login (once per session)
+  // Show passkey setup prompt after login (once per login session, not on navigation)
   useEffect(() => {
     const hasShownThisSession = sessionStorage.getItem("passkeySetupPromptShown");
+    // Only show if not on login/signup pages and haven't shown in this session
     if (!hasShownThisSession && location.pathname !== "/login" && location.pathname !== "/signup") {
       // Small delay to let the page render first
       const timer = setTimeout(() => {
@@ -44,7 +45,9 @@ function Layout() {
       }, 1000);
       return () => clearTimeout(timer);
     }
-  }, [location.pathname]);
+    // Don't re-trigger on pathname changes - only on initial mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array - only run once on mount
 
   // Redirect to login if no token
   useEffect(() => {

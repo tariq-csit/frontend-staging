@@ -89,6 +89,9 @@ export function PasskeyRegistrationDialog({
       }
 
       // Step 4: Complete registration
+      // Add a small delay to ensure backend has processed the start request
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       await completePasskeyRegistration({
         challengeKey,
         attestation,
