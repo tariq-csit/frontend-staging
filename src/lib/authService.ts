@@ -238,6 +238,22 @@ export function arrayBufferToBase64Url(buffer: ArrayBuffer): string {
 }
 
 /**
+ * Convert hex string to ArrayBuffer
+ */
+export function hexStringToArrayBuffer(hexString: string): ArrayBuffer {
+  // Remove any spaces or non-hex characters
+  const cleanHex = hexString.replace(/[^0-9a-fA-F]/g, '');
+  
+  // Convert hex string to bytes
+  const bytes = new Uint8Array(cleanHex.length / 2);
+  for (let i = 0; i < cleanHex.length; i += 2) {
+    bytes[i / 2] = parseInt(cleanHex.substr(i, 2), 16);
+  }
+  
+  return bytes.buffer;
+}
+
+/**
  * Convert base64url string to array buffer (for WebAuthn)
  */
 export function base64UrlToArrayBuffer(base64url: string): ArrayBuffer {
@@ -264,6 +280,33 @@ export function base64UrlToArrayBuffer(base64url: string): ArrayBuffer {
   
   // Return the ArrayBuffer (not a view, but the actual buffer)
   return bytes.buffer;
+}
+
+/**
+ * Convert base64/base64url string to ArrayBuffer, with special handling for user.id
+ * which may be a base64-encoded hex string
+ */
+export function base64ToArrayBufferForUserId(base64String: string): ArrayBuffer {
+  // First decode the base64 string
+  const decoded = atob(base64String);
+  
+  // Check if the decoded string is a hex string (MongoDB ObjectId format)
+  // Hex strings only contain 0-9, a-f, A-F
+  const isHexString = /^[0-9a-fA-F]+$/.test(decoded);
+  
+  if (isHexString && decoded.length === 24) {
+    // It's a MongoDB ObjectId in hex format - convert hex to bytes
+    debugLogger.debug('Detected hex-encoded user.id, converting from hex', { hexString: decoded });
+    return hexStringToArrayBuffer(decoded);
+  } else {
+    // It's already raw bytes
+    debugLogger.debug('Using raw bytes for user.id', { byteLength: decoded.length });
+    const bytes = new Uint8Array(decoded.length);
+    for (let i = 0; i < decoded.length; i++) {
+      bytes[i] = decoded.charCodeAt(i);
+    }
+    return bytes.buffer;
+  }
 }
 
 /**
@@ -295,7 +338,7 @@ export function transformOptionsForWebAuthn(
     transformed.user = {
       ...options.user,
       id: typeof options.user.id === 'string' 
-        ? base64UrlToArrayBuffer(options.user.id)
+        ? base64ToArrayBufferForUserId(options.user.id)
         : options.user.id,
     };
   }
