@@ -318,66 +318,102 @@ export function transformOptionsForWebAuthn(
   options: any
 ): PublicKeyCredentialRequestOptions | PublicKeyCredentialCreationOptions {
   debugLogger.info('Starting transformation of WebAuthn options', { originalOptions: options });
+  
+  // Use structuredClone if available for a truly deep clone (removes all shared references)
+  let clonedOptions: any;
+  if (typeof structuredClone !== 'undefined') {
+    try {
+      clonedOptions = structuredClone(options);
+      debugLogger.debug('Used structuredClone for deep copy');
+    } catch (e) {
+      // structuredClone might fail on some objects, fallback to manual clone
+      debugLogger.debug('structuredClone failed, using manual clone', { error: String(e) });
+      clonedOptions = JSON.parse(JSON.stringify(options));
+    }
+  } else {
+    clonedOptions = JSON.parse(JSON.stringify(options));
+  }
+  
   // Build a completely new object structure to avoid any mutation issues
   const transformed: any = {};
   
   // Copy primitive and simple properties
-  if (options.timeout !== undefined) transformed.timeout = options.timeout;
-  if (options.attestation !== undefined) transformed.attestation = options.attestation;
-  if (options.hints !== undefined && Array.isArray(options.hints)) {
-    transformed.hints = [...options.hints];
+  if (clonedOptions.timeout !== undefined) transformed.timeout = clonedOptions.timeout;
+  if (clonedOptions.attestation !== undefined) transformed.attestation = clonedOptions.attestation;
+  if (clonedOptions.rpId !== undefined) transformed.rpId = clonedOptions.rpId;
+  if (clonedOptions.userVerification !== undefined) transformed.userVerification = clonedOptions.userVerification;
+  if (clonedOptions.hints !== undefined && Array.isArray(clonedOptions.hints)) {
+    transformed.hints = [...clonedOptions.hints];
   }
   
   // Deep clone rp object
-  if (options.rp) {
-    transformed.rp = { ...options.rp };
+  if (clonedOptions.rp) {
+    transformed.rp = {
+      name: clonedOptions.rp.name,
+      id: clonedOptions.rp.id,
+    };
   }
   
   // Deep clone and convert user object (for registration)
-  if (options.user) {
+  if (clonedOptions.user) {
     transformed.user = {
-      ...options.user,
-      id: typeof options.user.id === 'string' 
-        ? base64ToArrayBufferForUserId(options.user.id)
-        : options.user.id,
+      name: clonedOptions.user.name,
+      displayName: clonedOptions.user.displayName,
+      id: typeof clonedOptions.user.id === 'string' 
+        ? base64ToArrayBufferForUserId(clonedOptions.user.id)
+        : clonedOptions.user.id,
     };
   }
   
   // Deep clone pubKeyCredParams array
-  if (options.pubKeyCredParams && Array.isArray(options.pubKeyCredParams)) {
-    transformed.pubKeyCredParams = options.pubKeyCredParams.map((param: any) => ({ ...param }));
+  if (clonedOptions.pubKeyCredParams && Array.isArray(clonedOptions.pubKeyCredParams)) {
+    transformed.pubKeyCredParams = clonedOptions.pubKeyCredParams.map((param: any) => ({
+      alg: param.alg,
+      type: param.type,
+    }));
   }
   
   // Deep clone authenticatorSelection object
-  if (options.authenticatorSelection) {
-    transformed.authenticatorSelection = { ...options.authenticatorSelection };
+  if (clonedOptions.authenticatorSelection) {
+    transformed.authenticatorSelection = {
+      authenticatorAttachment: clonedOptions.authenticatorSelection.authenticatorAttachment,
+      userVerification: clonedOptions.authenticatorSelection.userVerification,
+      requireResidentKey: clonedOptions.authenticatorSelection.requireResidentKey,
+      residentKey: clonedOptions.authenticatorSelection.residentKey,
+    };
   }
   
   // Deep clone extensions object
-  if (options.extensions) {
-    transformed.extensions = { ...options.extensions };
+  if (clonedOptions.extensions) {
+    transformed.extensions = { ...clonedOptions.extensions };
   }
   
   // Convert challenge from base64url string to ArrayBuffer
-  if (options.challenge && typeof options.challenge === 'string') {
-    transformed.challenge = base64UrlToArrayBuffer(options.challenge);
-  } else if (options.challenge) {
-    transformed.challenge = options.challenge;
+  if (clonedOptions.challenge && typeof clonedOptions.challenge === 'string') {
+    transformed.challenge = base64UrlToArrayBuffer(clonedOptions.challenge);
+  } else if (clonedOptions.challenge) {
+    transformed.challenge = clonedOptions.challenge;
   }
 
   // Deep clone and convert allowCredentials ids from base64url to ArrayBuffer
-  if (options.allowCredentials && Array.isArray(options.allowCredentials)) {
-    transformed.allowCredentials = options.allowCredentials.map((cred: any) => ({
-      ...cred,
-      id: typeof cred.id === 'string' ? base64UrlToArrayBuffer(cred.id) : cred.id,
-    }));
+  if (clonedOptions.allowCredentials && Array.isArray(clonedOptions.allowCredentials)) {
+    transformed.allowCredentials = clonedOptions.allowCredentials.map((cred: any) => {
+      const newCred: any = {
+        type: cred.type,
+        id: typeof cred.id === 'string' ? base64UrlToArrayBuffer(cred.id) : cred.id,
+      };
+      if (cred.transports && Array.isArray(cred.transports)) {
+        newCred.transports = [...cred.transports];
+      }
+      return newCred;
+    });
   }
 
   // Deep clone and convert excludeCredentials ids from base64url to ArrayBuffer
-  if (options.excludeCredentials && Array.isArray(options.excludeCredentials)) {
-    debugLogger.debug('Processing excludeCredentials', { count: options.excludeCredentials.length, credentials: options.excludeCredentials });
+  if (clonedOptions.excludeCredentials && Array.isArray(clonedOptions.excludeCredentials)) {
+    debugLogger.debug('Processing excludeCredentials', { count: clonedOptions.excludeCredentials.length, credentials: clonedOptions.excludeCredentials });
     
-    transformed.excludeCredentials = options.excludeCredentials.map((cred: any, index: number) => {
+    transformed.excludeCredentials = clonedOptions.excludeCredentials.map((cred: any, index: number) => {
       debugLogger.debug(`Converting credential ${index}`, { credential: cred });
       
       const newCred: any = {
