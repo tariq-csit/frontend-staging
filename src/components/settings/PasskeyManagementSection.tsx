@@ -70,39 +70,29 @@ export function PasskeyManagementSection() {
 
   if (!isWebAuthnSupported()) {
     return (
-      <div className="mb-8">
-        <h2 className="text-xl font-bold mb-4 dark:text-gray-100">Passkey Management</h2>
-        <Card className="shadow-sm dark:bg-gray-900 dark:border-gray-700">
-          <CardContent className="p-6">
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Passkeys are not supported in your browser. Please use a modern browser with WebAuthn support.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      <Card className="shadow-sm dark:bg-gray-900 dark:border-gray-700">
+        <CardContent className="pt-6">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Passkeys are not supported in your browser. Please use a modern browser with WebAuthn support.
+          </p>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="mb-8">
-      <h2 className="text-xl font-bold mb-4 dark:text-gray-100">Passkey Management</h2>
+    <>
       <Card className="shadow-sm dark:bg-gray-900 dark:border-gray-700">
-        <CardContent className="p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-lg font-semibold dark:text-gray-200">Registered Passkeys</h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                Manage your passkeys for secure, passwordless login
-              </p>
-            </div>
-            <Button
-              onClick={() => setRegisterDialogOpen(true)}
-              className="bg-primary hover:bg-primary/90 dark:bg-primary dark:hover:bg-primary/90"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Passkey
-            </Button>
-          </div>
+      <CardContent className="pt-6">
+        <div className="flex items-center justify-end mb-6">
+          <Button
+            onClick={() => setRegisterDialogOpen(true)}
+            className="bg-indigo-700 hover:bg-indigo-800 dark:bg-indigo-600 dark:hover:bg-indigo-700"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Passkey
+          </Button>
+        </div>
 
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
@@ -208,7 +198,7 @@ export function PasskeyManagementSection() {
         open={registerDialogOpen}
         onOpenChange={setRegisterDialogOpen}
       />
-    </div>
+    </>
   );
 }
 

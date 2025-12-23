@@ -5,10 +5,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query"
-
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
@@ -20,6 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useSetPageTitle } from "@/hooks/useSetPageTitle"
 import { useUser } from "@/hooks/useUser"
 import { PasskeyManagementSection } from "./PasskeyManagementSection"
+import { User, Lock, Bell, Shield } from "lucide-react"
 
 // Form schemas
 const nameFormSchema = z.object({
@@ -48,12 +47,14 @@ const passwordFormSchema = z
     path: ["confirmPassword"],
   })
 
+type Tab = 'account' | 'security' | 'notifications'
+
 export default function SettingsPage() {
   const { toast } = useToast()
   const queryClient = useQueryClient()
   const { isPentester } = useUser()
+  const [activeTab, setActiveTab] = useState<Tab>('account')
 
-  // Set page title for settings page
   useSetPageTitle("Settings");
 
   // Individual states for each notification preference
@@ -86,7 +87,6 @@ export default function SettingsPage() {
         description: error.response?.data?.message || "Failed to update name",
         variant: "destructive",
       })
-      console.error('Error updating name:', error)
     }
   })
 
@@ -107,7 +107,6 @@ export default function SettingsPage() {
         description: error.response?.data?.message || "Failed to update email",
         variant: "destructive",
       })
-      console.error('Error updating email:', error)
     }
   })
 
@@ -135,7 +134,6 @@ export default function SettingsPage() {
           variant: "destructive",
         })
       }
-      console.error('Error updating password:', error)
     }
   })
 
@@ -161,13 +159,11 @@ export default function SettingsPage() {
         description: error.response?.data?.message || "Failed to update notification preference",
         variant: "destructive",
       })
-      console.error('Error updating notification preferences:', error)
     }
   })
 
   const { mutate: updateProfilePicture, isPending: isUpdatingProfilePicture } = useMutation({
     mutationFn: async (file: File) => {
-      // First upload the profile picture
       const formData = new FormData()
       formData.append('profilePicture', file)
       const response = await axiosInstance.post(apiRoutes.uploadProfilePicture, formData, {
@@ -176,7 +172,6 @@ export default function SettingsPage() {
         },
       })
       
-      // Then update the user data with the new profile picture URL
       await axiosInstance.put(apiRoutes.user, {
         ...userData,
         profilePicture: response.data.url
@@ -197,11 +192,10 @@ export default function SettingsPage() {
         description: error.response?.data?.message || "Failed to update profile picture",
         variant: "destructive",
       })
-      console.error('Error updating profile picture:', error)
     }
   })
 
-  // Name form
+  // Forms
   const nameForm = useForm<z.infer<typeof nameFormSchema>>({
     resolver: zodResolver(nameFormSchema),
     defaultValues: {
@@ -209,7 +203,6 @@ export default function SettingsPage() {
     },
   })
 
-  // Email form
   const emailForm = useForm<z.infer<typeof emailFormSchema>>({
     resolver: zodResolver(emailFormSchema),
     defaultValues: {
@@ -217,7 +210,6 @@ export default function SettingsPage() {
     },
   })
 
-  // Password form
   const passwordForm = useForm<z.infer<typeof passwordFormSchema>>({
     mode: "onChange",
     resolver: zodResolver(passwordFormSchema),
@@ -244,7 +236,6 @@ export default function SettingsPage() {
     })
   }
 
-  // Generic handler for all notification preferences
   const onNotificationPreferenceChange = (
     preferenceKey: string,
     checked: boolean,
@@ -254,7 +245,6 @@ export default function SettingsPage() {
     updateNotificationPreference({ key: preferenceKey, value: checked })
   }
 
-  // Initialize all notification preferences from user data
   useEffect(() => {
     if (userData?.notificationPreferences) {
       const prefs = userData.notificationPreferences;
@@ -266,61 +256,145 @@ export default function SettingsPage() {
     }
   }, [userData]);
 
+  const tabs = [
+    { id: 'account' as Tab, label: 'Account', icon: User },
+    { id: 'security' as Tab, label: 'Security', icon: Shield },
+    { id: 'notifications' as Tab, label: 'Notifications', icon: Bell },
+  ]
+
   return (
-    <div className="mx-4 py-8 px-4 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-6 dark:text-gray-100">Settings</h1>
+    <div className="min-h-screen bg-white dark:bg-gray-800">
+      <div className="mx-auto max-w-6xl px-4 py-8">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Settings</h1>
+        </div>
 
-      {/* User Management Section */}
-      <div className="mb-8">
-        <h2 className="text-xl font-bold mb-4 dark:text-gray-100">User Management</h2>
-        <Card className="shadow-sm dark:bg-gray-900 dark:border-gray-700">
-          <CardContent className="p-0">
-            <Accordion type="single" collapsible className="w-full">
-              {/* Change Name */}
-              <AccordionItem value="name" className="border-b dark:border-gray-700">
-                <AccordionTrigger className="px-4 py-4 hover:no-underline dark:text-gray-200">
-                  <span className="text-base font-medium">Change Name</span>
-                </AccordionTrigger>
-                <AccordionContent className="px-4 pb-4">
-                  <Form {...nameForm}>
-                    <form onSubmit={nameForm.handleSubmit(onNameSubmit)} className="space-y-4 max-w-md">
-                      <div className="space-y-1">
-                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Current Name</p>
-                        <p className="text-sm text-gray-900 dark:text-gray-100">{userData?.name}</p>
+        {/* Tabs */}
+        <div className="mb-8 border-b border-gray-200 dark:border-gray-700">
+          <div className="flex space-x-8">
+            {tabs.map((tab) => {
+              const Icon = tab.icon
+              const isActive = activeTab === tab.id
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex items-center space-x-2 px-1 py-3 text-sm font-medium transition-all relative border-b-2 ${
+                    isActive
+                      ? 'border-indigo-600 text-indigo-600 dark:border-indigo-500 dark:text-indigo-400'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300 dark:hover:border-gray-600'
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  <span>{tab.label}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Tab Content */}
+        <div className="space-y-6">
+          {/* Account Tab */}
+          {activeTab === 'account' && (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              {/* Profile Picture & Name Card - Combined */}
+              <Card className="shadow-sm dark:bg-gray-900 dark:border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-lg dark:text-gray-100">Profile Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Profile Picture Section - Compact */}
+                  <div className="flex items-center gap-6">
+                    <div className="flex-shrink-0">
+                      <Avatar className="h-24 w-24 dark:border-2 dark:border-gray-600">
+                        <AvatarImage src={userData?.profilePicture} alt="Profile" />
+                        <AvatarFallback className="text-lg">{userData?.name?.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                    </div>
+                    <div className="flex-1">
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Profile Picture</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">JPG or PNG. Max size 5MB</p>
+                        <div className="flex gap-2">
+                          <label htmlFor="profile-upload" className="cursor-pointer">
+                            <div className="px-4 py-2 bg-indigo-700 hover:bg-indigo-800 dark:bg-indigo-600 dark:hover:bg-indigo-700 text-white text-sm font-medium rounded-md transition-colors inline-block">
+                              {isUpdatingProfilePicture ? "Uploading..." : "Change Picture"}
+                            </div>
+                            <input
+                              id="profile-upload"
+                              type="file"
+                              className="hidden"
+                              accept="image/jpeg,image/jpg,image/png"
+                              onChange={(e) => {
+                                const files = e.target.files
+                                if (files && files.length > 0) {
+                                  const file = files[0]
+                                  if (file.size <= 5 * 1024 * 1024) {
+                                    updateProfilePicture(file)
+                                  } else {
+                                    toast({
+                                      title: "Error",
+                                      description: "File size must be less than 5MB",
+                                      variant: "destructive",
+                                    })
+                                  }
+                                }
+                              }}
+                              disabled={isUpdatingProfilePicture}
+                            />
+                          </label>
+                        </div>
                       </div>
-                      <FormField
-                        control={nameForm.control}
-                        name="newName"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="dark:text-gray-200">Enter New Name</FormLabel>
-                            <FormControl>
-                              <Input {...field} className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" disabled={isUpdatingName} />
-                            </FormControl>
-                            <FormMessage className="dark:text-red-400" />
-                          </FormItem>
-                        )}
-                      />
-                      <Button 
-                        type="submit" 
-                        className="w-full bg-indigo-700 hover:bg-indigo-800 dark:bg-indigo-600 dark:hover:bg-indigo-700"
-                        disabled={isUpdatingName}
-                      >
-                        {isUpdatingName ? "Updating..." : "Update"}
-                      </Button>
-                    </form>
-                  </Form>
-                </AccordionContent>
-              </AccordionItem>
+                    </div>
+                  </div>
 
-              {/* Change Email */}
-              <AccordionItem value="email" className="border-b dark:border-gray-700">
-                <AccordionTrigger className="px-4 py-4 hover:no-underline dark:text-gray-200">
-                  <span className="text-base font-medium">Change Email</span>
-                </AccordionTrigger>
-                <AccordionContent className="px-4 pb-4">
+                  {/* Divider */}
+                  <div className="border-t dark:border-gray-700"></div>
+
+                  {/* Display Name Section */}
+                  <div>
+                    <Form {...nameForm}>
+                      <form onSubmit={nameForm.handleSubmit(onNameSubmit)} className="space-y-4">
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Current Name</p>
+                          <p className="text-sm text-gray-900 dark:text-gray-100">{userData?.name}</p>
+                        </div>
+                        <FormField
+                          control={nameForm.control}
+                          name="newName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="dark:text-gray-200">Enter New Name</FormLabel>
+                              <FormControl>
+                                <Input {...field} className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" disabled={isUpdatingName} />
+                              </FormControl>
+                              <FormMessage className="dark:text-red-400" />
+                            </FormItem>
+                          )}
+                        />
+                        <Button 
+                          type="submit" 
+                          className="w-full bg-indigo-700 hover:bg-indigo-800 dark:bg-indigo-600 dark:hover:bg-indigo-700"
+                          disabled={isUpdatingName}
+                        >
+                          {isUpdatingName ? "Updating..." : "Update"}
+                        </Button>
+                      </form>
+                    </Form>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Email Card */}
+              <Card className="shadow-sm dark:bg-gray-900 dark:border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-lg dark:text-gray-100">Email Address</CardTitle>
+                </CardHeader>
+                <CardContent>
                   <Form {...emailForm}>
-                    <form onSubmit={emailForm.handleSubmit(onEmailSubmit)} className="space-y-4 max-w-md">
+                    <form onSubmit={emailForm.handleSubmit(onEmailSubmit)} className="space-y-4">
                       <div className="space-y-1">
                         <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Current Email</p>
                         <p className="text-sm text-gray-900 dark:text-gray-100">{userData?.email}</p>
@@ -347,178 +421,174 @@ export default function SettingsPage() {
                       </Button>
                     </form>
                   </Form>
-                </AccordionContent>
-              </AccordionItem>
+                </CardContent>
+              </Card>
+            </div>
+          )}
 
-              {/* Change Password */}
-              <AccordionItem value="password" className="border-b dark:border-gray-700">
-                <AccordionTrigger className="px-4 py-4 hover:no-underline dark:text-gray-200">
-                  <span className="text-base font-medium">Change Password</span>
-                </AccordionTrigger>
-                <AccordionContent className="px-4 pb-4">
-                  <Form {...passwordForm}>
-                    <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4 max-w-md">
-                      <FormField
-                        control={passwordForm.control}
-                        name="currentPassword"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="dark:text-gray-200">Enter Current Password</FormLabel>
-                            <FormControl>
-                              <Input {...field} type="password" className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" disabled={isUpdatingPassword} />
-                            </FormControl>
-                            <FormMessage className="dark:text-red-400" />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={passwordForm.control}
-                        name="newPassword"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="dark:text-gray-200">Enter New Password</FormLabel>
-                            <FormControl>
-                              <Input {...field} type="password" className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" disabled={isUpdatingPassword} />
-                            </FormControl>
-                            <FormMessage className="dark:text-red-400" />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={passwordForm.control}
-                        name="confirmPassword"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="dark:text-gray-200">Re-enter New Password</FormLabel>
-                            <FormControl>
-                              <Input {...field} type="password" className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" disabled={isUpdatingPassword} />
-                            </FormControl>
-                            <FormMessage className="dark:text-red-400" />
-                          </FormItem>
-                        )}
-                      />
-                      <Button 
-                        type="submit" 
-                        disabled={isUpdatingPassword}
-                        className="dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:text-white"
-                      >
-                        {isUpdatingPassword ? "Updating..." : "Update"}
-                      </Button>
-                    </form>
-                  </Form>
-                </AccordionContent>
-              </AccordionItem>
+          {/* Security Tab */}
+          {activeTab === 'security' && (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              {/* Password Section */}
+              <div className="space-y-3">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                    <Lock className="h-5 w-5" />
+                    Password
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    Update your password to keep your account secure
+                  </p>
+                </div>
+                <Card className="shadow-sm dark:bg-gray-900 dark:border-gray-700">
+                  <CardContent className="pt-6">
+                    <Form {...passwordForm}>
+                      <form onSubmit={passwordForm.handleSubmit(onPasswordSubmit)} className="space-y-4">
+                        <FormField
+                          control={passwordForm.control}
+                          name="currentPassword"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="dark:text-gray-200">Enter Current Password</FormLabel>
+                              <FormControl>
+                                <Input {...field} type="password" className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" disabled={isUpdatingPassword} />
+                              </FormControl>
+                              <FormMessage className="dark:text-red-400" />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={passwordForm.control}
+                          name="newPassword"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="dark:text-gray-200">Enter New Password</FormLabel>
+                              <FormControl>
+                                <Input {...field} type="password" className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" disabled={isUpdatingPassword} />
+                              </FormControl>
+                              <FormMessage className="dark:text-red-400" />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={passwordForm.control}
+                          name="confirmPassword"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="dark:text-gray-200">Re-enter New Password</FormLabel>
+                              <FormControl>
+                                <Input {...field} type="password" className="w-full dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100" disabled={isUpdatingPassword} />
+                              </FormControl>
+                              <FormMessage className="dark:text-red-400" />
+                            </FormItem>
+                          )}
+                        />
+                        <Button 
+                          type="submit" 
+                          disabled={isUpdatingPassword}
+                          className="bg-indigo-700 hover:bg-indigo-800 dark:bg-indigo-600 dark:hover:bg-indigo-700"
+                        >
+                          {isUpdatingPassword ? "Updating..." : "Update Password"}
+                        </Button>
+                      </form>
+                    </Form>
+                  </CardContent>
+                </Card>
+              </div>
 
-              {/* Change Profile Picture */}
-              <AccordionItem value="profile-picture" className="border-b-0">
-                <AccordionTrigger className="px-4 py-4 hover:no-underline dark:text-gray-200">
-                  <span className="text-base font-medium">Change Profile Picture</span>
-                </AccordionTrigger>
-                <AccordionContent className="px-4 pb-4">
-                  <div className="space-y-4 max-w-md">
-                    {userData?.profilePicture && (
-                      <div className="flex items-center space-x-4">
-                        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Current Picture</p>
-                        <Avatar className="h-16 w-16 dark:border dark:border-gray-600">
-                          <AvatarImage src={userData.profilePicture} alt="Profile" />
-                          <AvatarFallback>{userData?.name?.charAt(0)}</AvatarFallback>
-                        </Avatar>
+              {/* Divider */}
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
+                </div>
+              </div>
+
+              {/* Passkeys Section */}
+              <div className="space-y-3">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+                    <Shield className="h-5 w-5" />
+                    Passkeys
+                  </h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    Secure, passwordless authentication for faster and safer login
+                  </p>
+                </div>
+                <PasskeyManagementSection />
+              </div>
+            </div>
+          )}
+
+          {/* Notifications Tab */}
+          {activeTab === 'notifications' && (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              <Card className="shadow-sm dark:bg-gray-900 dark:border-gray-700">
+                <CardContent className="pb-0">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between py-4">
+                      <span className="text-base font-medium dark:text-gray-200">Comment notifications</span>
+                      <Switch
+                        checked={commentNotification}
+                        onCheckedChange={(checked) => 
+                          onNotificationPreferenceChange('commentNotification', checked, setCommentNotification)
+                        }
+                        className="data-[state=checked]:bg-primary"
+                        disabled={isUpdatingPreference}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between py-4 border-t dark:border-gray-700">
+                      <span className="text-base font-medium dark:text-gray-200">Status change notifications</span>
+                      <Switch
+                        checked={statusChangeNotification}
+                        onCheckedChange={(checked) => 
+                          onNotificationPreferenceChange('statusChangeNotification', checked, setStatusChangeNotification)
+                        }
+                        className="data-[state=checked]:bg-primary"
+                        disabled={isUpdatingPreference}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between py-4 border-t dark:border-gray-700">
+                      <span className="text-base font-medium dark:text-gray-200">Vulnerability alerts</span>
+                      <Switch
+                        checked={vulnerabilityAlerts}
+                        onCheckedChange={(checked) => 
+                          onNotificationPreferenceChange('vulnerabilitySubmissionNotification', checked, setVulnerabilityAlerts)
+                        }
+                        className="data-[state=checked]:bg-primary"
+                        disabled={isUpdatingPreference}
+                      />
+                    </div>
+                    <div className="flex items-center justify-between py-4 border-t dark:border-gray-700">
+                      <span className="text-base font-medium dark:text-gray-200">Login notifications</span>
+                      <Switch
+                        checked={loginNotification}
+                        onCheckedChange={(checked) => 
+                          onNotificationPreferenceChange('loginNotification', checked, setLoginNotification)
+                        }
+                        className="data-[state=checked]:bg-primary"
+                        disabled={isUpdatingPreference}
+                      />
+                    </div>
+                    {!isPentester() && (
+                      <div className="flex items-center justify-between py-4 border-t dark:border-gray-700">
+                        <span className="text-base font-medium dark:text-gray-200">Report comment notifications</span>
+                        <Switch
+                          checked={reportCommentNotification}
+                          onCheckedChange={(checked) => 
+                            onNotificationPreferenceChange('reportCommentNotification', checked, setReportCommentNotification)
+                          }
+                          className="data-[state=checked]:bg-primary"
+                          disabled={isUpdatingPreference}
+                        />
                       </div>
                     )}
-                    <FileUpload
-                      value={[]}
-                      onChange={(files) => {
-                        if (files.length > 0) {
-                          updateProfilePicture(files[0])
-                        }
-                      }}
-                      maxSize={5 * 1024 * 1024} // 5MB
-                      acceptedTypes={{
-                        'image/jpeg': ['.jpg', '.jpeg'],
-                        'image/png': ['.png'],
-                      }}
-                      disabled={isUpdatingProfilePicture}
-                    />
                   </div>
-                </AccordionContent>
-              </AccordionItem>
-
-            </Accordion>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Passkey Management Section */}
-      <PasskeyManagementSection />
-
-      {/* Notification Preferences Section */}
-      <div className="mt-8">
-        <h2 className="text-xl font-bold mb-4 dark:text-gray-100">Notification Preferences</h2>
-        <Card className="shadow-sm dark:bg-gray-900 dark:border-gray-700">
-          <CardContent className="pb-0">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between py-4">
-                <span className="text-base font-medium dark:text-gray-200">Comment notifications</span>
-                <Switch
-                  checked={commentNotification}
-                  onCheckedChange={(checked) => 
-                    onNotificationPreferenceChange('commentNotification', checked, setCommentNotification)
-                  }
-                  className="data-[state=checked]:bg-primary"
-                  disabled={isUpdatingPreference}
-                />
-              </div>
-              <div className="flex items-center justify-between py-4 border-t dark:border-gray-700">
-                <span className="text-base font-medium dark:text-gray-200">Status change notifications</span>
-                <Switch
-                  checked={statusChangeNotification}
-                  onCheckedChange={(checked) => 
-                    onNotificationPreferenceChange('statusChangeNotification', checked, setStatusChangeNotification)
-                  }
-                  className="data-[state=checked]:bg-primary"
-                  disabled={isUpdatingPreference}
-                />
-              </div>
-              <div className="flex items-center justify-between py-4 border-t dark:border-gray-700">
-                <span className="text-base font-medium dark:text-gray-200">Vulnerability alerts</span>
-                <Switch
-                  checked={vulnerabilityAlerts}
-                  onCheckedChange={(checked) => 
-                    onNotificationPreferenceChange('vulnerabilitySubmissionNotification', checked, setVulnerabilityAlerts)
-                  }
-                  className="data-[state=checked]:bg-primary"
-                  disabled={isUpdatingPreference}
-                />
-              </div>
-              <div className="flex items-center justify-between py-4 border-t dark:border-gray-700">
-                <span className="text-base font-medium dark:text-gray-200">Login notifications</span>
-                <Switch
-                  checked={loginNotification}
-                  onCheckedChange={(checked) => 
-                    onNotificationPreferenceChange('loginNotification', checked, setLoginNotification)
-                  }
-                  className="data-[state=checked]:bg-primary"
-                  disabled={isUpdatingPreference}
-                />
-              </div>
-              {!isPentester() && (
-                <div className="flex items-center justify-between py-4 border-t dark:border-gray-700">
-                  <span className="text-base font-medium dark:text-gray-200">Report comment notifications</span>
-                  <Switch
-                    checked={reportCommentNotification}
-                    onCheckedChange={(checked) => 
-                      onNotificationPreferenceChange('reportCommentNotification', checked, setReportCommentNotification)
-                    }
-                    className="data-[state=checked]:bg-primary"
-                    disabled={isUpdatingPreference}
-                  />
-                </div>
-              )}
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
+          )}
+        </div>
       </div>
     </div>
   )
 }
-
