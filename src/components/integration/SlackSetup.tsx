@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, CheckCircle2, X, Bell, MessageSquare, Settings, ArrowLeft } from 'lucide-react';
+import { Loader2, CheckCircle2, X, Bell, MessageSquare, Settings, ArrowLeft, AlertCircle, Info } from 'lucide-react';
 import { Client, Pentest } from '@/types/types';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -145,11 +145,29 @@ const SlackSetup: React.FC = () => {
         { channelId, channelName }
       );
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
+      const data = response.data;
+      const message = data?.message || "Channel linked successfully";
+      const warning = data?.warning;
+      const botInChannel = data?.botInChannel;
+      const isPrivateChannel = data?.isPrivateChannel;
+
+      // Show success toast
       toast({
         title: "Channel linked",
-        description: "Pentest has been successfully linked to the selected channel.",
+        description: message,
       });
+
+      // Show warning toast if present (for private channels or failed auto-join)
+      if (warning) {
+        toast({
+          title: "Action Required",
+          description: warning,
+          variant: "default",
+          duration: 10000, // Show for 10 seconds
+        });
+      }
+
       setLinkDialogOpen(false);
       setSelectedPentestForLink(null);
       setSelectedChannelId('');
@@ -563,6 +581,25 @@ const SlackSetup: React.FC = () => {
                     ))}
                   </SelectContent>
                 </Select>
+                {selectedChannelId && (
+                  <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <div className="flex items-start gap-2">
+                      <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                      <div className="text-sm text-blue-800 dark:text-blue-300">
+                        <p className="font-medium mb-1">Channel Information:</p>
+                        {channels.find(c => c.id === selectedChannelId)?.isPrivate ? (
+                          <ul className="list-disc list-inside space-y-1 text-xs">
+                            <li>This is a private channel</li>
+                            <li>You'll need to manually invite the bot using <code className="bg-blue-100 dark:bg-blue-900 px-1 rounded">/invite @SLASH</code> in the channel</li>
+                            <li>Thread replies and notifications won't work until the bot is invited</li>
+                          </ul>
+                        ) : (
+                          <p className="text-xs">The bot will automatically join this public channel when you link it.</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
